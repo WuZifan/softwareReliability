@@ -18,7 +18,6 @@ public class VCGenerator {
 //		result.append("(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
 //		result.append("(define-fun tobool ((p (_ BitVec 32))) Bool (ite (= p (_ bv0 32)) false true))\n");
 		StringBuilder result = new StringBuilder("(set-logic QF_LIA)\n");
-//		System.out.println(proc.getChildCount());
 		tv.visit(proc);
 		result.append(tv.getSMT());
 		
