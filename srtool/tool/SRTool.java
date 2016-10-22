@@ -19,7 +19,8 @@ public class SRTool {
     private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-        String filename = args[0];
+//        String filename = args[0];
+		String filename="example/Count42.c";
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
         SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -38,13 +39,12 @@ public class SRTool {
 			}
 			System.exit(1);
 		}
-		
+
 		assert ctx.procedures.size() == 1; // For Part 1 of the coursework, this can be assumed
-				
+		
 		for(ProcedureDeclContext proc : ctx.procedures) {
 			VCGenerator vcgen = new VCGenerator(proc);
 			String vc = vcgen.generateVC().toString();
-
 			ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
 			String queryResult = "";
 			try {

@@ -13,8 +13,8 @@ import parser.SimpleCParser.ProgramContext;
 public class Count42s {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		// String filename = args[0];
-		String filename = "/tests/correct/if.c";
+//		String filename = args[0];
+		String filename="example/Count42.c";
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
 		SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
