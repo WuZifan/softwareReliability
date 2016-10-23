@@ -1,6 +1,9 @@
 package example;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.Token;
 
@@ -16,6 +19,7 @@ public class Count42sVisitor extends SimpleCBaseVisitor<Void> {
 
 	private int num42s = 0;
 	private boolean inAssert = false;
+//	private StringBuilder 
 	@Override
 	public Void visitAssertStmt(AssertStmtContext ctx) {
 		inAssert = true;
@@ -73,31 +77,60 @@ public class Count42sVisitor extends SimpleCBaseVisitor<Void> {
 	
 	@Override
 	public Void visitMulExpr(MulExprContext ctx) {
+		// 先进行更高级的表达式
 		super.visitMulExpr(ctx);
+		// 结果SMT语句
 		StringBuilder mulSMT=new StringBuilder();
+		// 拿到这句表达式
 		String mulStmt=ctx.getText();
+		// 去除字符串
 		mulStmt.trim();
-		List<Token> list=ctx.ops;
-		for (Token token : list) {
-			System.out.println(token.getText());
-		}
-		// 2*7/4%2
-		// 2 7 4 2 
-//		String[] mulNum=ctx.getText();
-//		System.out.println("nulNum Length: "+mulNum.length);
-		System.out.println("Mul: "+ctx.getText());
-		if(mulStmt.contains("*")){
-			
+		// 按顺序，拿到所有运算符
+		List<Token> opsList=ctx.ops;
+		// 按顺序，拿到所有的操作数
+		List<String> numList=getNumList(mulStmt);
+
+		if(opsList.size()!=0){
+			// 拼接前面的内容
+			for(int i=0;i<opsList.size();i++){
+				// 形成  (* 1 (% 2 (/ 3 这样的String
+				mulSMT.append("("+opsList.get(i)+" "+numList.get(i)+" ");
+			}
+			// 拼接最后一个操作数
+			mulSMT.append(numList.get(opsList.size()));
+			// 拼接最后的括号
+			for(int i=0; i<opsList.size();i++){
+				mulSMT.append(")");
+			}
 		}else{
 			mulSMT.append("(* "+mulStmt+" 1)");
 		}
 		return null;
 	}
 	
-	
-	
+	private List<String> getNumList(String mulStmt) {
+		List<String> list=new ArrayList<String>();
+		String rule="\\d+";
+		Pattern p=Pattern.compile(rule);
+		Matcher ma=p.matcher(rule);
+		while(ma.find()){
+			list.add(ma.group());
+		}
+		return list;
+	}
+
 	public int getNum42s() {
 		return num42s;
 	}
-
+	
+	
+	public static void main(String[] args) {
+		String str="22*33/44%55";
+		String rule="\\d+";
+		Pattern p=Pattern.compile(rule);
+		Matcher ma=p.matcher(str);
+		while(ma.find()){
+			System.out.println(ma.group());
+		}
+	}
 }
