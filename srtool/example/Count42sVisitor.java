@@ -81,8 +81,10 @@ public class Count42sVisitor extends SimpleCBaseVisitor<Void> {
 		for (Token token : list) {
 			System.out.println(token.getText());
 		}
-		String[] mulNum=ctx.getText().split("*|/|%");
-		System.out.println("nulNum Length: "+mulNum.length);
+		// 2*7/4%2
+		// 2 7 4 2 
+//		String[] mulNum=ctx.getText();
+//		System.out.println("nulNum Length: "+mulNum.length);
 		System.out.println("Mul: "+ctx.getText());
 		if(mulStmt.contains("*")){
 			

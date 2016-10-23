@@ -55,6 +55,7 @@ public class TestVisitor extends SimpleCBaseVisitor<Void> {
 		// 赋值语句
 		nomoAss.append("(assert (= "+variName+" "+num+"))\n");
 		assVisitor.visitnomorAss(nomoAss.toString());
+		
 		// 判断是否超过限制
 		unnomAss.append("(<= "+variName+" 4294967295)");
 		unnomAss.append("(>= "+variName+" 0)");
@@ -91,9 +92,15 @@ public class TestVisitor extends SimpleCBaseVisitor<Void> {
 		// 获得下标
 		int subScript = variCount.get(text);
 		// 下标更新
-		int nextSubscript = subScript + 1;
+		int nextSubscript = subScript+1;
 		// 重新声明新的变量,变量名+新下标
-		String newDecl=getDeclStmt(text+nextSubscript);
+		String newDecl="";
+		if(subScript!=0){
+			newDecl=getDeclStmt(text+subScript);
+		}else{
+			variCount.put(text, new Integer(nextSubscript));
+			return text+"0";
+		}
 		// 把变量名+新下标重新塞入Map
 		variCount.put(text, new Integer(nextSubscript));
 		// 添加到整段SMT语句中
