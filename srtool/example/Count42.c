@@ -4,6 +4,9 @@
 int foo(int a)
 {
 	int i;
-	i=-2;
+	i=4294967298;
+	i=3;
+	a=1;
+	assert(42==42);
 	return a;
 }
