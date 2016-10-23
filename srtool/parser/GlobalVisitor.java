@@ -2,12 +2,14 @@ package parser;
 
 import parser.SimpleCParser.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GlobalVisitor extends SimpleCBaseVisitor {
 	private int inProcedure = 0;
 	private StringBuilder ResSmt = new StringBuilder("");
-	private static List<String> idList = new ArrayList<String>();
+	private static Map<String, Integer> variCount = new HashMap<String, Integer>();
 	
 	public Void visitCallStmt(CallStmtContext ctx) {
 		inProcedure = 1;
@@ -15,17 +17,22 @@ public class GlobalVisitor extends SimpleCBaseVisitor {
 		inProcedure = 0;
 		return null;
 	}
+		
+	// 获取声明语句的SMT语句
+	private String getDeclStmt(String variName) {
+		StringBuilder result = new StringBuilder();
+		String typeName="Int";
+		// 编写SMT语句
+		result.append("(declare-fun ");
+		result.append(variName + " ");
+		result.append("() ");
+		result.append(typeName + ")");
+		result.append("\n");
+		return result.toString();
+	}
 	
 	public Void visitProcedureDecl(ProcedureDeclContext ctx) {
 		inProcedure = 1;
-		List<FormalParamContext> formal = ctx.formalParam();
-		for(FormalParamContext item : formal) {
-			String typeName = item.getChild(0).getText();
-			String variName = item.getChild(1).getText();
-			
-			System.out.println(typeName + "  " + variName);
-		}
-		
 		super.visitProcedureDecl(ctx);
 		inProcedure = 0;
 		return null;
@@ -35,30 +42,18 @@ public class GlobalVisitor extends SimpleCBaseVisitor {
 		if(inProcedure == 1) {
 			return null;
 		}
-		System.out.println("not in procedure");
-		String typeName = ctx.getChild(0).getText();
 		String variName = ctx.getChild(1).getText();
+	
+		variCount.put(variName, 0);
+		variName = variName + "0";
+		ResSmt.append(getDeclStmt(variName).toString());
 		
-		if (!idList.contains(variName)) {
-			idList.add(variName);
-			
-			ResSmt.append("(declare-fun ");
-			ResSmt.append(variName+" ");
-			ResSmt.append("() ");
-			if(typeName.equals("int")){
-				typeName="Int";
-			}
-			ResSmt.append(typeName + ")");
-			ResSmt.append("\n");
-			ResSmt.append("(assert false)\n");
-		} else {
-			ResSmt.append("(assert true)");
-		}
 		return null;
 		
 	}
 	public String getSMT() {
 		return ResSmt.toString();
 	}
+	
 	
 }

@@ -18,11 +18,17 @@ public class VCGenerator {
 	public VCGenerator(ProgramContext prog, ProcedureDeclContext proc) {
 		this.proc = proc;
 		this.prog = prog;
+		
 		// TODO: You will probably find it useful to add more fields and constructor arguments
 	}
 	
 	public String generateVCGlobal() {
 		gl.visit(prog);
+		String res = gl.getSMT().toString();
+		if (res.isEmpty()) {
+			result = null;
+			return null;
+		}
 		result.append(gl.getSMT().toString());
 		result.append("\n(check-sat)\n");
 		return result.toString();
