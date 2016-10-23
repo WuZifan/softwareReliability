@@ -43,4 +43,8 @@
 /SimpleCParser.class
 /SimpleCVisitor.class
 /TestVisitor.class
+<<<<<<< HEAD
+/GlobalVisitor.class
+=======
 /MyAssertVisitor.class
+>>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
