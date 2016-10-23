@@ -10,7 +10,6 @@ public class Count42sVisitor extends SimpleCBaseVisitor<Void> {
 
 	private int num42s = 0;
 	private boolean inAssert = false;
-	// assert(42==42);
 	@Override
 	public Void visitAssertStmt(AssertStmtContext ctx) {
 		inAssert = true;
