@@ -18,6 +18,14 @@ public class GlobalVisitor extends SimpleCBaseVisitor {
 	
 	public Void visitProcedureDecl(ProcedureDeclContext ctx) {
 		inProcedure = 1;
+		List<FormalParamContext> formal = ctx.formalParam();
+		for(FormalParamContext item : formal) {
+			String typeName = item.getChild(0).getText();
+			String variName = item.getChild(1).getText();
+			
+			System.out.println(typeName + "  " + variName);
+		}
+		
 		super.visitProcedureDecl(ctx);
 		inProcedure = 0;
 		return null;
