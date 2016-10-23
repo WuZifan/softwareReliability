@@ -4,6 +4,7 @@ import parser.SimpleCParser.ProcedureDeclContext;
 import parser.SimpleCParser.ProgramContext;
 import parser.MyAssertVisitor;
 import parser.TestVisitor;
+import parser.VariCount;
 
 public class VCGenerator {
 
@@ -12,7 +13,7 @@ public class VCGenerator {
 	private TestVisitor tv = new TestVisitor();
 	private GlobalVisitor gl = new GlobalVisitor();
 	private StringBuilder result = new StringBuilder("(set-logic QF_LIA)\n");
-
+	private VariCount varCount=new VariCount();
 	private MyAssertVisitor mav;
 	
 	public VCGenerator(ProgramContext prog, ProcedureDeclContext proc) {
@@ -42,7 +43,7 @@ public class VCGenerator {
 //		result.append("(define-fun tobool ((p (_ BitVec 32))) Bool (ite (= p (_ bv0 32)) false true))\n");
 
 		mav=new MyAssertVisitor();
-		tv=new TestVisitor(mav);
+		tv=new TestVisitor(mav,varCount);
 		StringBuilder result = new StringBuilder("(set-logic QF_LIA)\n");
 		// assert分两种，
 		// 赋值语句的assert要是对的才行
