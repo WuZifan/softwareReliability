@@ -41,7 +41,6 @@ public class VCGenerator {
 		// assert分两种，
 		// 赋值语句的assert要是对的才行
 		// pre-/post- condition的条件全部写在一起，前面加not 条件之间关系为and
-
 		tv.visit(proc);
 		result.append(tv.getSMT());	
 		result.append(mav.getAssSMT());

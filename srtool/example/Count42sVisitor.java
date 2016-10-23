@@ -1,12 +1,15 @@
 package example;
 
-import javax.rmi.ssl.SslRMIClientSocketFactory;
+import java.util.List;
+
+import org.antlr.v4.runtime.Token;
 
 import parser.SimpleCBaseVisitor;
 import parser.SimpleCParser.AddExprContext;
 import parser.SimpleCParser.AssertStmtContext;
 import parser.SimpleCParser.AssignStmtContext;
 import parser.SimpleCParser.ExprContext;
+import parser.SimpleCParser.MulExprContext;
 import parser.SimpleCParser.NumberExprContext;
 
 public class Count42sVisitor extends SimpleCBaseVisitor<Void> {
@@ -56,16 +59,40 @@ public class Count42sVisitor extends SimpleCBaseVisitor<Void> {
 	
 	@Override
 	public Void visitAddExpr(AddExprContext ctx) {
-		System.out.println("AddExpr: "+ctx.getText());
+		super.visitAddExpr(ctx);
+		System.out.println("AddExpr: CTX=   "+ctx.getText());
 		StringBuilder result=new StringBuilder();
-		
-		// 1+1+1;
-		// (+ (+ 1 1) 1)
-		for(int i=0;i<ctx.getChildCount();i++){
-			
-		}
-		return super.visitAddExpr(ctx);
+//		String[] addNum=ctx.getText().split("+");
+//		// 1+1+1;
+//		// (+ (+ 1 1) 1)
+//		for(int i=0;i<addNum.length;i++){
+//			System.out.println(addNum[i]);
+//		}
+		return null;
 	}
+	
+	@Override
+	public Void visitMulExpr(MulExprContext ctx) {
+		super.visitMulExpr(ctx);
+		StringBuilder mulSMT=new StringBuilder();
+		String mulStmt=ctx.getText();
+		mulStmt.trim();
+		List<Token> list=ctx.ops;
+		for (Token token : list) {
+			System.out.println(token.getText());
+		}
+		String[] mulNum=ctx.getText().split("*|/|%");
+		System.out.println("nulNum Length: "+mulNum.length);
+		System.out.println("Mul: "+ctx.getText());
+		if(mulStmt.contains("*")){
+			
+		}else{
+			mulSMT.append("(* "+mulStmt+" 1)");
+		}
+		return null;
+	}
+	
+	
 	
 	public int getNum42s() {
 		return num42s;

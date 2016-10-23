@@ -20,7 +20,8 @@ public class SRTool {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 //        String filename = args[0];
-		String filename="example/declare.c";
+//		String filename="example/declare.c";
+		String filename="example/Count42.c";
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
         SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -41,28 +42,28 @@ public class SRTool {
 		}
 		
 		assert ctx.procedures.size() == 1; // For Part 1 of the coursework, this can be assumed
-		VCGenerator vcgenGl = new VCGenerator(ctx, null);
-		String vcG = vcgenGl.generateVCGlobal();
-		System.out.println(vcG);
-		ProcessExec pro = new ProcessExec("z3", "-smt2", "-in");
-		String quRes = "";
-		try {
-			quRes = pro.execute(vcG, TIMEOUT);
-		} catch (ProcessTimeoutException e) {
-			System.out.println("UNKNOWN");
-			System.exit(1);
-		}
-		
-		if (quRes.startsWith("sat")) {
-			System.out.println("INCORRECT");
-			System.exit(0);
-		}
-		
-		if (!quRes.startsWith("unsat")) {
-			System.out.println("UNKNOWN");
-			System.out.println(quRes);
-			System.exit(1);
-		}
+//		VCGenerator vcgenGl = new VCGenerator(ctx, null);
+//		String vcG = vcgenGl.generateVCGlobal();
+//		System.out.println(vcG);
+//		ProcessExec pro = new ProcessExec("z3", "-smt2", "-in");
+//		String quRes = "";
+//		try {
+//			quRes = pro.execute(vcG, TIMEOUT);
+//		} catch (ProcessTimeoutException e) {
+//			System.out.println("UNKNOWN");
+//			System.exit(1);
+//		}
+//		
+//		if (quRes.startsWith("sat")) {
+//			System.out.println("INCORRECT");
+//			System.exit(0);
+//		}
+//		
+//		if (!quRes.startsWith("unsat")) {
+//			System.out.println("UNKNOWN");
+//			System.out.println(quRes);
+//			System.exit(1);
+//		}
 	
 		for(ProcedureDeclContext proc : ctx.procedures) {
 			VCGenerator vcgen = new VCGenerator(null, proc);

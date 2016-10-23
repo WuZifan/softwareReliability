@@ -5,6 +5,7 @@ import parser.SimpleCParser.AssertStmtContext;
 public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 	private StringBuilder nomorAss=new StringBuilder();
 	private StringBuilder unnomAss=new StringBuilder();
+	private boolean unnomFlag=false;
 	
 	public MyAssertVisitor() {
 		unnomAss.append("(assert (not (and");
@@ -12,7 +13,7 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 	
 	@Override
 	public Void visitAssertStmt(AssertStmtContext ctx) {
-		
+		unnomFlag=true;
 		return super.visitAssertStmt(ctx);
 	}
 	
@@ -24,6 +25,7 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 	 * @return
 	 */
 	public Void visitunnomAss(String text){
+		unnomFlag=true;
 		unnomAss.append(text);
 		return null;
 	}
@@ -39,7 +41,11 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 	}
 	
 	public String getAssSMT(){
+		if(unnomFlag){
 		unnomAss.append(")))\n");
 		return nomorAss.toString()+unnomAss.toString();
+		}else{
+			return nomorAss.toString();
+		}
 	}
 }
