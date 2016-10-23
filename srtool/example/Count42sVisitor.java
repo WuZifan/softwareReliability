@@ -1,10 +1,15 @@
 package example;
 
-import javax.rmi.ssl.SslRMIClientSocketFactory;
+import java.util.List;
+
+import org.antlr.v4.runtime.Token;
 
 import parser.SimpleCBaseVisitor;
+import parser.SimpleCParser.AddExprContext;
 import parser.SimpleCParser.AssertStmtContext;
+import parser.SimpleCParser.AssignStmtContext;
 import parser.SimpleCParser.ExprContext;
+import parser.SimpleCParser.MulExprContext;
 import parser.SimpleCParser.NumberExprContext;
 
 public class Count42sVisitor extends SimpleCBaseVisitor<Void> {
@@ -25,6 +30,7 @@ public class Count42sVisitor extends SimpleCBaseVisitor<Void> {
 	@Override
 	public Void visitExpr(ExprContext ctx) {
 //		System.out.println(ctx.getChildCount());
+		System.out.print("Expr: ");
 		System.out.println(ctx.getChild(0).getText());
 		return super.visitExpr(ctx);
 	}
@@ -39,6 +45,55 @@ public class Count42sVisitor extends SimpleCBaseVisitor<Void> {
 		}
 		return null;
 	}
+
+	@Override
+	public Void visitAssignStmt(AssignStmtContext ctx) {
+		System.out.print("assign: ");
+		System.out.println(ctx.getChildCount());
+		System.out.println("assign:"+ctx.getChild(0).getText());
+		System.out.println("assign:"+ctx.getChild(1).getText());
+		System.out.println("assign:"+ctx.getChild(2).getText());
+		System.out.println("assign:"+ctx.getChild(3).getText());
+		return super.visitAssignStmt(ctx);
+	}
+	
+	@Override
+	public Void visitAddExpr(AddExprContext ctx) {
+		super.visitAddExpr(ctx);
+		System.out.println("AddExpr: CTX=   "+ctx.getText());
+		StringBuilder result=new StringBuilder();
+//		String[] addNum=ctx.getText().split("+");
+//		// 1+1+1;
+//		// (+ (+ 1 1) 1)
+//		for(int i=0;i<addNum.length;i++){
+//			System.out.println(addNum[i]);
+//		}
+		return null;
+	}
+	
+	@Override
+	public Void visitMulExpr(MulExprContext ctx) {
+		super.visitMulExpr(ctx);
+		StringBuilder mulSMT=new StringBuilder();
+		String mulStmt=ctx.getText();
+		mulStmt.trim();
+		List<Token> list=ctx.ops;
+		for (Token token : list) {
+			System.out.println(token.getText());
+		}
+		// 2*7/4%2
+		// 2 7 4 2 
+//		String[] mulNum=ctx.getText();
+//		System.out.println("nulNum Length: "+mulNum.length);
+		System.out.println("Mul: "+ctx.getText());
+		if(mulStmt.contains("*")){
+			
+		}else{
+			mulSMT.append("(* "+mulStmt+" 1)");
+		}
+		return null;
+	}
+	
 	
 	
 	public int getNum42s() {
