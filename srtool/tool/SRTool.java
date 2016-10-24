@@ -42,33 +42,8 @@ public class SRTool {
 		assert ctx.procedures.size() == 1; // For Part 1 of the coursework, this can be assumed
 
 		VCGenerator vcgenGl = new VCGenerator(ctx, null);
-		String vcG = vcgenGl.generateVCGlobal();
-		System.out.println(vcG);
-		if (vcG == null || vcG.isEmpty()) {
-		}
-		else {
-			ProcessExec pro = new ProcessExec("z3", "-smt2", "-in");
-			String quRes = "";
-			try {
-				quRes = pro.execute(vcG, TIMEOUT);
-			} catch (ProcessTimeoutException e) {
-				System.out.println("UNKNOWN");
-				System.exit(1);
-			}
-			
-			if (quRes.startsWith("sat")) {
-				System.out.println("INCORRECT");
-				System.exit(0);
-			}
-			
-			if (!quRes.startsWith("unsat")) {
-				System.out.println("UNKNOWN");
-				System.out.println(quRes);
-				System.exit(1);
-			}
-		}
-		
-
+		vcgenGl.generateVCGlobal();
+	
 		for(ProcedureDeclContext proc : ctx.procedures) {
 			VCGenerator vcgen = new VCGenerator(null, proc);
 			String vc = vcgen.generateVC().toString();

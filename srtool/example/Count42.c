@@ -7,7 +7,7 @@ int foo(int a)
 	int i;
 
 	int j;
-	i=2*3+5/2;
+	
 	j=1;
 // 	i=4294967298;
 // 	i=3;

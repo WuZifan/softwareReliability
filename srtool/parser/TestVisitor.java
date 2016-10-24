@@ -3,21 +3,35 @@ package parser;
 import java.util.HashMap;
 import java.util.Map;
 import parser.SimpleCParser.AssignStmtContext;
+import parser.SimpleCParser.CallStmtContext;
 import parser.SimpleCParser.ExprContext;
+import parser.SimpleCParser.ProcedureDeclContext;
 import parser.SimpleCParser.VarDeclContext;
 
 public class TestVisitor extends SimpleCBaseVisitor<Void> {
-	private Map<String, Integer> variCount = new HashMap<String, Integer>();
-	private StringBuilder smtResult = new StringBuilder();
+	private Map<String, Integer> variCount;
+	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
+	private String glSmt;
 	
 	public TestVisitor() {
+		this.smtResult = new StringBuilder();
+	}
+	
+	public TestVisitor(MyAssertVisitor assVisitor,VariCount variCount, String glSmt){
+		this.assVisitor = assVisitor;
+		this.variCount = variCount.getVarCount();
+		this.smtResult = new StringBuilder();
+		this.glSmt = glSmt;
+		
 	}
 	
 	public TestVisitor(MyAssertVisitor assVisitor,VariCount variCount){
-		this.assVisitor=assVisitor;
-		this.variCount=variCount.getVarCount();
+		this.assVisitor = assVisitor;
+		this.variCount = variCount.getVarCount();
+		this.smtResult = new StringBuilder();
 	}
+
 
 	// 声明语句的SMT转换
 	@Override
