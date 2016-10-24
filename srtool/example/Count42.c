@@ -2,7 +2,7 @@
 // RUN: %diff %CORRECT "%t"
 int s;
 
-int foo(int a)
+int foo(int a, int b)
 {
 	int i;
 

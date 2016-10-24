@@ -18,7 +18,7 @@ public class TestVisitor extends SimpleCBaseVisitor<Void> {
 		this.smtResult = new StringBuilder();
 	}
 	
-	public TestVisitor(MyAssertVisitor assVisitor,VariCount variCount, String glSmt){
+	public TestVisitor(MyAssertVisitor assVisitor,VariCount variCount, String glSmt, String plSmt){
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
 		this.smtResult = new StringBuilder();

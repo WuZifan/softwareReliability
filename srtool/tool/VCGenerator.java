@@ -3,6 +3,7 @@ import parser.GlobalVisitor;
 import parser.SimpleCParser.ProcedureDeclContext;
 import parser.SimpleCParser.ProgramContext;
 import parser.MyAssertVisitor;
+import parser.ParameterVisitor;
 import parser.TestVisitor;
 import parser.VariCount;
 
@@ -10,7 +11,8 @@ public class VCGenerator {
 	private ProcedureDeclContext proc;
 	private ProgramContext prog;
 	private TestVisitor tv;
-	private GlobalVisitor gl;
+	private GlobalVisitor glVisitor;
+	private ParameterVisitor paVisitor;
 	private StringBuilder result;
 	private VariCount VarCount;
 	private MyAssertVisitor mav;
@@ -21,8 +23,8 @@ public class VCGenerator {
 		this.prog = prog;
 		this.result = new StringBuilder("(set-logic QF_LIA)\n");
 		this.VarCount = new VariCount();
-		this.tv = new TestVisitor();
-		this.gl = new GlobalVisitor(this.VarCount);
+		this.glVisitor = new GlobalVisitor(this.VarCount);
+		this.paVisitor = new ParameterVisitor(this.VarCount);
 		
 	
 		// TODO: You will probably find it useful to add more fields and constructor arguments
@@ -30,8 +32,8 @@ public class VCGenerator {
 	
 	public Void generateVCGlobal() {
 		
-		gl.visit(prog);
-		String res = gl.getSMT().toString();
+		this.glVisitor.visit(prog);
+		String res = this.glVisitor.getSMT().toString();
 		VCGenerator.glSmt = res;
 		return null;
 	}
@@ -42,8 +44,12 @@ public class VCGenerator {
 //		result.append("(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
 //		result.append("(define-fun tobool ((p (_ BitVec 32))) Bool (ite (= p (_ bv0 32)) false true))\n");
 
+		String paRes;
+		this.paVisitor.visit(proc);
+		paRes = this.paVisitor.getSMT().toString();
+		
 		mav = new MyAssertVisitor();
-		tv = new TestVisitor(mav, this.VarCount, VCGenerator.glSmt);
+		tv = new TestVisitor(mav, this.VarCount, VCGenerator.glSmt, paRes);
 		
 		// assert分两种，
 		// 赋值语句的assert要是对的才行

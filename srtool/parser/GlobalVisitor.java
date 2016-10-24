@@ -36,13 +36,14 @@ public class GlobalVisitor extends SimpleCBaseVisitor<Void> {
 		return null;
 	}
 	
-	
+	/** Only get declaration of global variable, assignment will in procedure **/
 	public Void visitVarDecl(VarDeclContext ctx) {
+		/** Not in procedure will end immediately **/
 		if(this.inProcedure == 1) {
 			return null;
 		}
+		
 		String variName = ctx.getChild(1).getText();
-	
 		this.variCount.put(variName, 0);
 		variName = variName + "0";
 		this.ResSmt.append(getDeclStmt(variName).toString());
