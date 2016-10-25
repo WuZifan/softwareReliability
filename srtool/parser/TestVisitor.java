@@ -129,7 +129,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String res;
 		
 		if (single != null) {
-			resSmt.append(super.visitLorExpr(ctx.single));
+			System.out.println(single.getText());
+			resSmt.append(visitLorExpr(single));
 		}
 		else {
 			resSmt.append("(ite )");
@@ -184,7 +185,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String res;
 		
 		if (single != null) {
-			resSmt.append(super.visitBorExpr(ctx.single));
+			resSmt.append(visitBorExpr(ctx.single));
 		}
 		else {
 			resSmt.append("(and )");
@@ -209,7 +210,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String res;
 		
 		if (single != null) {
-			resSmt.append(super.visitBxorExpr(ctx.single));
+			resSmt.append(visitBxorExpr(ctx.single));
 		}
 		else {
 			resSmt.append("(| )");
@@ -234,7 +235,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String res;
 		
 		if (single != null) {
-			resSmt.append(super.visitBandExpr(ctx.single));
+			resSmt.append(visitBandExpr(ctx.single));
 		}
 		else {
 			resSmt.append("(^ )");
@@ -259,7 +260,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String res;
 		
 		if (single != null) {
-			resSmt.append(super.visitEqualityExpr(ctx.single));
+			resSmt.append(visitEqualityExpr(ctx.single));
 		}
 		else {
 			resSmt.append("(& )");
@@ -284,7 +285,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String res;
 		
 		if (single != null) {
-			resSmt.append(super.visitRelExpr(ctx.single));
+			resSmt.append(visitRelExpr(ctx.single));
 		}
 		else {
 			resSmt.append("(= )");
@@ -309,7 +310,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String res;
 		
 		if (single != null) {
-			resSmt.append(super.visitShiftExpr(ctx.single));
+			resSmt.append(visitShiftExpr(ctx.single));
 		}
 		else {
 			resSmt.append("(or )");
@@ -334,7 +335,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String res;
 		
 		if (single != null) {
-			resSmt.append(super.visitAddExpr(ctx.single));
+			resSmt.append(visitAddExpr(ctx.single));
 		}
 		else {
 			resSmt.append("(or )");

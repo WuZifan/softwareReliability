@@ -9,7 +9,7 @@ int foo(int a)
 	
 	j=1;
 	
-	if (j || j) {
+	if (j && j) {
 		
 	}
 	else {
