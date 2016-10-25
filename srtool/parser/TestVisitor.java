@@ -2,6 +2,7 @@ package parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import parser.SimpleCParser.*;
 
@@ -89,11 +90,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return super.visitAssignStmt(ctx);
 	}
 
-	@Override
-	public String visitExpr(ExprContext ctx) {
-		// TODO Auto-generated method stub
-		return super.visitExpr(ctx);
-	}
 	
 	@Override
 	public String visitIfStmt(IfStmtContext ctx) {
@@ -118,11 +114,260 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 	
 	@Override
+	public String visitExpr(ExprContext ctx) {
+		String resSmt;
+		resSmt = super.visitExpr(ctx);
+		System.out.println("expr is " + resSmt + "  " + ctx.getText());
+		return resSmt;
+	}
+	
+	@Override
 	public String visitTernExpr(TernExprContext ctx) {
+		System.out.println("enter tern");
+		StringBuilder resSmt = new StringBuilder("");
+		LorExprContext single = ctx.single;		
+		String res;
 		
-		return null;
+		if (single != null) {
+			resSmt.append(super.visitLorExpr(ctx.single));
+		}
+		else {
+			resSmt.append("(ite )");
+			Iterator<LorExprContext> iter = ctx.args.iterator();
+			while(iter.hasNext()) {
+				LorExprContext temp;
+				temp = iter.next();
+//				System.out.println("dealing " + temp.getText());
+				res = super.visitLorExpr(temp);
+//				System.out.println("res " + res + "   " + ctx.getText());
+				resSmt.insert(resSmt.length() - 1, res + " ");
+			}
+	//		System.out.println("answer " + resSmt.toString() + " " + ctx.getText());
+		}
+		
+		return resSmt.toString();
 		
 	}
+	
+	@Override
+	public String visitLorExpr(LorExprContext ctx) {
+		System.out.println("enter or");
+		StringBuilder resSmt = new StringBuilder("");
+		LandExprContext single = ctx.single;		
+		String res;
+		
+		if (single != null) {
+			resSmt.append(super.visitLandExpr(ctx.single));
+		}
+		else {
+			resSmt.append("(or )");
+			Iterator<LandExprContext> iter = ctx.args.iterator();
+			while(iter.hasNext()) {
+				LandExprContext temp;
+				temp = iter.next();
+				System.out.println("dealing " + temp.getText());
+				res = super.visitLandExpr(temp);
+				resSmt.insert(resSmt.length() - 1, res);
+			}
+		}
+		
+		System.out.println("result " + resSmt.toString());
+		return resSmt.toString();
+		
+	}
+	
+	@Override
+	public String visitLandExpr(LandExprContext ctx) {
+		System.out.println("enter and");
+		StringBuilder resSmt = new StringBuilder("");
+		BorExprContext single = ctx.single;		
+		String res;
+		
+		if (single != null) {
+			resSmt.append(super.visitBorExpr(ctx.single));
+		}
+		else {
+			resSmt.append("(and )");
+			Iterator<BorExprContext> iter = ctx.args.iterator();
+			while(iter.hasNext()) {
+				BorExprContext temp;
+				temp = iter.next();
+				System.out.println("dealing " + temp.getText());
+				res = super.visitBorExpr(temp);
+				resSmt.insert(resSmt.length() - 1, res);
+			}
+		}
+		
+		return resSmt.toString();
+		
+	}
+	
+	@Override
+	public String visitBorExpr(BorExprContext ctx) {
+		StringBuilder resSmt = new StringBuilder("");
+		BxorExprContext single = ctx.single;		
+		String res;
+		
+		if (single != null) {
+			resSmt.append(super.visitBxorExpr(ctx.single));
+		}
+		else {
+			resSmt.append("(| )");
+			Iterator<BxorExprContext> iter = ctx.args.iterator();
+			while(iter.hasNext()) {
+				BxorExprContext temp;
+				temp = iter.next();
+				System.out.println("dealing " + temp.getText());
+				res = super.visitBxorExpr(temp);
+				resSmt.insert(resSmt.length() - 1, res);
+			}
+		}
+		
+		return resSmt.toString();
+		
+	}
+	
+	@Override
+	public String visitBxorExpr(BxorExprContext ctx) {
+		StringBuilder resSmt = new StringBuilder("");
+		BandExprContext single = ctx.single;		
+		String res;
+		
+		if (single != null) {
+			resSmt.append(super.visitBandExpr(ctx.single));
+		}
+		else {
+			resSmt.append("(^ )");
+			Iterator<BandExprContext> iter = ctx.args.iterator();
+			while(iter.hasNext()) {
+				BandExprContext temp;
+				temp = iter.next();
+				System.out.println("dealing " + temp.getText());
+				res = super.visitBandExpr(temp);
+				resSmt.insert(resSmt.length() - 1, res);
+			}
+		}
+		
+		return resSmt.toString();
+		
+	}
+	
+	@Override
+	public String visitBandExpr(BandExprContext ctx) {
+		StringBuilder resSmt = new StringBuilder("");
+		EqualityExprContext single = ctx.single;		
+		String res;
+		
+		if (single != null) {
+			resSmt.append(super.visitEqualityExpr(ctx.single));
+		}
+		else {
+			resSmt.append("(& )");
+			Iterator<EqualityExprContext> iter = ctx.args.iterator();
+			while(iter.hasNext()) {
+				EqualityExprContext temp;
+				temp = iter.next();
+				System.out.println("dealing " + temp.getText());
+				res = super.visitEqualityExpr(temp);
+				resSmt.insert(resSmt.length() - 1, res);
+			}
+		}
+		
+		return resSmt.toString();
+		
+	}
+	
+	@Override
+	public String visitEqualityExpr(EqualityExprContext ctx) {
+		StringBuilder resSmt = new StringBuilder("");
+		RelExprContext single = ctx.single;		
+		String res;
+		
+		if (single != null) {
+			resSmt.append(super.visitRelExpr(ctx.single));
+		}
+		else {
+			resSmt.append("(= )");
+			Iterator<RelExprContext> iter = ctx.args.iterator();
+			while(iter.hasNext()) {
+				RelExprContext temp;
+				temp = iter.next();
+				System.out.println("dealing " + temp.getText());
+				res = super.visitRelExpr(temp);
+				resSmt.insert(resSmt.length() - 1, res);
+			}
+		}
+		
+		return resSmt.toString();
+		
+	}
+	
+	@Override
+	public String visitRelExpr(RelExprContext ctx) {
+		StringBuilder resSmt = new StringBuilder("");
+		ShiftExprContext single = ctx.single;		
+		String res;
+		
+		if (single != null) {
+			resSmt.append(super.visitShiftExpr(ctx.single));
+		}
+		else {
+			resSmt.append("(or )");
+			Iterator<ShiftExprContext> iter = ctx.args.iterator();
+			while(iter.hasNext()) {
+				ShiftExprContext temp;
+				temp = iter.next();
+				System.out.println("dealing " + temp.getText());
+				res = super.visitShiftExpr(temp);
+				resSmt.insert(resSmt.length() - 1, res);
+			}
+		}
+		
+		return resSmt.toString();
+		
+	}
+	
+	@Override
+	public String visitShiftExpr(ShiftExprContext ctx) {
+		StringBuilder resSmt = new StringBuilder("");
+		AddExprContext single = ctx.single;		
+		String res;
+		
+		if (single != null) {
+			resSmt.append(super.visitAddExpr(ctx.single));
+		}
+		else {
+			resSmt.append("(or )");
+			Iterator<AddExprContext> iter = ctx.args.iterator();
+			while(iter.hasNext()) {
+				AddExprContext temp;
+				temp = iter.next();
+				System.out.println("dealing " + temp.getText());
+				res = super.visitAddExpr(temp);
+				resSmt.insert(resSmt.length() - 1, res);
+			}
+		}
+		
+		return resSmt.toString();
+	}
+	
+	@Override 
+	public String visitNumberExpr(NumberExprContext ctx) {
+		return ctx.getText();
+	}
+	
+	@Override 
+	public String visitVarrefExpr(VarrefExprContext ctx) {
+		return ctx.getText();
+	}
+	
+	@Override
+	public String visitParenExpr(ParenExprContext ctx) {
+		String res = super.visitExpr(ctx.arg);
+		return res;
+	}
+	
+
 	
 	// 获取声明语句的SMT语句
 	private String getDeclStmt(String variName) {

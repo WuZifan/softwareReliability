@@ -1,6 +1,6 @@
 // RUN: %tool "%s" > "%t"
 // RUN: %diff %CORRECT "%t"
-
+int s;
 int foo(int a)
 {
 	int i;
@@ -8,12 +8,13 @@ int foo(int a)
 	int j;
 	
 	j=1;
-/*	if (j == 1) {
+	
+	if (j || j) {
 		
 	}
 	else {
 		
-	}*/
+	}
 // 	i=4294967298;
 // 	i=3;
 // 	i=1+2*2%6/2*7;
