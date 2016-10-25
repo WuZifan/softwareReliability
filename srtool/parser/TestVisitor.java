@@ -1,18 +1,17 @@
 package parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import parser.SimpleCParser.AssignStmtContext;
-import parser.SimpleCParser.CallStmtContext;
-import parser.SimpleCParser.ExprContext;
-import parser.SimpleCParser.ProcedureDeclContext;
-import parser.SimpleCParser.VarDeclContext;
+import parser.SimpleCParser.*;
 
-public class TestVisitor extends SimpleCBaseVisitor<Void> {
-	private Map<String, Integer> variCount;
+public class TestVisitor extends SimpleCBaseVisitor<String> {
+	private Map<String, ArrayList<Integer> > variCount;
+	private ArrayList<Integer> IfLayer;
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
-	private String glSmt;
+	private StringBuilder exprResult;
+	private int inCond;
 	
 	public TestVisitor() {
 		this.smtResult = new StringBuilder();
@@ -21,8 +20,11 @@ public class TestVisitor extends SimpleCBaseVisitor<Void> {
 	public TestVisitor(MyAssertVisitor assVisitor,VariCount variCount, String glSmt, String plSmt){
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
+		this.IfLayer = variCount.getIfLayer();
 		this.smtResult = new StringBuilder();
-		this.glSmt = glSmt;
+		this.smtResult.append(glSmt);
+		this.smtResult.append(plSmt);
+		this.inCond = 0;
 		
 	}
 	
@@ -30,20 +32,24 @@ public class TestVisitor extends SimpleCBaseVisitor<Void> {
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
 		this.smtResult = new StringBuilder();
+		this.inCond = 0;
 	}
 
 
 	// 声明语句的SMT转换
 	@Override
-	public Void visitVarDecl(VarDeclContext ctx) {
+	public String visitVarDecl(VarDeclContext ctx) {
 		// SMT语句结果
 		StringBuilder result = new StringBuilder();
 		// 只有一种类型，所以不用特地处理类型名
 		// 变量名
 		String variName = ctx.getChild(1).getText();
+		ArrayList<Integer> status = new ArrayList<Integer>();
+		status.add(1);
+		status.add(0);
 		// 变量名，下标初始为0
-		variCount.put(variName, 0);
-		variName=variName+"0";
+		variCount.put(variName, status);
+		variName = variName+"0";
 		// 编写SMT语句
 		result.append(getDeclStmt(variName));
 		// 调用父类
@@ -55,10 +61,11 @@ public class TestVisitor extends SimpleCBaseVisitor<Void> {
 
 	// 赋值语句的SMT转换
 	@Override
-	public Void visitAssignStmt(AssignStmtContext ctx) {
+	public String visitAssignStmt(AssignStmtContext ctx) {
 		// 被赋值的变量名，且取下标
-		String variName = getSubscript(ctx.getChild(0).getText());
-		
+		String name = ctx.getChild(0).getText();
+		String variName = name + getSubscript(name);
+		incSubscript(name);
 		// 暂时只考虑单个数字赋值
 		String num = ctx.getChild(2).getText();
 		
@@ -83,11 +90,39 @@ public class TestVisitor extends SimpleCBaseVisitor<Void> {
 	}
 
 	@Override
-	public Void visitExpr(ExprContext ctx) {
+	public String visitExpr(ExprContext ctx) {
 		// TODO Auto-generated method stub
 		return super.visitExpr(ctx);
 	}
 	
+	@Override
+	public String visitIfStmt(IfStmtContext ctx) {
+		Map<String, ArrayList<Integer>> init = new HashMap<String, ArrayList<Integer>>();
+		Map<String, ArrayList<Integer>> afif = new HashMap<String, ArrayList<Integer>>();
+		String cond;
+		this.variCount.putAll(init);
+		
+		this.IfLayer.add(this.IfLayer.size() + 1);
+//		System.out.println(ctx.condition.getText());
+		
+		cond = super.visitExpr(ctx.condition);
+		
+		super.visitBlockStmt(ctx.thenBlock);
+		this.variCount.putAll(afif);
+		
+		if(ctx.elseBlock != null) {
+			super.visitBlockStmt(ctx.elseBlock);
+		}
+		this.IfLayer.remove(this.IfLayer.size() - 1);
+		return null;
+	}
+	
+	@Override
+	public String visitTernExpr(TernExprContext ctx) {
+		
+		return null;
+		
+	}
 	
 	// 获取声明语句的SMT语句
 	private String getDeclStmt(String variName) {
@@ -102,26 +137,23 @@ public class TestVisitor extends SimpleCBaseVisitor<Void> {
 		return result.toString();
 	}
 
-	// 取得变量的下标
-	private String getSubscript(String text) {
-		// 获得下标
-		int subScript = variCount.get(text);
-		// 下标更新
-		int nextSubscript = subScript+1;
-		// 重新声明新的变量,变量名+新下标
-		String newDecl="";
-		if(subScript!=0){
-			newDecl=getDeclStmt(text+subScript);
-		}else{
-			variCount.put(text, new Integer(nextSubscript));
-			return text+"0";
+	/** Get current subscripte for a specific variable **/
+	private int getSubscript(String text) {
+		return variCount.get(text).get(1);	
+	}
+	
+	/** Increase the subscript while assigned **/
+	private void incSubscript(String text) {
+		variCount.get(text).set(1, getSubscript(text) + 1);
+	}
+	
+	/** Remove all local variables, later use **/
+	private void rmLocalVar() {
+		for(Map.Entry<String, ArrayList<Integer> > iter : this.variCount.entrySet()) {
+			if (iter.getValue().get(0) == 1) {
+				this.variCount.remove(iter.getKey());
+			}
 		}
-		// 把变量名+新下标重新塞入Map
-		variCount.put(text, new Integer(nextSubscript));
-		// 添加到整段SMT语句中
-		smtResult.append(newDecl);
-		// 返回变量名+原下标
-		return text + subScript;
 	}
 	
 	// 返回整个SMT

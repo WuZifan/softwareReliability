@@ -9,7 +9,7 @@ import java.util.Map;
 public class GlobalVisitor extends SimpleCBaseVisitor<Void> {
 	private int inProcedure;
 	private StringBuilder ResSmt;
-	private Map<String, Integer> variCount;
+	private Map<String, ArrayList<Integer> > variCount;
 
 	
 	public GlobalVisitor(VariCount variCount) {
@@ -43,8 +43,11 @@ public class GlobalVisitor extends SimpleCBaseVisitor<Void> {
 			return null;
 		}
 		
+		ArrayList<Integer> status = new ArrayList<Integer>();
+		status.add(0);
+		status.add(0);
 		String variName = ctx.getChild(1).getText();
-		this.variCount.put(variName, 0);
+		this.variCount.put(variName, status);
 		variName = variName + "0";
 		this.ResSmt.append(getDeclStmt(variName).toString());
 		System.out.println(this.ResSmt.toString());
