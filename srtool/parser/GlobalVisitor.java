@@ -2,63 +2,72 @@ package parser;
 
 import parser.SimpleCParser.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class GlobalVisitor extends SimpleCBaseVisitor {
-	private int inProcedure = 0;
-	private StringBuilder ResSmt = new StringBuilder("");
-	private static List<String> idList = new ArrayList<String>();
+public class GlobalVisitor extends SimpleCBaseVisitor<Void> {
+	private int inProcedure;
+	private StringBuilder ResSmt;
+	private Map<String, Integer> variCount;
+
 	
+	public GlobalVisitor(VariCount variCount) {
+		this.inProcedure = 0;
+		this.ResSmt = new StringBuilder("");
+		this.variCount = variCount.getVarCount();
+	}
+	
+	/** Current: global variable checking **/
 	public Void visitCallStmt(CallStmtContext ctx) {
-		inProcedure = 1;
+		/** Assign status code to 1 while in procedure statement **/
+		this.inProcedure = 1;
 		super.visitCallStmt(ctx);
-		inProcedure = 0;
+		this.inProcedure = 0;
 		return null;
 	}
 	
+	/** Current: global variable checking **/
 	public Void visitProcedureDecl(ProcedureDeclContext ctx) {
-		inProcedure = 1;
-		List<FormalParamContext> formal = ctx.formalParam();
-		for(FormalParamContext item : formal) {
-			String typeName = item.getChild(0).getText();
-			String variName = item.getChild(1).getText();
-			
-			System.out.println(typeName + "  " + variName);
-		}
-		
+		/** Assign status code to 1 while in procedure statement **/
+		this.inProcedure = 1;
 		super.visitProcedureDecl(ctx);
-		inProcedure = 0;
+		this.inProcedure = 0;
 		return null;
 	}
 	
+	/** Only get declaration of global variable, assignment will in procedure **/
 	public Void visitVarDecl(VarDeclContext ctx) {
-		if(inProcedure == 1) {
+		/** Not in procedure will end immediately **/
+		if(this.inProcedure == 1) {
 			return null;
 		}
-		System.out.println("not in procedure");
-		String typeName = ctx.getChild(0).getText();
-		String variName = ctx.getChild(1).getText();
 		
-		if (!idList.contains(variName)) {
-			idList.add(variName);
-			
-			ResSmt.append("(declare-fun ");
-			ResSmt.append(variName+" ");
-			ResSmt.append("() ");
-			if(typeName.equals("int")){
-				typeName="Int";
-			}
-			ResSmt.append(typeName + ")");
-			ResSmt.append("\n");
-			ResSmt.append("(assert false)\n");
-		} else {
-			ResSmt.append("(assert true)");
-		}
+		String variName = ctx.getChild(1).getText();
+		this.variCount.put(variName, 0);
+		variName = variName + "0";
+		this.ResSmt.append(getDeclStmt(variName).toString());
+		System.out.println(this.ResSmt.toString());
 		return null;
 		
 	}
+	
+	// 获取声明语句的SMT语句
+	private String getDeclStmt(String variName) {
+		StringBuilder result = new StringBuilder();
+		String typeName="Int";
+		// 编写SMT语句
+		result.append("(declare-fun ");
+		result.append(variName + " ");
+		result.append("() ");
+		result.append(typeName + ")");
+		result.append("\n");
+		return result.toString();
+	}
+	
 	public String getSMT() {
 		return ResSmt.toString();
 	}
+	
 	
 }
