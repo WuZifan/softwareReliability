@@ -1,5 +1,6 @@
 package parser;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -8,7 +9,7 @@ import parser.SimpleCParser.ProcedureDeclContext;
 
 public class ParameterVisitor extends SimpleCBaseVisitor<Void> {
 	private StringBuilder ResSmt;
-	private Map<String, Integer> variCount;
+	private Map<String, ArrayList<Integer> > variCount;
 	
 	public ParameterVisitor(VariCount variCount) {
 		this.variCount = variCount.getVarCount();
@@ -18,11 +19,14 @@ public class ParameterVisitor extends SimpleCBaseVisitor<Void> {
 	/** Current: multiple parametres checking **/
 	public Void visitProcedureDecl(ProcedureDeclContext ctx) {
 		List<FormalParamContext> paras;
+		ArrayList<Integer> status = new ArrayList<Integer>();
 		paras = ctx.formals;
 		for(FormalParamContext para : paras) {
 			String name = para.name.getText();
 			this.ResSmt.append(this.getDeclStmt(name));
-			this.variCount.put(name, 0);
+			status.add(1);
+			status.add(0);
+			this.variCount.put(name, status);
 //			System.out.println(ResSmt);
 		}
 		
