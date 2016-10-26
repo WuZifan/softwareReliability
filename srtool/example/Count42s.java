@@ -23,9 +23,12 @@ public class Count42s {
 		if (parser.getNumberOfSyntaxErrors() > 0) {
 			System.exit(1);
 		}
-		Count42sVisitor visitor = new Count42sVisitor();
+//		Count42sVisitor visitor = new Count42sVisitor();
+//		Count42sVisitor2 visitor = new Count42sVisitor2();
+//		Count42sVisitor3 visitor = new Count42sVisitor3();
+		AssignVisitor visitor=new AssignVisitor();
 		visitor.visit(ctx);
-		System.out.println("Number of 42s inside assert guards: " + visitor.getNum42s());
+		System.out.println("Number of 42s inside assert guards: " );
 	}
 
 }
