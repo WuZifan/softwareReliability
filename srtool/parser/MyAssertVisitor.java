@@ -10,7 +10,9 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 	public MyAssertVisitor() {
 		unnomAss.append("(assert (not (and");
 	}
-	
+	/**
+	 * 回去修改下Assert
+	 */
 	@Override
 	public Void visitAssertStmt(AssertStmtContext ctx) {
 		unnomFlag=true;
@@ -47,5 +49,9 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 		}else{
 			return nomorAss.toString();
 		}
+	}
+	
+	public String getUnAssSMT(){
+		return unnomAss.append(")))\n").toString();
 	}
 }
