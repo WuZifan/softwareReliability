@@ -262,9 +262,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			}
 		}
-
 		return resSmt.toString();
-
 	}
 
 	@Override
@@ -464,7 +462,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitVarrefExpr(VarrefExprContext ctx) {
 		String var=ctx.getText();
+		if(getSubscript(var)>0){
 		var+=getSubscript(var)-1;
+		}else{
+			var+=getSubscript(var);
+		}
 		return var;
 	}
 
@@ -565,6 +567,17 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return super.visitAtomExpr(ctx);
 	}
 
+	@Override
+	public String visitHavocStmt(HavocStmtContext ctx) {
+		for(int i=0;i<ctx.getChildCount();i++){
+			System.out.println("haovc:"+ctx.getChild(i).getText());
+		}
+		// havoc的 SMT语句：
+		// 将对应变量的下标+1即可
+		incSubscript(ctx.getChild(1).getText());
+		return super.visitHavocStmt(ctx);
+	}
+	
 	// 获取声明语句的SMT语句
 	private String getDeclStmt(String variName) {
 		StringBuilder result = new StringBuilder();
