@@ -1,9 +1,13 @@
 package tool;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import parser.GlobalVisitor;
-import parser.SimpleCParser.ProcedureDeclContext;
-import parser.SimpleCParser.ProgramContext;
 import parser.MyAssertVisitor;
 import parser.ParameterVisitor;
+import parser.SimpleCParser.ProcedureDeclContext;
+import parser.SimpleCParser.ProgramContext;
 import parser.TestVisitor;
 import parser.VariCount;
 
@@ -55,7 +59,10 @@ public class VCGenerator {
 		// 赋值语句的assert要是对的才行
 		// pre-/post- condition的条件全部写在一起，前面加not 条件之间关系为and
 		tv.visit(proc);
-		result.append(tv.getSMT());	
+		result.append(tv.getSMT());
+		// 拼接新增下标后的声明语句
+		result.append(getDeclSMTofRest());
+		// 拼接assert语句
 		result.append(mav.getAssSMT());
 		// TODO: generate the meat of the VC
 		result.append("\n(check-sat)\n");
@@ -63,4 +70,23 @@ public class VCGenerator {
 		return result;
 	}
 
+	private String getDeclSMTofRest(){
+		StringBuilder re=new StringBuilder();
+		// 拼接新增下标后的声明语句
+				Map<String,ArrayList<Integer>> decMap=this.VarCount.getVarCount();
+				for(String key:decMap.keySet()){
+					List<Integer> varList=decMap.get(key);
+					if(varList.get(1)>=2){
+						for(int i=1;i<varList.get(1);i++){
+							re.append("(declare-fun ");
+							re.append(key+i + " ");
+							re.append("() ");
+							re.append("Int" + ")");
+							re.append("\n");
+						}
+					}
+				}
+				return re.toString();
+	}
+	
 }

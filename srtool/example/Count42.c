@@ -1,20 +1,21 @@
 // RUN: %tool "%s" > "%t"
 // RUN: %diff %CORRECT "%t"
 int s;
-<<<<<<< HEAD
 
 int foo(int a, int b)
-=======
-int foo(int a)
->>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 {
 	int i;
-<<<<<<< HEAD
+	int x;
 // 	i=2+2*3/5%4-5*3/2;
 // 	i=(3+4)*(5+6);
 // 有问题
 // AssExpr:(+(-(*2 (+3 4)) 100) (%(-(+4 (~ (-1 2))) (/2 2)) 5))
-	i=2*(3+4)-100+(4+2/2-~(1-2))%5;
+// 	i=2*(3+4)-100+(4+2/2-~(1-2))%5;
+	x=1;
+	x=2;
+	i=5%2+x;
+	i=i+1+i+x;
+	i=i%3+x;
 //    (-(+4 (/2 2)) (-1 2))
 // 	i=(1+2)-(4+2/2-(1-2));
 // 	i=(1+1)+2;
@@ -27,8 +28,6 @@ int foo(int a)
 // 		i=3*4/5;
 // 	i=2*(3+4)/3%(6-7);
 // 	i=(2+(-1));
-=======
-
 	int j;
 	
 	j=1;
@@ -39,7 +38,6 @@ int foo(int a)
 	else {
 		
 	}
->>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 // 	i=4294967298;
 // 	i=3;
 // 	i=1+2*2%6/2*7;
