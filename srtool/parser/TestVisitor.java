@@ -731,7 +731,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		result.append("(declare-fun ");
 		result.append(variName + " ");
 		result.append("() ");
+		// for Int
 		result.append(typeName + ")");
+		// for Reals
+//		result.append("Real"+")");
 		result.append("\n");
 		return result.toString();
 	}
