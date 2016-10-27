@@ -263,7 +263,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 		
-		System.out.println("result " + resSmt.toString());
+	//	System.out.println("fde" + resSmt.toString());
 		return resSmt.toString();
 
 	}
@@ -447,10 +447,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				RelExprContext temp;
 				
 				sign = i == ctx.ops.size() ? sign : ctx.ops.get(i).getText();
-				System.out.println("sign: " + sign);
+		//		System.out.println("sign: " + sign);
 				if (i < ctx.ops.size()) {
 					if (sign.equals("==")) {
-						System.out.println("enter");
+				//		System.out.println("enter");
 						tempSmt.append("(= )");
 						offset ++;
 					}
