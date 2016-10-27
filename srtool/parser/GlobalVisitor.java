@@ -49,8 +49,8 @@ public class GlobalVisitor extends SimpleCBaseVisitor<Void> {
 		String variName = ctx.getChild(1).getText();
 		this.variCount.put(variName, status);
 		variName = variName + "0";
-		this.ResSmt.append(getDeclStmt(variName).toString());
-		System.out.println(this.ResSmt.toString());
+//		this.ResSmt.append(getDeclStmt(variName).toString());
+//		System.out.println(this.ResSmt.toString());
 		return null;
 		
 	}

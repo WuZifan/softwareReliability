@@ -19,10 +19,32 @@ public class SRTool {
     private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-//		String filename="example/Count42.c";
-
-		String filename="tests/correct/simplelor.c";
-
+		String filename="example/Count42.c";
+		/*
+		 * Correct
+		 */
+		// Pased
+//		String filename="tests/correct/divzero.c"; 
+		// Pased. But afarid of missing the assertation in the block
+//		String filename="tests/correct/if.c";
+		// Error:(error "line 28 column 21: unexpected character"):(assert (= x3 (ite  ([@31,151:151='<',<29>,11:9] x0 (or ) (bvlshr 1 24)) x2 x1)))
+//		String filename="tests/correct/ifelse.c";
+		// (Error "line 8 column 36: invalid function application, arguments missing")
+//		String filename="tests/correct/overshift.c";
+		// Pased
+//		String filename="tests/correct/simpleeq.c";
+		// (Error "line 15 column 29: Sort mismatch at argument #2 for function (declare-fun and (Bool Bool) Bool) supplied sort is Int")
+//		String filename="tests/correct/simplelor.c";
+		// Pased
+//		String filename="tests/correct/simplesub.c";
+		/*
+		 * INCORRECT
+		 */
+		// (Error "line 6 column 28: Sort mismatch at argument #2 for function (declare-fun and (Bool Bool) Bool) supplied sort is Int")
+//		String filename="tests/incorrect/assertfalse.c";
+		// Pased
+//		String filename="tests/incorrect/faildivzero.c";
+//		String filename="tests/incorrect/failold.c";
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
         SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -46,7 +68,7 @@ public class SRTool {
 
 		VCGenerator vcgenGl = new VCGenerator(ctx, null);
 		vcgenGl.generateVCGlobal();
-	
+		System.out.println();
 		for(ProcedureDeclContext proc : ctx.procedures) {
 			VCGenerator vcgen = new VCGenerator(null, proc);
 			String vc = vcgen.generateVC().toString();
