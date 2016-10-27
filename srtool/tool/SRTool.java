@@ -19,9 +19,9 @@ public class SRTool {
     private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		String filename="example/Count42.c";
-//		String filename="tests/correct/divzero.c";
-//		String filename = "tests/correct/divzero.c";
+//		String filename="example/Count42.c";
+		String filename="tests/correct/divzero.c";
+//		String filename = "tests/correct/simplelor.c";
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
         SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -45,7 +45,7 @@ public class SRTool {
 
 		VCGenerator vcgenGl = new VCGenerator(ctx, null);
 		vcgenGl.generateVCGlobal();
-	
+		System.out.println();
 		for(ProcedureDeclContext proc : ctx.procedures) {
 			VCGenerator vcgen = new VCGenerator(null, proc);
 			String vc = vcgen.generateVC().toString();

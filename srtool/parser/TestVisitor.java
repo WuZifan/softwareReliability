@@ -42,8 +42,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
 		this.smtResult = new StringBuilder();
-		this.smtResult.append(glSmt);
-		this.smtResult.append(plSmt);
+		// 以下声明在vcGenerate里面生成了，不再这里重复声明
+//		this.smtResult.append(glSmt);
+//		this.smtResult.append(plSmt);
 
 	}
 
@@ -57,6 +58,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		String text = this.visitExpr(ctx.expr());
 		System.out.println("assert:++++++++" + text);
+		if(!text.contains("(")){
+			text="(and true "+text+")";
+		}
 		this.assVisitor.visitunnomAss(text);
 		return null;
 	}
@@ -76,11 +80,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		variCount.put(variName, status);
 		variName = variName + "0";
 		// 编写SMT语句
-		result.append(getDeclStmt(variName));
+//		result.append(getDeclStmt(variName));
 		// 调用父类
 		super.visitVarDecl(ctx);
 		// 拼接完整SMT语句
-		smtResult.append(result.toString());
+//		smtResult.append(result.toString());
 		return null;
 	}
 
@@ -105,7 +109,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder nomoAss = new StringBuilder();
 		// 赋值语句
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
-		assVisitor.visitnomorAss(nomoAss.toString());
+//		assVisitor.visitnomorAss(nomoAss.toString());
+		this.smtResult.append(nomoAss.toString());
 
 		// 判断是否超过限制
 		unnomAss.append("(<= " + variName + " 4294967295)");
