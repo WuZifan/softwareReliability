@@ -30,11 +30,8 @@ import parser.SimpleCParser.VarrefExprContext;
 
 public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
-	private ArrayList<Integer> IfLayer;
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
-	private StringBuilder exprResult;
-	private int inCond;
 
 	public TestVisitor() {
 		this.smtResult = new StringBuilder();
@@ -43,11 +40,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public TestVisitor(MyAssertVisitor assVisitor, VariCount variCount, String glSmt, String plSmt) {
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
-		this.IfLayer = variCount.getIfLayer();
 		this.smtResult = new StringBuilder();
 		this.smtResult.append(glSmt);
 		this.smtResult.append(plSmt);
-		this.inCond = 0;
 
 	}
 
@@ -55,7 +50,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
 		this.smtResult = new StringBuilder();
-		this.inCond = 0;
 	}
 
 	@Override
@@ -132,7 +126,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 //		System.out.println(ctx.condition.getText());		
 		cond = super.visitExpr(ctx.condition);
 		
-		System.out.println("cond :" + cond);
+//		System.out.println("cond :" + cond);
 		strif = visitBlockStmt(ctx.thenBlock);
 		smtResult.append(strif);
 		afif = copyMap(this.variCount);
@@ -143,23 +137,23 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			strelse = visitBlockStmt(ctx.elseBlock);
 			smtResult.append(strelse);
 		//	System.out.println("strelse :" + strelse);
-			System.out.println("afif: " + afif + "      this.vari " + variCount);
+	//		System.out.println("afif: " + afif + "      this.vari " + variCount);
 			for(String key : afif.keySet()) {
-				System.out.println("key: " + key + " " + afif.get(key).get(1));
+	//			System.out.println("key: " + key + " " + afif.get(key).get(1));
 				String tempSmt = "";
 				if(afif.get(key).get(1) > this.variCount.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(afif.get(key).get(1) + 1);
 					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
 					tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + "))\n";
 					incSubscript(key);
-					System.out.println("tmp res : " + tempSmt.toString());
+	//				System.out.println("tmp res : " + tempSmt.toString());
 				}
 				else if(afif.get(key).get(1) < this.variCount.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
 					tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1));
 					tempSmt += " " + key + Integer.toString(afif.get(key).get(1)) + "))\n";
 					incSubscript(key);
-					System.out.println("tmp res : " + tempSmt.toString());
+	//				System.out.println("tmp res : " + tempSmt.toString());
 				}
 				else if(afif.get(key).get(1) > init.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
@@ -173,7 +167,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 
 
-		System.out.println("if res : " + resSmt.toString());
+	//	System.out.println("if res : " + resSmt.toString());
 		smtResult.append(resSmt);
 		return resSmt.toString();
 	}
@@ -220,7 +214,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			}
 
-			System.out.println("answer " + resSmt.toString() + " " + ctx.getText());
+	//		System.out.println("answer " + resSmt.toString() + " " + ctx.getText());
 
 		}
 
