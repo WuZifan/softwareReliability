@@ -42,7 +42,7 @@ int foo(int a, int b)
 
 
 	int j;
-	int i;
+	
 	j=1;
 	
 	if (i == 0) {
