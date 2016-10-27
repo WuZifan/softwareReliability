@@ -91,13 +91,13 @@ public class VCGenerator {
 		// TODO: generate the meat of the VC
 		result.append("\n(check-sat)\n");
 		// result.append("\n(check-sat-using qfnra-nlsat)\n");
-		// System.out.println(result.toString());
+		 System.out.println("FinalResult:-------------------------------\n"+result.toString());
 		return result;
 	}
 	
 	private void getAssertNot(String preSMT,String postSMT){
 		if(postSMT.isEmpty()){
-			result.append("(assert false)");
+//			result.append("(assert false)");
 		}else{
 			result.append("(assert (not ");
 			result.append(postSMT);
@@ -107,8 +107,8 @@ public class VCGenerator {
 
 	private String getDivFunSMT() {
 		StringBuilder result = new StringBuilder();
-		result.append("(define-fun mydiv ((x Real) (y Real)) Real\n" + "(ite (= y 0) x (div x y)))\n");
-		result.append("(define-fun mymod ((x Real) (y Real)) Real\n" + "(ite (= y 0) x (mod x y)))\n");
+		result.append("(define-fun mydiv ((x Int) (y Int)) Int\n" + "(ite (= y 0) x (div x y)))\n");
+		result.append("(define-fun mymod ((x Int) (y Int)) Int\n" + "(ite (= y 0) x (mod x y)))\n");
 		// TODO Test assume
 		return result.toString();
 	}
