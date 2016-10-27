@@ -63,7 +63,10 @@ public class GlobalVisitor extends SimpleCBaseVisitor<Void> {
 		result.append("(declare-fun ");
 		result.append(variName + " ");
 		result.append("() ");
+		// for int
 		result.append(typeName + ")");
+		// for reals
+//		result.append("Real"+")");
 		result.append("\n");
 		return result.toString();
 	}

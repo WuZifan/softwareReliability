@@ -27,7 +27,8 @@ public class VCGenerator {
 	public VCGenerator(ProgramContext prog, ProcedureDeclContext proc) {
 		this.proc = proc;
 		this.prog = prog;
-		this.result = new StringBuilder("(set-logic QF_LIA)\n");
+//		this.result = new StringBuilder("(set-logic QF_LIA)\n");
+		this.result = new StringBuilder("(set-logic QF_IRA)\n");
 		this.glVisitor = new GlobalVisitor(VarCount);
 		this.paVisitor = new ParameterVisitor(VarCount);
 		
@@ -70,16 +71,18 @@ public class VCGenerator {
 		result.append(mav.getAssSMT());
 		// TODO: generate the meat of the VC
 		result.append("\n(check-sat)\n");
+//		result.append("\n(check-sat-using qfnra-nlsat)\n");
 		System.out.println(result.toString());
 		return result;
 	}
 
 	private String getDivFunSMT() {
 		StringBuilder result=new StringBuilder();
-		result.append("(define-fun mydiv ((x Int) (y Int)) Int\n"
+		result.append("(define-fun mydiv ((x Real) (y Real)) Real\n"
 				+ "(ite (= y 0) x (div x y)))\n");
-		result.append("(define-fun mymod ((x Int) (y Int)) Int\n"
+		result.append("(define-fun mymod ((x Real) (y Real)) Real\n"
 				+ "(ite (= y 0) x (mod x y)))\n");
+		// TODO Test assume
 		return result.toString();
 	}
 
@@ -95,6 +98,8 @@ public class VCGenerator {
 							re.append(key+i + " ");
 							re.append("() ");
 							re.append("Int" + ")");
+							// for reals
+//							re.append("Real"+")");
 							re.append("\n");
 						}
 					}
