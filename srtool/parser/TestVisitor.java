@@ -157,24 +157,24 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				String tempSmt = "";
 				if(afif.get(key).get(1) > this.variCount.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + Integer.toString(afif.get(key).get(1) + 1);
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
-					tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + "))\n";
+					tempSmt += "(assert (= " + key + Integer.toString(afif.get(key).get(1));
+					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1) - 1);
+					tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1) - 1) + "))\n";
 					incSubscript(key);
 					incSubscript(key);
 
 				}
 				else if(afif.get(key).get(1) < this.variCount.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1));
-					tempSmt += " " + key + Integer.toString(afif.get(key).get(1)) + ")))\n";
+					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1));
+					tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1) - 1);
+					tempSmt += " " + key + Integer.toString(afif.get(key).get(1) - 1) + ")))\n";
 					incSubscript(key);
 					incSubscript(key);
 				}
 				else if(afif.get(key).get(1) > init.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
-					tempSmt += " " + key + Integer.toString(init.get(key).get(1)) + ")))\n";
+					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1));
+					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1) - 1);
+					tempSmt += " " + key + Integer.toString((init.get(key).get(1)) - 1) + ")))\n";
 					incSubscript(key);
 					incSubscript(key);
 				}
