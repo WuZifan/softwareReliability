@@ -7,6 +7,8 @@ import java.util.Map;
 import parser.GlobalVisitor;
 import parser.MyAssertVisitor;
 import parser.ParameterVisitor;
+import parser.PostConditionVisitor;
+import parser.PreConditionVisitor;
 import parser.SimpleCParser.ProcedureDeclContext;
 import parser.SimpleCParser.ProgramContext;
 import parser.TestVisitor;
@@ -75,13 +77,32 @@ public class VCGenerator {
 		result.append(tv.getSMT());
 		System.out.println("TVSMT: \n" + tv.getSMT());
 		// 拼接assert语句
+		//////////////////////////////////////////////////////////////////////
 		result.append(mav.getAssSMT());
 		System.out.println("MavSMT: \n" + mav.getAssSMT());
+		
+		PreConditionVisitor preVisitor = new PreConditionVisitor(VarCount);
+		preVisitor.visit(proc);
+		PostConditionVisitor postVisitor = new PostConditionVisitor(preVisitor.getSMT(),VarCount);
+		postVisitor.visit(proc);
+		getAssertNot(preVisitor.getSMT(),postVisitor.getSMT());
+		
+		//////////////////////////////////////////////////////////////////////
 		// TODO: generate the meat of the VC
 		result.append("\n(check-sat)\n");
 		// result.append("\n(check-sat-using qfnra-nlsat)\n");
 		// System.out.println(result.toString());
 		return result;
+	}
+	
+	private void getAssertNot(String preSMT,String postSMT){
+		if(postSMT.isEmpty()){
+			result.append("(assert false)");
+		}else{
+			result.append("(assert (not ");
+			result.append(postSMT);
+			result.append("))");
+		}			
 	}
 
 	private String getDivFunSMT() {
@@ -89,6 +110,13 @@ public class VCGenerator {
 		result.append("(define-fun mydiv ((x Real) (y Real)) Real\n" + "(ite (= y 0) x (div x y)))\n");
 		result.append("(define-fun mymod ((x Real) (y Real)) Real\n" + "(ite (= y 0) x (mod x y)))\n");
 		// TODO Test assume
+		return result.toString();
+	}
+	
+	private String getInttoBoolSmt() {
+		StringBuilder result = new StringBuilder();
+		result.append("(define-fun itb ((x Real))) Bool");
+		result.append("(ite (= x 0) false true");
 		return result.toString();
 	}
 

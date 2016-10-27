@@ -1,5 +1,6 @@
 package parser;
 
+import parser.SimpleCParser.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -7,205 +8,73 @@ import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTree;
 
-import parser.SimpleCParser.*;
-import parser.SimpleCParser.AddExprContext;
-import parser.SimpleCParser.AssignStmtContext;
-import parser.SimpleCParser.BandExprContext;
-import parser.SimpleCParser.BorExprContext;
-import parser.SimpleCParser.BxorExprContext;
-import parser.SimpleCParser.EqualityExprContext;
-import parser.SimpleCParser.ExprContext;
-import parser.SimpleCParser.IfStmtContext;
-import parser.SimpleCParser.LandExprContext;
-import parser.SimpleCParser.LorExprContext;
-import parser.SimpleCParser.NumberExprContext;
-import parser.SimpleCParser.ParenExprContext;
-import parser.SimpleCParser.RelExprContext;
-import parser.SimpleCParser.ShiftExprContext;
-import parser.SimpleCParser.TernExprContext;
-import parser.SimpleCParser.UnaryExprContext;
-import parser.SimpleCParser.VarDeclContext;
-import parser.SimpleCParser.VarrefExprContext;
 
-public class TestVisitor extends SimpleCBaseVisitor<String> {
+public class PreConditionVisitor extends SimpleCBaseVisitor<String> {
+
 	private Map<String, ArrayList<Integer>> variCount;
-	private StringBuilder smtResult;
-	private MyAssertVisitor assVisitor;
-	private HashMap<Integer, HashMap<String, Integer >> ifLayer;
+	private StringBuilder smtResult = new StringBuilder();
+	private ArrayList<String> preCon = new ArrayList<String>();
+	
+	private int preNumber = 0;
 
-
-	public TestVisitor() {
-		this.smtResult = new StringBuilder();
+	public PreConditionVisitor(VariCount variCount){		
+		
+		this.variCount = variCount.getVarCount(); 	
+		
 	}
-
-	public TestVisitor(MyAssertVisitor assVisitor, VariCount variCount, String glSmt, String plSmt) {
-		this.assVisitor = assVisitor;
-		this.variCount = variCount.getVarCount();
-		this.ifLayer = variCount.getIfLayer();
-		this.smtResult = new StringBuilder();
-		// 以下声明在vcGenerate里面生成了，不再这里重复声明
-//		this.smtResult.append(glSmt);
-//		this.smtResult.append(plSmt);
-
+	
+	public String getSMT(){
+		
+		return smtResult.toString();
+		
 	}
-
-	public TestVisitor(MyAssertVisitor assVisitor, VariCount variCount) {
-		this.assVisitor = assVisitor;
-		this.variCount = variCount.getVarCount();
-		this.ifLayer = variCount.getIfLayer();
-		this.smtResult = new StringBuilder();
-	}
-
-	@Override
-	public String visitAssertStmt(AssertStmtContext ctx) {
-		String text = this.visitExpr(ctx.expr());
-		System.out.println("assert:++++++++" + text);
-		if(!text.contains("(")){
-			text="(and true "+text+")";
+	
+	public void combine (){
+		
+		if(preCon.isEmpty()){
+			preCon.add("null");
 		}
-		this.assVisitor.visitunnomAss(text);
-		return null;
-	}
-
-	// 声明语句的SMT转换
-	@Override
-	public String visitVarDecl(VarDeclContext ctx) {
-		// SMT语句结果
-		StringBuilder result = new StringBuilder();
-		// 只有一种类型，所以不用特地处理类型名
-		// 变量名
-		String variName = ctx.getChild(1).getText();
-		ArrayList<Integer> status = new ArrayList<Integer>();
-		status.add(1);
-		status.add(0);
-		// 变量名，下标初始为0
-		variCount.put(variName, status);
-		variName = variName + "0";
-		// 编写SMT语句
-//		result.append(getDeclStmt(variName));
-		// 调用父类
-		super.visitVarDecl(ctx);
-		// 拼接完整SMT语句
-//		smtResult.append(result.toString());
-		return null;
-	}
-
-	// 赋值语句的SMT转换
-	@Override
-	public String visitAssignStmt(AssignStmtContext ctx) {
-
-		// String num = ctx.getChild(2).getText();
-		// 右边的表达式语句
-		String num = this.visitExpr((ExprContext) ctx.getChild(2));
-
-		// 被赋值的变量名，且取下标
-		String name = ctx.getChild(0).getText();
-		String variName = name + getSubscript(name);
-
-		incSubscript(name);
-
-		// not类型的assert.
-		StringBuilder unnomAss = new StringBuilder();
-
-		// 普通类型的assert
-		StringBuilder nomoAss = new StringBuilder();
-		// 赋值语句
-		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
-//		assVisitor.visitnomorAss(nomoAss.toString());
-		this.smtResult.append(nomoAss.toString());
-
-		// 判断是否超过限制
-		unnomAss.append("(<= " + variName + " 4294967295)");
-		unnomAss.append("(>= " + variName + " 0)");
-		//assVisitor.visitunnomAss(unnomAss.toString());
-		// 下标问题
-		return nomoAss.toString();
+		
+		smtResult = new StringBuilder();
+		
+		for(int i =0 ; i< preNumber-1; i++){
+			smtResult.append(" (and ");
+		}
+		
+		smtResult.append(preCon.get(0));
+		
+		for(int i =1 ; i< preNumber; i++){
+			smtResult.append(preCon.get(i) + ") ");
+		}
+		
 	}
 	
 	@Override
-	public String visitIfStmt(IfStmtContext ctx) {
-		Map<String, ArrayList<Integer>> init = new HashMap<String, ArrayList<Integer>>();
-		Map<String, ArrayList<Integer>> afif = new HashMap<String, ArrayList<Integer>>();
-		StringBuilder resSmt = new StringBuilder("");
-		HashMap<String, Integer> iftemp;
-		int layer;
-		String cond, strif, strelse;
-		
-		/** store initial info of variable **/
-		init = copyMap(this.variCount);
-		
-		/** receive condition SMT **/
-		cond = super.visitExpr(ctx.condition);
-		
-		/** prepare if information **/
-		layer = this.ifLayer.size();
-		iftemp = new HashMap<String, Integer>();
-		iftemp.put(cond, 1);
-		this.ifLayer.put(layer + 1, iftemp);
-
-		/** visit if bloc statement **/
-		strif = visitBlockStmt(ctx.thenBlock);
-		smtResult.append(strif);
-		
-		/** store variable info after if **/
-		afif = copyMap(this.variCount);
-
-		/** detect else statement then enter **/
-		if(ctx.elseBlock != null) {
-			this.ifLayer.get(layer + 1).put(cond, 0);
-			strelse = visitBlockStmt(ctx.elseBlock);
-			smtResult.append(strelse);
-
-			/** Compare differences and generate Smt for if **/
-			for(String key : afif.keySet()) {
-
-				String tempSmt = "";
-				if(afif.get(key).get(1) > this.variCount.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + Integer.toString(afif.get(key).get(1));
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1) - 1);
-					tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1) - 1) + "))\n";
-					incSubscript(key);
-					incSubscript(key);
-
-				}
-				else if(afif.get(key).get(1) < this.variCount.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1));
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1) - 1);
-					tempSmt += " " + key + Integer.toString(afif.get(key).get(1) - 1) + ")))\n";
-					incSubscript(key);
-					incSubscript(key);
-				}
-				else if(afif.get(key).get(1) > init.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1));
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1) - 1);
-					tempSmt += " " + key + Integer.toString((init.get(key).get(1)) - 1) + ")))\n";
-					incSubscript(key);
-					incSubscript(key);
-				}
+	public String visitPrepost (SimpleCParser.PrepostContext ctx){		
 				
-				resSmt.append(tempSmt);
-			}
-		}
+		super.visitPrepost(ctx);	
 		
-		this.ifLayer.remove(layer + 1);
-
-
-	//	System.out.println("if res : " + resSmt.toString());
-		smtResult.append(resSmt);
-		return resSmt.toString();
-	}
-
+		combine ();
+		System.out.println("pre::"+smtResult);
+		
+		return null;
+	}	
+	
+	
 	@Override
-	public String visitBlockStmt(BlockStmtContext ctx) {
-		StringBuilder res = new StringBuilder();
+	public String visitRequires (SimpleCParser.RequiresContext ctx){
+	
+		String requires;	
+		requires = super.visitRequires(ctx);
 		
-		for(StmtContext iter : ctx.stmts) {
-			res.append(visitStmt(iter));
-		}
+		preNumber++;
+		preCon.add(requires);
+		//System.out.print(preNumber+" "+"preCon::");
 		
-		return res.toString();
-	}
+		return null;
+	}	
 	
 	@Override
 	public String visitExpr(ExprContext ctx) {
@@ -523,7 +392,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				ShiftExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					tempSmt.append("(" + ctx.ops.get(i).toString() + " )");
+					tempSmt.append("(" + ctx.ops.get(i).getText() + " )");
 					i++;
 				}
 
@@ -604,6 +473,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			var += getSubscript(var);
 		}
 		return var;
+	}
+	
+	/** Get current subscripte for a specific variable **/
+	private int getSubscript(String text) {
+		return variCount.get(text).get(1);
 	}
 
 	@Override
@@ -693,103 +567,4 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return super.visitAtomExpr(ctx);
 	}
 
-	@Override
-	public String visitHavocStmt(HavocStmtContext ctx) {
-		// for(int i=0;i<ctx.getChildCount();i++){
-		// System.out.println("haovc:"+ctx.getChild(i).getText());
-		// }
-		// havoc的 SMT语句：
-		// 将对应变量的下标+1即可
-		incSubscript(ctx.getChild(1).getText());
-		return super.visitHavocStmt(ctx);
-	}
-
-
-	// 只能用在全局变量中
-	@Override
-	public String visitOldExpr(OldExprContext ctx) {
-		for (int i = 0; i < ctx.getChildCount(); i++) {
-			System.out.println("Old: " + ctx.getChild(i).getText());
-		}
-		// return super.visitOldExpr(ctx);
-		String varible = ctx.getChild(2).getText();
-		return varible + this.getGlobaOldSubscript(varible);
-	}
-	/*
-	// 只能用在全局变量中
-	@Override
-	public String visitResultExpr(ResultExprContext ctx) {
-		String varible = ctx.getChild(2).getText();
-		return null;
-	}*/
-
-	/**
-	 * 拿到全局变量进入方法前的值 令variCount 对应内容的List的第三个值存储这个内容
-	 * 
-	 * @param varible
-	 * @return
-	 */
-	private int getGlobaOldSubscript(String varible) {
-		int sub = 0;
-		if (variCount.get(varible).size() < 3) {
-			// 对于多个procedure而言，有问题
-			// 对于单个procedure而言，暂时没有问题。
-			sub = 0;
-		} else {
-			sub = variCount.get(varible).get(2);
-		}
-		return sub;
-	}
-
-	// 获取声明语句的SMT语句
-	private String getDeclStmt(String variName) {
-		StringBuilder result = new StringBuilder();
-		String typeName = "Int";
-		// 编写SMT语句
-		result.append("(declare-fun ");
-		result.append(variName + " ");
-		result.append("() ");
-		// for Int
-		result.append(typeName + ")");
-		// for Reals
-//		result.append("Real"+")");
-		result.append("\n");
-		return result.toString();
-	}
-
-	/** Get current subscripte for a specific variable **/
-	private int getSubscript(String text) {
-		return variCount.get(text).get(1);
-	}
-
-	/** Increase the subscript while assigned **/
-	private void incSubscript(String text) {
-		// TODO : Declaration
-		variCount.get(text).set(1, getSubscript(text) + 1);
-	}
-
-	/** Remove all local variables, later use **/
-	@SuppressWarnings("unused")
-	private void rmLocalVar() {
-		for (Map.Entry<String, ArrayList<Integer>> iter : this.variCount.entrySet()) {
-			if (iter.getValue().get(0) == 1) {
-				this.variCount.remove(iter.getKey());
-			}
-		}
-	}
-	
-	private HashMap<String, ArrayList<Integer> > copyMap( Map<String, ArrayList<Integer> > ori) {
-		 HashMap<String, ArrayList<Integer> > res = new HashMap<String, ArrayList<Integer> >();
-		 
-		 for ( Map.Entry<String, ArrayList<Integer> > entry : ori.entrySet()) {
-			 res.put(entry.getKey(), (ArrayList<Integer>) entry.getValue().clone());
-		 }
-		 return res;
-	}
-
-	/** Return the whole SMT **/
-	public String getSMT(){
-
-		return smtResult.toString();
-	}
 }
