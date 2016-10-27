@@ -51,6 +51,7 @@ public class SRTool {
 			String queryResult = "";
 			try {
 				queryResult = process.execute(vc, TIMEOUT);
+				System.out.println(queryResult);
 			} catch (ProcessTimeoutException e) {
 				System.out.println("UNKNOWN");
 				System.exit(1);
