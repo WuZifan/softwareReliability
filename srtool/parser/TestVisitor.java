@@ -220,16 +220,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			// System.out.println(single.getText());
 			resSmt.append(visitLorExpr(single));
 		} else {
-			resSmt.append("(ite )");
-			Iterator<LorExprContext> iter = ctx.args.iterator();
-			while (iter.hasNext()) {
+			resSmt.append("(ite (itb ) )");
+			for(int i = 0; i < ctx.args.size(); i++) {
 				LorExprContext temp;
-				temp = iter.next();
+				temp = ctx.args.get(i);
 
 //				System.out.println("dealing " + temp.getText());
 				res = visitLorExpr(temp);
 //				System.out.println("res " + res + "   " + ctx.getText());
-				resSmt.insert(resSmt.length() - 1, " " + res);
+				if ((i + 1) % 3 == 1) {
+					resSmt.insert(resSmt.length() - 3, " " + res);
+				}
+				else {
+					resSmt.insert(resSmt.length() - 1, " " + res);
+				}
+				
 
 			}
 
@@ -267,9 +272,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				// System.out.println("dealing " + temp.getText());
 				res = super.visitLandExpr(temp);
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " (itb " + res + ")");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, "(itb " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 

@@ -63,6 +63,8 @@ public class VCGenerator {
 		tv.visit(proc);
 		// 拼接函数声明语句
 		result.append(getDivFunSMT());
+		result.append(getInttoBoolSmt());
+		result.append(getBooltoIntSmt());
 		// 拼接新增下标后的声明语句
 		result.append(getDeclSMTofRest());
 		// 拼接TestVisitor里面的SMT
@@ -88,8 +90,15 @@ public class VCGenerator {
 	
 	private String getInttoBoolSmt() {
 		StringBuilder result = new StringBuilder();
-		result.append("(define-fun itb ((x Real))) Bool");
-		result.append("(ite (= x 0) false true");
+		result.append("(define-fun itb ((x Int)) Bool\n");
+		result.append("(ite (= x 0) false true))\n");
+		return result.toString();
+	}
+	
+	private String getBooltoIntSmt() {
+		StringBuilder result = new StringBuilder();
+		result.append("(define-fun ibt ((x Bool)) Int\n");
+		result.append("(ite (= x true) 1 0))\n");
 		return result.toString();
 	}
 
