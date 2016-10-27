@@ -106,6 +106,13 @@ public class VCGenerator {
 		// TODO Test assume
 		return result.toString();
 	}
+	
+	private String getInttoBoolSmt() {
+		StringBuilder result = new StringBuilder();
+		result.append("(define-fun itb ((x Real))) Bool");
+		result.append("(ite (= x 0) false true");
+		return result.toString();
+	}
 
 	private String getDeclSMTofRest(){
 		StringBuilder re=new StringBuilder();

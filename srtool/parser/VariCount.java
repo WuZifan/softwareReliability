@@ -15,7 +15,14 @@ public class VariCount {
 	 * start with 0
 	 * */
 	private Map<String, ArrayList<Integer> > varCount = new HashMap<String, ArrayList<Integer> >();
-	private ArrayList<Integer> ifLayer = new ArrayList<Integer>();
+	
+	/*
+	 * IfLayer stores information about if condition structure
+	 * Key is the layer of the if condition
+	 * HashMap keys store the condition of this layer in SMT form, values means it is in if or else
+	 * 1: if          0: else
+	 */
+	private HashMap<Integer, HashMap<String, Integer >> ifLayer = new HashMap<Integer, HashMap<String, Integer>>();
 	
 	public Map<String, ArrayList<Integer> > getVarCount() {
 		return varCount;
@@ -26,7 +33,7 @@ public class VariCount {
 
 	}
 	
-	public ArrayList<Integer> getIfLayer() {
+	public HashMap<Integer, HashMap<String, Integer >> getIfLayer() {
 		return this.ifLayer;
 	}
 
