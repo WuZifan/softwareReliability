@@ -50,3 +50,6 @@
 >>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 /VariCount.class
 /ParameterVisitor.class
+/AssumeVisitor.class
+/PostConditionVisitor.class
+/PreConditionVisitor.class

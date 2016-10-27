@@ -6,6 +6,8 @@ import java.util.Map;
 import parser.GlobalVisitor;
 import parser.MyAssertVisitor;
 import parser.ParameterVisitor;
+import parser.PostConditionVisitor;
+import parser.PreConditionVisitor;
 import parser.SimpleCParser.ProcedureDeclContext;
 import parser.SimpleCParser.ProgramContext;
 import parser.TestVisitor;
@@ -68,12 +70,31 @@ public class VCGenerator {
 		// 拼接TestVisitor里面的SMT
 		result.append(tv.getSMT());
 		// 拼接assert语句
-		result.append(mav.getAssSMT());
+		//////////////////////////////////////////////////////////////////////
+		//result.append(mav.getAssSMT());
+		
+		PreConditionVisitor preVisitor = new PreConditionVisitor(VarCount);
+		preVisitor.visit(proc);
+		PostConditionVisitor postVisitor = new PostConditionVisitor(preVisitor.getSMT(),VarCount);
+		postVisitor.visit(proc);
+		getAssertNot(preVisitor.getSMT(),postVisitor.getSMT());
+		
+		//////////////////////////////////////////////////////////////////////
 		// TODO: generate the meat of the VC
 		result.append("\n(check-sat)\n");
 //		result.append("\n(check-sat-using qfnra-nlsat)\n");
 		System.out.println(result.toString());
 		return result;
+	}
+	
+	private void getAssertNot(String preSMT,String postSMT){
+		if(postSMT.isEmpty()){
+			result.append("(assert false)");
+		}else{
+			result.append("(assert (not ");
+			result.append(postSMT);
+			result.append("))");
+		}			
 	}
 
 	private String getDivFunSMT() {

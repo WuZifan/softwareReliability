@@ -19,9 +19,9 @@ public class SRTool {
     private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-//		String filename="example/Count42.c";
+		String filename="example/Count42.c";
 
-		String filename="tests/correct/divzero.c";
+		//String filename="tests/incorrect/assertfalse.c";
 
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
         SimpleCLexer lexer = new SimpleCLexer(input);

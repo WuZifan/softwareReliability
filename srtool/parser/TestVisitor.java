@@ -697,13 +697,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String varible = ctx.getChild(2).getText();
 		return varible + this.getGlobaOldSubscript(varible);
 	}
-
+	/*
 	// 只能用在全局变量中
 	@Override
 	public String visitResultExpr(ResultExprContext ctx) {
 		String varible = ctx.getChild(2).getText();
 		return null;
-	}
+	}*/
 
 	/**
 	 * 拿到全局变量进入方法前的值 令variCount 对应内容的List的第三个值存储这个内容
