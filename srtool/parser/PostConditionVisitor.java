@@ -86,7 +86,6 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitEnsures (SimpleCParser.EnsuresContext ctx){
 	
-		System.out.println("post::"+smtResult);
 		String ensures;	
 		StringBuilder ensuresSMT = new StringBuilder();
 		ensures = super.visitEnsures(ctx);
@@ -103,8 +102,6 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 		postCon.add(ensuresSMT.toString());
 		
 		combine ();
-		
-		System.out.println("post::"+smtResult);
 		
 		return null;
 	}
@@ -138,7 +135,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 			while(iter.hasNext()) {
 				LorExprContext temp;
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+				//System.out.println("dealing " + temp.getText());
 				res = visitLorExpr(temp);
 //				System.out.println("res " + res + "   " + ctx.getText());
 				resSmt.insert(resSmt.length() - 1, res);
@@ -173,7 +170,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				}
 				
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+				//System.out.println("dealing " + temp.getText());
 				res = visitLandExpr(temp);
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " " + res);
@@ -214,7 +211,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				}
 				
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+				//System.out.println("dealing " + temp.getText());
 				res = visitBorExpr(temp);
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " " + res);
@@ -254,7 +251,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				}
 				
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+				//System.out.println("dealing " + temp.getText());
 				res = visitBxorExpr(temp);
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " " + res);
@@ -294,7 +291,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				}
 				
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+				//System.out.println("dealing " + temp.getText());
 				res = visitBandExpr(temp);
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " " + res);
@@ -334,7 +331,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				}
 				
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+				//System.out.println("dealing " + temp.getText());
 				res = visitEqualityExpr(temp);
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " " + res);
@@ -370,11 +367,11 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				
 				if (i < ctx.ops.size()) {
 					
-					if(ctx.ops.get(i).equals("==")){
-						
-						tempSmt.append("(= )");
-						
-					}else{
+					tempSmt.append("(not )");
+					tempSmt.append("(= )");
+					
+					
+					if(ctx.ops.get(i).equals("!=")){
 						
 						tempSmt.append("(not )");
 						
@@ -384,7 +381,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				}
 				
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+				//System.out.println("dealing " + temp.getText());
 				res = visitRelExpr(temp);
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " " + res);
@@ -424,7 +421,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				}
 				
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+				//System.out.println("dealing " + temp.getText());
 				res = visitShiftExpr(temp);
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " " + res);
@@ -470,7 +467,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				}
 				
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+				//System.out.println("dealing " + temp.getText());
 				res = visitAddExpr(temp);
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " " + res);
