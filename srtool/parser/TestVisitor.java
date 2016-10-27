@@ -147,7 +147,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + "))\n";
 					incSubscript(key);
 					incSubscript(key);
+
 	//				System.out.println("tmp res : " + tempSmt.toString());
+
 				}
 				else if(afif.get(key).get(1) < this.variCount.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
@@ -155,12 +157,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					tempSmt += " " + key + Integer.toString(afif.get(key).get(1)) + "))\n";
 					incSubscript(key);
 					incSubscript(key);
-	//				System.out.println("tmp res : " + tempSmt.toString());
+					incSubscript(key);
+					System.out.println("tmp res : " + tempSmt.toString());
 				}
 				else if(afif.get(key).get(1) > init.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
 					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
 					tempSmt += " " + key + Integer.toString(init.get(key).get(1)) + "))\n";
+					incSubscript(key);
 					incSubscript(key);
 				}
 				

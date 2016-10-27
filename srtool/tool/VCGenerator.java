@@ -62,11 +62,10 @@ public class VCGenerator {
 		tv.visit(proc);
 		// 拼接函数声明语句
 		result.append(getDivFunSMT());
-		// 拼接TestVisitor里面的SMT
-		result.append(tv.getSMT());
 		// 拼接新增下标后的声明语句
 		result.append(getDeclSMTofRest());
-		
+		// 拼接TestVisitor里面的SMT
+		result.append(tv.getSMT());
 		// 拼接assert语句
 		result.append(mav.getAssSMT());
 		// TODO: generate the meat of the VC
