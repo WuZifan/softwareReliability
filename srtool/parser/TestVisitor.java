@@ -113,7 +113,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// 判断是否超过限制
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
-		assVisitor.visitunnomAss(unnomAss.toString());
+		//assVisitor.visitunnomAss(unnomAss.toString());
 		// 下标问题
 		return nomoAss.toString();
 	}

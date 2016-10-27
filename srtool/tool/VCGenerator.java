@@ -71,7 +71,7 @@ public class VCGenerator {
 		result.append(tv.getSMT());
 		// 拼接assert语句
 		//////////////////////////////////////////////////////////////////////
-		//result.append(mav.getAssSMT());
+		result.append(mav.getAssSMT());
 		
 		PreConditionVisitor preVisitor = new PreConditionVisitor(VarCount);
 		preVisitor.visit(proc);

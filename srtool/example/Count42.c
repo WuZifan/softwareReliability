@@ -3,23 +3,16 @@
 int s;
 
 int foo(int a, int b)
-requires a>0,
+requires a!=0,
 requires b<0,
-ensures \result==0,
-ensures \result==2
+ensures \result > 0,
+ensures \result ==2
 {
 	int j;
 	int i;
-	i=501;
-	j=1;
-	i=i/(j-j);
+	i=-2;
+	i=-1*2;
 
-	if (j != 0) {
-		j = 2;
-	}
-	else {
-		i = 1;
-	}
 	
-	return i;
+	return i+4;
 }
