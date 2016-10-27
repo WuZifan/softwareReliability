@@ -16,5 +16,11 @@ int foo(int a, int b)
 // 	else {
 // 		i = 1;
 // 	}
+	if (j != 0) {
+		j = 2;
+	}
+	else {
+		i = 1;
+	}
 	return 0;
 }
