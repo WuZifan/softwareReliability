@@ -148,7 +148,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		/** detect else statement then enter **/
 		if(ctx.elseBlock != null) {
-			this.ifLayer.get(layer).put(cond, 0);
+			this.ifLayer.get(layer + 1).put(cond, 0);
 			strelse = visitBlockStmt(ctx.elseBlock);
 			smtResult.append(strelse);
 
@@ -183,7 +183,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 		
-		this.ifLayer.remove(layer);
+		this.ifLayer.remove(layer + 1);
 
 
 	//	System.out.println("if res : " + resSmt.toString());
