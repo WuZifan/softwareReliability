@@ -33,6 +33,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
 
+
 	public TestVisitor() {
 		this.smtResult = new StringBuilder();
 	}
@@ -55,7 +56,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		String text = this.visitExpr(ctx.expr());
-		System.out.println("assert:" + text);
+		System.out.println("assert:++++++++" + text);
+		this.assVisitor.visitunnomAss(text);
 		return null;
 	}
 
@@ -93,6 +95,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// 被赋值的变量名，且取下标
 		String name = ctx.getChild(0).getText();
 		String variName = name + getSubscript(name);
+
 		incSubscript(name);
 
 		// not类型的assert.
@@ -102,15 +105,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder nomoAss = new StringBuilder();
 		// 赋值语句
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
-	//	System.out.println("nomalAss:" + nomoAss.toString());
 		assVisitor.visitnomorAss(nomoAss.toString());
 
 		// 判断是否超过限制
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
-	//	System.out.print("unnomal:" + unnomAss.toString());
 		assVisitor.visitunnomAss(unnomAss.toString());
-
 		// 下标问题
 		return nomoAss.toString();
 	}
@@ -613,10 +613,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				String operator = opsList.get(i);
 				// 不能用%，只能用mod
 				if (operator.equals("%")) {
-					operator = "mod";
+					operator = "mymod";
 				}
 				if (operator.equals("/")) {
-					operator = "div";
+					operator = "mydiv";
 				}
 				result.append("(" + operator + " " + this.visitUnaryExpr(ctx.args.get(i)));
 			}

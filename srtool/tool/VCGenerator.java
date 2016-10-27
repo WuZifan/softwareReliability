@@ -60,15 +60,28 @@ public class VCGenerator {
 		// 赋值语句的assert要是对的才行
 		// pre-/post- condition的条件全部写在一起，前面加not 条件之间关系为and
 		tv.visit(proc);
+		// 拼接函数声明语句
+		result.append(getDivFunSMT());
+		// 拼接TestVisitor里面的SMT
 		result.append(tv.getSMT());
 		// 拼接新增下标后的声明语句
 		result.append(getDeclSMTofRest());
+		
 		// 拼接assert语句
 		result.append(mav.getAssSMT());
 		// TODO: generate the meat of the VC
 		result.append("\n(check-sat)\n");
 		System.out.println(result.toString());
 		return result;
+	}
+
+	private String getDivFunSMT() {
+		StringBuilder result=new StringBuilder();
+		result.append("(define-fun mydiv ((x Int) (y Int)) Int\n"
+				+ "(ite (= y 0) x (div x y)))\n");
+		result.append("(define-fun mymod ((x Int) (y Int)) Int\n"
+				+ "(ite (= y 0) x (mod x y)))\n");
+		return result.toString();
 	}
 
 	private String getDeclSMTofRest(){
