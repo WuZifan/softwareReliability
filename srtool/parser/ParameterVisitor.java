@@ -38,7 +38,7 @@ public class ParameterVisitor extends SimpleCBaseVisitor<Void> {
 		String typeName="Int";
 		result.append("(declare-fun ");
 		result.append(variName + "0");
-		result.append("() ");
+		result.append(" () ");
 		result.append(typeName + ")");
 		result.append("\n");
 		return result.toString();
