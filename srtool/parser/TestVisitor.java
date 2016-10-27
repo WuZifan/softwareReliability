@@ -154,7 +154,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				else if(afif.get(key).get(1) < this.variCount.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
 					tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1));
-					tempSmt += " " + key + Integer.toString(afif.get(key).get(1)) + "))\n";
+					tempSmt += " " + key + Integer.toString(afif.get(key).get(1)) + ")))\n";
 					incSubscript(key);
 					incSubscript(key);
 					incSubscript(key);
@@ -163,7 +163,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				else if(afif.get(key).get(1) > init.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
 					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
-					tempSmt += " " + key + Integer.toString(init.get(key).get(1)) + "))\n";
+					tempSmt += " " + key + Integer.toString(init.get(key).get(1)) + ")))\n";
 					incSubscript(key);
 					incSubscript(key);
 				}
@@ -440,30 +440,45 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			Iterator<RelExprContext> iter = ctx.args.iterator();
 			int i = 0;
+			String sign = "";
+			int offset = 0;
 			while (iter.hasNext()) {
 				StringBuilder tempSmt = new StringBuilder("");
 				RelExprContext temp;
-
+				
+				sign = i == ctx.ops.size() ? sign : ctx.ops.get(i).getText();
+				System.out.println("sign: " + sign);
 				if (i < ctx.ops.size()) {
-					if (ctx.ops.get(i).toString().equals("==")) {
+					if (sign.equals("==")) {
+						System.out.println("enter");
 						tempSmt.append("(= )");
+						offset ++;
 					}
 					else {
-						tempSmt.append("(not (= )");
+						tempSmt.append("(not (= ))");
+						offset += 2;
 					}			
 					i++;
 				}
-
+				
+			
 				temp = iter.next();
 
 //				System.out.println("dealing " + temp.getText());
 				res = visitRelExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - offset, " " + res);
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
-					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
+					if (sign.equals("==")) {
+						tempSmt.insert(tempSmt.length() - 1, res);
+						resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
+					}
+					else {
+						tempSmt.insert(tempSmt.length() - 2, res);
+						resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
+					}
+					
 				}
 
 			}

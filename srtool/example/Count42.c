@@ -5,9 +5,9 @@ int s;
 int foo(int a, int b)
 {
 	int j;
-
+	int i;
 	j=1;
-	if (i == 0) {
+	if (j != 0) {
 		j = 2;
 	}
 	else {

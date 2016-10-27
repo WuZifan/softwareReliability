@@ -20,6 +20,7 @@ public class SRTool {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		String filename="example/Count42.c";
+//		String filename = "tests/correct/divzero.c";
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
         SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
