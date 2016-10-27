@@ -108,13 +108,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder nomoAss = new StringBuilder();
 		// 赋值语句
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
-		System.out.println("nomalAss:" + nomoAss.toString());
+	//	System.out.println("nomalAss:" + nomoAss.toString());
 		assVisitor.visitnomorAss(nomoAss.toString());
 
 		// 判断是否超过限制
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
-		System.out.print("unnomal:" + unnomAss.toString());
+	//	System.out.print("unnomal:" + unnomAss.toString());
 		assVisitor.visitunnomAss(unnomAss.toString());
 
 		// 下标问题
@@ -127,42 +127,54 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		Map<String, ArrayList<Integer>> afif = new HashMap<String, ArrayList<Integer>>();
 		StringBuilder resSmt = new StringBuilder("");
 		String cond, strif, strelse;
-		this.variCount.putAll(init);
-
-		this.IfLayer.add(this.IfLayer.size() + 1);
-
-//		System.out.println(ctx.condition.getText());
 		
+		init = copyMap(this.variCount);
+//		System.out.println(ctx.condition.getText());		
 		cond = super.visitExpr(ctx.condition);
 		
 		System.out.println("cond :" + cond);
 		strif = visitBlockStmt(ctx.thenBlock);
-		this.variCount.putAll(afif);
-		System.out.println("strif :" + strif);
+		smtResult.append(strif);
+		afif = copyMap(this.variCount);
+	//	System.out.println("strif :" + strif);
+	//	System.out.println("afif: " + afif + "      this.vari " + variCount);
 		
 		if(ctx.elseBlock != null) {
 			strelse = visitBlockStmt(ctx.elseBlock);
-			System.out.println("strelse :" + strelse);
+			smtResult.append(strelse);
+		//	System.out.println("strelse :" + strelse);
+			System.out.println("afif: " + afif + "      this.vari " + variCount);
 			for(String key : afif.keySet()) {
+				System.out.println("key: " + key + " " + afif.get(key).get(1));
 				String tempSmt = "";
 				if(afif.get(key).get(1) > this.variCount.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(afif.get(key).get(1) + 1);
 					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
-					tempSmt += key + Integer.toString(this.variCount.get(key).get(1)) + "\n";
+					tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + "))\n";
+					incSubscript(key);
 					System.out.println("tmp res : " + tempSmt.toString());
 				}
 				else if(afif.get(key).get(1) < this.variCount.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
 					tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1));
-					tempSmt += key + Integer.toString(afif.get(key).get(1)) + "\n";
+					tempSmt += " " + key + Integer.toString(afif.get(key).get(1)) + "))\n";
+					incSubscript(key);
 					System.out.println("tmp res : " + tempSmt.toString());
 				}
+				else if(afif.get(key).get(1) > init.get(key).get(1)) {
+					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
+					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
+					tempSmt += " " + key + Integer.toString(init.get(key).get(1)) + "))\n";
+					incSubscript(key);
+				}
+				
 				resSmt.append(tempSmt);
 			}
 		}
 
 
 		System.out.println("if res : " + resSmt.toString());
+		smtResult.append(resSmt);
 		return resSmt.toString();
 	}
 
@@ -728,6 +740,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				this.variCount.remove(iter.getKey());
 			}
 		}
+	}
+	
+	private HashMap<String, ArrayList<Integer> > copyMap( Map<String, ArrayList<Integer> > ori) {
+		 HashMap<String, ArrayList<Integer> > res = new HashMap<String, ArrayList<Integer> >();
+		 
+		 for ( Map.Entry<String, ArrayList<Integer> > entry : ori.entrySet()) {
+			 res.put(entry.getKey(), (ArrayList<Integer>) entry.getValue().clone());
+		 }
+		 return res;
 	}
 
 	/** Return the whole SMT **/

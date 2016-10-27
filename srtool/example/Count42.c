@@ -9,7 +9,7 @@ int foo(int a, int b)
 	int i;
 	j=1;
 	
-	if (1 == 0) {
+	if (i == 0) {
 		j = 2;
 	}
 	else {
