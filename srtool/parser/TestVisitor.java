@@ -32,6 +32,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
+	private HashMap<Integer, HashMap<String, Integer >> ifLayer;
 
 
 	public TestVisitor() {
@@ -41,6 +42,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public TestVisitor(MyAssertVisitor assVisitor, VariCount variCount, String glSmt, String plSmt) {
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
+		this.ifLayer = variCount.getIfLayer();
 		this.smtResult = new StringBuilder();
 		this.smtResult.append(glSmt);
 		this.smtResult.append(plSmt);
@@ -50,6 +52,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public TestVisitor(MyAssertVisitor assVisitor, VariCount variCount) {
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
+		this.ifLayer = variCount.getIfLayer();
 		this.smtResult = new StringBuilder();
 	}
 
@@ -120,26 +123,38 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		Map<String, ArrayList<Integer>> init = new HashMap<String, ArrayList<Integer>>();
 		Map<String, ArrayList<Integer>> afif = new HashMap<String, ArrayList<Integer>>();
 		StringBuilder resSmt = new StringBuilder("");
+		HashMap<String, Integer> iftemp;
+		int layer;
 		String cond, strif, strelse;
 		
+		/** store initial info of variable **/
 		init = copyMap(this.variCount);
-//		System.out.println(ctx.condition.getText());		
+		
+		/** receive condition SMT **/
 		cond = super.visitExpr(ctx.condition);
 		
-//		System.out.println("cond :" + cond);
+		/** prepare if information **/
+		layer = this.ifLayer.size();
+		iftemp = new HashMap<String, Integer>();
+		iftemp.put(cond, 1);
+		this.ifLayer.put(layer + 1, iftemp);
+
+		/** visit if bloc statement **/
 		strif = visitBlockStmt(ctx.thenBlock);
 		smtResult.append(strif);
-		afif = copyMap(this.variCount);
-	//	System.out.println("strif :" + strif);
-	//	System.out.println("afif: " + afif + "      this.vari " + variCount);
 		
+		/** store variable info after if **/
+		afif = copyMap(this.variCount);
+
+		/** detect else statement then enter **/
 		if(ctx.elseBlock != null) {
+			this.ifLayer.get(layer).put(cond, 0);
 			strelse = visitBlockStmt(ctx.elseBlock);
 			smtResult.append(strelse);
-		//	System.out.println("strelse :" + strelse);
-	//		System.out.println("afif: " + afif + "      this.vari " + variCount);
+
+			/** Compare differences and generate Smt for if **/
 			for(String key : afif.keySet()) {
-	//			System.out.println("key: " + key + " " + afif.get(key).get(1));
+
 				String tempSmt = "";
 				if(afif.get(key).get(1) > this.variCount.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(afif.get(key).get(1) + 1);
@@ -148,8 +163,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					incSubscript(key);
 					incSubscript(key);
 
-	//				System.out.println("tmp res : " + tempSmt.toString());
-
 				}
 				else if(afif.get(key).get(1) < this.variCount.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
@@ -157,8 +170,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					tempSmt += " " + key + Integer.toString(afif.get(key).get(1)) + ")))\n";
 					incSubscript(key);
 					incSubscript(key);
-					incSubscript(key);
-					System.out.println("tmp res : " + tempSmt.toString());
 				}
 				else if(afif.get(key).get(1) > init.get(key).get(1)) {
 					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1) + 1);
@@ -171,6 +182,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				resSmt.append(tempSmt);
 			}
 		}
+		
+		this.ifLayer.remove(layer);
 
 
 	//	System.out.println("if res : " + resSmt.toString());
