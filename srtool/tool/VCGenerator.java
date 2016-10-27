@@ -18,17 +18,18 @@ public class VCGenerator {
 	private GlobalVisitor glVisitor;
 	private ParameterVisitor paVisitor;
 	private StringBuilder result;
-	private VariCount VarCount;
+	private static VariCount VarCount;
 	private MyAssertVisitor mav;
 	private static String glSmt;
-	
+	static{
+		VarCount=new VariCount();
+	}
 	public VCGenerator(ProgramContext prog, ProcedureDeclContext proc) {
 		this.proc = proc;
 		this.prog = prog;
 		this.result = new StringBuilder("(set-logic QF_LIA)\n");
-		this.VarCount = new VariCount();
-		this.glVisitor = new GlobalVisitor(this.VarCount);
-		this.paVisitor = new ParameterVisitor(this.VarCount);
+		this.glVisitor = new GlobalVisitor(VarCount);
+		this.paVisitor = new ParameterVisitor(VarCount);
 		
 	
 		// TODO: You will probably find it useful to add more fields and constructor arguments
@@ -53,7 +54,7 @@ public class VCGenerator {
 		paRes = this.paVisitor.getSMT().toString();
 		
 		mav = new MyAssertVisitor();
-		tv = new TestVisitor(mav, this.VarCount, VCGenerator.glSmt, paRes);
+		tv = new TestVisitor(mav, VarCount, VCGenerator.glSmt, paRes);
 		
 		// assert分两种，
 		// 赋值语句的assert要是对的才行
@@ -73,7 +74,7 @@ public class VCGenerator {
 	private String getDeclSMTofRest(){
 		StringBuilder re=new StringBuilder();
 		// 拼接新增下标后的声明语句
-				Map<String,ArrayList<Integer>> decMap=this.VarCount.getVarCount();
+				Map<String,ArrayList<Integer>> decMap=VarCount.getVarCount();
 				for(String key:decMap.keySet()){
 					List<Integer> varList=decMap.get(key);
 					if(varList.get(1)>=2){

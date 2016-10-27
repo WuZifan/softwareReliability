@@ -58,6 +58,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.inCond = 0;
 	}
 
+	@Override
+	public String visitAssertStmt(AssertStmtContext ctx) {
+		String text = this.visitExpr(ctx.expr());
+		System.out.println("assert:" + text);
+		return null;
+	}
+
 	// 声明语句的SMT转换
 	@Override
 	public String visitVarDecl(VarDeclContext ctx) {
@@ -88,12 +95,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// String num = ctx.getChild(2).getText();
 		// 右边的表达式语句
 		String num = this.visitExpr((ExprContext) ctx.getChild(2));
-		
+
 		// 被赋值的变量名，且取下标
 		String name = ctx.getChild(0).getText();
 		String variName = name + getSubscript(name);
 		incSubscript(name);
-		
+
 		// not类型的assert.
 		StringBuilder unnomAss = new StringBuilder();
 
@@ -101,11 +108,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder nomoAss = new StringBuilder();
 		// 赋值语句
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
+		System.out.println("nomalAss:" + nomoAss.toString());
 		assVisitor.visitnomorAss(nomoAss.toString());
 
 		// 判断是否超过限制
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
+		System.out.print("unnomal:" + unnomAss.toString());
 		assVisitor.visitunnomAss(unnomAss.toString());
 
 		// 下标问题
@@ -543,11 +552,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	@Override
 	public String visitVarrefExpr(VarrefExprContext ctx) {
-		String var=ctx.getText();
-		if(getSubscript(var)>0){
-		var+=getSubscript(var)-1;
-		}else{
-			var+=getSubscript(var);
+		String var = ctx.getText();
+		if (getSubscript(var) > 0) {
+			var += getSubscript(var) - 1;
+		} else {
+			var += getSubscript(var);
 		}
 		return var;
 	}
@@ -557,19 +566,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String res = super.visitExpr(ctx.arg);
 		return res;
 	}
-
-	// @Override
-	// public String visitAssignStmt(AssignStmtContext ctx) {
-	// String result=this.visitExpr((ExprContext)ctx.getChild(2));
-	// System.out.println(result);
-	// return result;
-	// }
-
-	// @Override
-	// public String visitExpr(ExprContext ctx) {
-	// String result=super.visitExpr(ctx);
-	// return result;
-	// }
 
 	@Override
 	public String visitAddExpr(AddExprContext ctx) {
@@ -613,6 +609,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				if (operator.equals("%")) {
 					operator = "mod";
 				}
+				if (operator.equals("/")) {
+					operator = "div";
+				}
 				result.append("(" + operator + " " + this.visitUnaryExpr(ctx.args.get(i)));
 			}
 			result.append(" " + this.visitUnaryExpr(ctx.args.get(ctx.args.size() - 1)));
@@ -651,16 +650,53 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	@Override
 	public String visitHavocStmt(HavocStmtContext ctx) {
-		for(int i=0;i<ctx.getChildCount();i++){
-			System.out.println("haovc:"+ctx.getChild(i).getText());
-		}
+		// for(int i=0;i<ctx.getChildCount();i++){
+		// System.out.println("haovc:"+ctx.getChild(i).getText());
+		// }
 		// havoc的 SMT语句：
 		// 将对应变量的下标+1即可
 		incSubscript(ctx.getChild(1).getText());
 		return super.visitHavocStmt(ctx);
 	}
-	
-	/** Transform declare statement to SMT **/
+
+
+	// 只能用在全局变量中
+	@Override
+	public String visitOldExpr(OldExprContext ctx) {
+		for (int i = 0; i < ctx.getChildCount(); i++) {
+			System.out.println("Old: " + ctx.getChild(i).getText());
+		}
+		// return super.visitOldExpr(ctx);
+		String varible = ctx.getChild(2).getText();
+		return varible + this.getGlobaOldSubscript(varible);
+	}
+
+	// 只能用在全局变量中
+	@Override
+	public String visitResultExpr(ResultExprContext ctx) {
+		String varible = ctx.getChild(2).getText();
+		return null;
+	}
+
+	/**
+	 * 拿到全局变量进入方法前的值 令variCount 对应内容的List的第三个值存储这个内容
+	 * 
+	 * @param varible
+	 * @return
+	 */
+	private int getGlobaOldSubscript(String varible) {
+		int sub = 0;
+		if (variCount.get(varible).size() < 3) {
+			// 对于多个procedure而言，有问题
+			// 对于单个procedure而言，暂时没有问题。
+			sub = 0;
+		} else {
+			sub = variCount.get(varible).get(2);
+		}
+		return sub;
+	}
+
+	// 获取声明语句的SMT语句
 	private String getDeclStmt(String variName) {
 		StringBuilder result = new StringBuilder();
 		String typeName = "Int";
@@ -680,7 +716,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	/** Increase the subscript while assigned **/
 	private void incSubscript(String text) {
-		// TODO : Declaration 
+		// TODO : Declaration
 		variCount.get(text).set(1, getSubscript(text) + 1);
 	}
 
