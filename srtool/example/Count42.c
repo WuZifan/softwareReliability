@@ -3,13 +3,18 @@
 int s;
 
 int foo(int a, int b)
+<<<<<<< HEAD
 requires a!=0,
 requires b > 0,
 ensures \result > \old(s)
+=======
+
+>>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 {
 
 	int j;
 	int i;
+<<<<<<< HEAD
 	i=2;
 	i=1*2;
 	s=0;
@@ -37,4 +42,9 @@ ensures \result > \old(s)
 // 	}
 // 	return 0;
 
+=======
+
+	i = 1 << 5;
+	return i;
+>>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 }

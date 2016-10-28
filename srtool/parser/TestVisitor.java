@@ -441,7 +441,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				}
 
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+			//	System.out.println("dealing " + temp.getText());
 				res = visitEqualityExpr(temp);
 
 				if (tempSmt.length() == 0) {
@@ -576,10 +576,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				if (i < ctx.ops.size()) {
 					if (ctx.ops.get(i).toString().equals("<<")) {
-						tempSmt.append("(bvlshl )");
+						tempSmt.append("(bv2int (bvlshl )");
 					}
 					else {
-						tempSmt.append("(bvlshr )");
+						tempSmt.append("(bv2int (bvlshr )");
 					}
 					
 					i++;
@@ -591,9 +591,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitAddExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
