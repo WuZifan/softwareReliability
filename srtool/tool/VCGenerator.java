@@ -63,23 +63,16 @@ public class VCGenerator {
 		mav = new MyAssertVisitor();
 		tv = new TestVisitor(mav, VarCount, VCGenerator.glSmt, paRes);
 
-		// assert分两种，
-		// 赋值语句的assert要是对的才行
-		// pre-/post- condition的条件全部写在一起，前面加not 条件之间关系为and
 		tv.visit(proc);
-		// 拼接函数声明语句
 		result.append(getDivFunSMT());
 
 		result.append(getInttoBoolSmt());
 		result.append(getBooltoIntSmt());
 		System.out.println("FunDecl: \n" + getDivFunSMT());
-		// 拼接新增下标后的声明语句
 		result.append(getDeclSMTofRest());
 		System.out.println("DeclSMT: \n" + getDeclSMTofRest());
-		// 拼接TestVisitor里面的SMT
 		result.append(tv.getSMT());
 		System.out.println("TVSMT: \n" + tv.getSMT());
-		// 拼接assert语句
 		result.append(mav.getAssSMT());
 
 		System.out.println("MavSMT: \n" + mav.getAssSMT());
@@ -147,7 +140,6 @@ public class VCGenerator {
 
 	private String getDeclSMTofRest() {
 		StringBuilder re = new StringBuilder();
-		// 拼接新增下标后的声明语句
 		Map<String, ArrayList<Integer>> decMap = VarCount.getVarCount();
 		for (String key : decMap.keySet()) {
 			List<Integer> varList = decMap.get(key);

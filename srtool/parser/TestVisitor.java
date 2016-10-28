@@ -45,7 +45,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.variCount = variCount.getVarCount();
 		this.ifLayer = variCount.getIfLayer();
 		this.smtResult = new StringBuilder();
-		// 以下声明在vcGenerate里面生成了，不再这里重复声明
 //		this.smtResult.append(glSmt);
 //		this.smtResult.append(plSmt);
 
@@ -78,58 +77,41 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return null;
 	}
 
-	// 声明语句的SMT转换
 	@Override
 	public String visitVarDecl(VarDeclContext ctx) {
-		// SMT语句结果
 		StringBuilder result = new StringBuilder();
-		// 只有一种类型，所以不用特地处理类型名
-		// 变量名
 		String variName = ctx.getChild(1).getText();
 		ArrayList<Integer> status = new ArrayList<Integer>();
 		status.add(1);
 		status.add(0);
-		// 变量名，下标初始为0
 		variCount.put(variName, status);
 		variName = variName + "0";
-		// 编写SMT语句
 //		result.append(getDeclStmt(variName));
-		// 调用父类
 		super.visitVarDecl(ctx);
-		// 拼接完整SMT语句
-//		smtResult.append(result.toString());
 		return null;
 	}
 
-	// 赋值语句的SMT转换
 	@Override
 	public String visitAssignStmt(AssignStmtContext ctx) {
 		System.out.println("**\nAssign: "+ctx.getText());
 		// String num = ctx.getChild(2).getText();
-		// 右边的表达式语句
 		String num = this.visitExpr((ExprContext) ctx.getChild(2));
 
 		//incSubscript(name);
-		// 被赋值的变量名，且取下标
 		String name = ctx.getChild(0).getText();
 		incSubscript(name);
 		String variName = name + getSubscript(name);
-		// not类型的assert.
 		StringBuilder unnomAss = new StringBuilder();
 
-		// 普通类型的assert
 		StringBuilder nomoAss = new StringBuilder();
-		// 赋值语句
 		num=isCondition(num);
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
 		//assVisitor.visitnomorAss(nomoAss.toString());
 		this.smtResult.append(nomoAss.toString());
 
-		// 判断是否超过限制
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
 		//assVisitor.visitunnomAss(unnomAss.toString());
-		// 下标问题
 		return nomoAss.toString();
 	}
 	
@@ -657,7 +639,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitAddExpr(AddExprContext ctx) {
 		/*
-		 * 注意，没有操作符，就没有操作数
 		 */
 		StringBuilder result = new StringBuilder();
 		List<String> opsList = new ArrayList<String>();
@@ -715,7 +696,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		} else {
 			for (int i = 0; i < opsList.size(); i++) {
 				String operator = opsList.get(i);
-				// 不能用%，只能用mod
 				if (operator.equals("%")) {
 					operator = "mymod";
 				}
@@ -763,14 +743,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// for(int i=0;i<ctx.getChildCount();i++){
 		// System.out.println("haovc:"+ctx.getChild(i).getText());
 		// }
-		// havoc的 SMT语句：
-		// 将对应变量的下标+1即可
 		incSubscript(ctx.getChild(1).getText());
 		return super.visitHavocStmt(ctx);
 	}
 
 
-	// 只能用在全局变量中
 	@Override
 	public String visitOldExpr(OldExprContext ctx) {
 		for (int i = 0; i < ctx.getChildCount(); i++) {
@@ -781,7 +758,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return varible + this.getGlobaOldSubscript(varible);
 	}
 	/*
-	// 只能用在全局变量中
 	@Override
 	public String visitResultExpr(ResultExprContext ctx) {
 		String varible = ctx.getChild(2).getText();
@@ -789,7 +765,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}*/
 
 	/**
-	 * 拿到全局变量进入方法前的值 令variCount 对应内容的List的第三个值存储这个内容
 	 * 
 	 * @param varible
 	 * @return
@@ -797,8 +772,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private int getGlobaOldSubscript(String varible) {
 		int sub = 0;
 		if (variCount.get(varible).size() < 3) {
-			// 对于多个procedure而言，有问题
-			// 对于单个procedure而言，暂时没有问题。
 			sub = 0;
 		} else {
 			sub = variCount.get(varible).get(2);
@@ -806,11 +779,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return sub;
 	}
 
-	// 获取声明语句的SMT语句
 	private String getDeclStmt(String variName) {
 		StringBuilder result = new StringBuilder();
 		String typeName = "Int";
-		// 编写SMT语句
 		result.append("(declare-fun ");
 		result.append(variName + " ");
 		result.append("() ");
@@ -843,6 +814,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private HashMap<String, ArrayList<Integer> > copyMap( Map<String, ArrayList<Integer> > ori) {
 		 HashMap<String, ArrayList<Integer> > res = new HashMap<String, ArrayList<Integer> >();
 		 

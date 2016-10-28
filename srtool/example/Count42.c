@@ -3,9 +3,7 @@
 int s;
 
 int foo(int a, int b)
-requires a!=0,
-requires b > 0,
-ensures \result == 0
+
 {
 // 	int j;
 	int i;
