@@ -566,8 +566,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				AddExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					if (ctx.ops.get(i).toString().equals("<<")) {
-						tempSmt.append("(bv2int (bvlshl )");
+					if (ctx.ops.get(i).getText().equals("<<")) {
+						tempSmt.append("(bv2int (bvshl )");
 					}
 					else {
 						tempSmt.append("(bv2int (bvlshr )");
