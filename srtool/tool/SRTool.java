@@ -19,7 +19,7 @@ public class SRTool {
     private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-//		String filename="example/Count42.c";
+		String filename="example/Count42.c";
 		/*
 		 * Correct
 		 */
@@ -30,7 +30,7 @@ public class SRTool {
 		// Error:(error "line 28 column 21: unexpected character"):(assert (= x3 (ite  ([@31,151:151='<',<29>,11:9] x0 (or ) (bvlshr 1 24)) x2 x1)))
 //		String filename="tests/correct/ifelse.c";
 		// (Error "line 8 column 36: invalid function application, arguments missing")
-		String filename="tests/correct/overshift.c";
+//		String filename="tests/correct/overshift.c";
 		// Pased
 //		String filename="tests/correct/simpleeq.c";
 		// (Error "line 15 column 29: Sort mismatch at argument #2 for function (declare-fun and (Bool Bool) Bool) supplied sort is Int")

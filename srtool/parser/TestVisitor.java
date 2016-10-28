@@ -348,7 +348,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				BxorExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					tempSmt.append("(bvor )");
+					tempSmt.append("(bv2int (bvor )");
 					i++;
 				}
 
@@ -358,9 +358,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitBxorExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -386,7 +386,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				BandExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					tempSmt.append("(bvxor )");
+					tempSmt.append("(bv2int (bvxor )");
 					i++;
 				}
 
@@ -396,9 +396,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitBandExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, "((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -427,7 +427,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				EqualityExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					tempSmt.append("(bvand )");
+					tempSmt.append("(bv2int (bvand )");
 					i++;
 				}
 
@@ -436,9 +436,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitEqualityExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
