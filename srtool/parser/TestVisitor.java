@@ -62,7 +62,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String text = this.visitExpr(ctx.expr());
 		System.out.println("assert:++++++++" + text);
 		if(!text.contains("(")){
-			text="(and true "+text+")";
+			text=isNotCondition(text);
 		}
 		this.assVisitor.visitunnomAss(text);
 		return null;
@@ -224,7 +224,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			// System.out.println(single.getText());
 			resSmt.append(visitLorExpr(single));
 		} else {
-			resSmt.append("(ite (itb ) )");
+			resSmt.append("(ite  )");
 			for(int i = 0; i < ctx.args.size(); i++) {
 				LorExprContext temp;
 				temp = ctx.args.get(i);
@@ -233,9 +233,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitLorExpr(temp);
 //				System.out.println("res " + res + "   " + ctx.getText());
 				if ((i + 1) % 3 == 1) {
+					System.out.println(res);
+					res=isNotCondition(res);
 					resSmt.insert(resSmt.length() - 3, " " + res);
 				}
 				else {
+					res=isCondition(res);
 					resSmt.insert(resSmt.length() - 1, " " + res);
 				}
 				
@@ -245,7 +248,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	//		System.out.println("answer " + resSmt.toString() + " " + ctx.getText());
 
 		}
-
+		System.out.println(resSmt.toString());
+		System.out.println();
 		return resSmt.toString();
 
 	}
@@ -297,6 +301,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		conOpList.add("or");conOpList.add("an");conOpList.add("=");conOpList.add("no");
 		conOpList.add("<");conOpList.add("<=");conOpList.add(">");conOpList.add(">=");
 		// (> 1 1)
+		if(sub.contains("(")){
+			String result="(itb "+sub+")";
+			return result;
+		}
 		if(sub.trim().length()>3){
 			String op=sub.trim().substring(1, 3).trim();
 			if(conOpList.contains(op)){
@@ -370,19 +378,19 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				BxorExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					tempSmt.append("(bvor )");
+					tempSmt.append("(bv2int (bvor )");
 					i++;
 				}
 
 				temp = iter.next();
 
-				System.out.println("dealing " + temp.getText());
+		//		System.out.println("dealing " + temp.getText());
 				res = visitBxorExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -408,7 +416,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				BandExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					tempSmt.append("(bvxor )");
+					tempSmt.append("(bv2int (bvxor )");
 					i++;
 				}
 
@@ -418,9 +426,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitBandExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, "((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -449,18 +457,18 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				EqualityExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					tempSmt.append("(bvand )");
+					tempSmt.append("(bv2int (bvand )");
 					i++;
 				}
 
 				temp = iter.next();
-				System.out.println("dealing " + temp.getText());
+			//	System.out.println("dealing " + temp.getText());
 				res = visitEqualityExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -516,10 +524,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					resSmt.insert(resSmt.length() - offset, " " + res);
 				} else {
 					if (sign.equals("==")) {
+						res=isCondition(res);
 						tempSmt.insert(tempSmt.length() - 1, res);
 						resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 					}
 					else {
+						res=isCondition(res);
 						tempSmt.insert(tempSmt.length() - 2, res);
 						resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 					}
@@ -559,8 +569,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitShiftExpr(temp);
 
 				if (tempSmt.length() == 0) {
+					res=isCondition(res);
 					resSmt.insert(resSmt.length() - i, " " + res);
 				} else {
+					res=isCondition(res);
 					tempSmt.insert(tempSmt.length() - 1, res);
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
@@ -581,7 +593,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (single != null) {
 			resSmt.append(visitAddExpr(ctx.single));
 		} else {
-			resSmt.append("(or )");
 			Iterator<AddExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {
@@ -590,10 +601,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				if (i < ctx.ops.size()) {
 					if (ctx.ops.get(i).toString().equals("<<")) {
-						tempSmt.append("(bvshl )");
+						tempSmt.append("(bv2int (bvlshl )");
 					}
 					else {
-						tempSmt.append("(bvlshr )");
+						tempSmt.append("(bv2int (bvlshr )");
 					}
 					
 					i++;
@@ -601,13 +612,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				temp = iter.next();
 
-				System.out.println("dealing " + temp.getText());
+		//		System.out.println("dealing " + temp.getText());
 				res = visitAddExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 

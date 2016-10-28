@@ -3,10 +3,6 @@
 int s;
 
 int foo(int a, int b)
-// requires a!=0,
-// requires b<0,
-// ensures \result > 0,
-// ensures \result ==2
 {
 // 	int j;
 	int i;
@@ -35,7 +31,7 @@ int foo(int a, int b)
 // 	}
 // 	return 0;
 // 	i=-2;
-	i=(1==2)||(1!=2)&&(1==2);
+	i=(1>2)?(2>1):0;
 // 		i=1+1;
 // 	i=(1>=1)+2+(1<2)+(3>2)+(4<=5);
 // 	i=(1>(1>2))+1;
