@@ -125,7 +125,7 @@ public class VCGenerator {
 	
 	private String getBooltoIntSmt() {
 		StringBuilder result = new StringBuilder();
-		result.append("(define-fun ibt ((x Bool)) Int\n");
+		result.append("(define-fun bti ((x Bool)) Int\n");
 		result.append("(ite (= x true) 1 0))\n");
 		return result.toString();
 	}

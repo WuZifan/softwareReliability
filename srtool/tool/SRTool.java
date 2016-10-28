@@ -19,7 +19,7 @@ public class SRTool {
     private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		String filename="example/Count42.c";
+	//	String filename="example/Count42.c";
 		/*
 		 * Correct
 		 */
@@ -45,6 +45,10 @@ public class SRTool {
 		// Pased
 //		String filename="tests/incorrect/faildivzero.c";
 //		String filename="tests/incorrect/failold.c";
+//		String filename="tests/incorrect/failovershift.c.c";
+//		String filename="tests/incorrect/failsimpleeq.c";
+//		String filename="tests/incorrect/failsimplelor.c";
+		String filename="tests/incorrect/failsimplesub.c";
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
         SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);

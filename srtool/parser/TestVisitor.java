@@ -318,9 +318,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitBorExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " (itb " + res + ")");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, "(itb " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -354,7 +354,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				temp = iter.next();
 
-				System.out.println("dealing " + temp.getText());
+		//		System.out.println("dealing " + temp.getText());
 				res = visitBxorExpr(temp);
 
 				if (tempSmt.length() == 0) {
@@ -528,7 +528,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				ShiftExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					tempSmt.append("(" + ctx.ops.get(i).toString() + " )");
+					tempSmt.append("(" + ctx.ops.get(i).getText() + " )");
 					i++;
 				}
 
@@ -559,7 +559,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (single != null) {
 			resSmt.append(visitAddExpr(ctx.single));
 		} else {
-			resSmt.append("(or )");
 			Iterator<AddExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {
@@ -568,7 +567,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				if (i < ctx.ops.size()) {
 					if (ctx.ops.get(i).toString().equals("<<")) {
-						tempSmt.append("(bvshl )");
+						tempSmt.append("(bvlshl )");
 					}
 					else {
 						tempSmt.append("(bvlshr )");
@@ -579,7 +578,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				temp = iter.next();
 
-				System.out.println("dealing " + temp.getText());
+		//		System.out.println("dealing " + temp.getText());
 				res = visitAddExpr(temp);
 
 				if (tempSmt.length() == 0) {
