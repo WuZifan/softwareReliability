@@ -33,6 +33,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
 	private HashMap<Integer, HashMap<String, Integer >> ifLayer;
+	
 
 
 	public TestVisitor() {
@@ -63,6 +64,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.assVisitor.visitunnomAss(text);
 		return null;
 	}
+	/*
+	@Override
+	public String visitAssumeStmt(AssumeStmtContext ctx) {
+		String text = this.visitExpr(ctx.expr());
+		System.out.println("assert:++++++++" + text);
+		this.assVisitor.visitunnomAss(text);
+		return null;
+	}*/
 
 	// 声明语句的SMT转换
 	@Override
@@ -113,7 +122,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// 判断是否超过限制
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
-		//assVisitor.visitunnomAss(unnomAss.toString());
+		assVisitor.visitunnomAss(unnomAss.toString());
 		// 下标问题
 		return nomoAss.toString();
 	}
@@ -518,7 +527,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				ShiftExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					tempSmt.append("(" + ctx.ops.get(i).toString() + " )");
+					tempSmt.append("(" + ctx.ops.get(i).getText() + " )");
 					i++;
 				}
 
@@ -549,7 +558,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (single != null) {
 			resSmt.append(visitAddExpr(ctx.single));
 		} else {
-			resSmt.append("(or )");
 			Iterator<AddExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {

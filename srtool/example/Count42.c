@@ -4,15 +4,19 @@ int s;
 
 int foo(int a, int b)
 requires a!=0,
-requires b<0,
-ensures \result > 0,
-ensures \result ==2
+requires b > 0,
+ensures \result > \old(s)
 {
+
 	int j;
 	int i;
-	i=-2;
-	i=-1*2;
-
+	i=2;
+	i=1*2;
+	s=0;
+	s=0;
+	s=0;
+	s=0;
+	s=0;
 	
-	return i+4;
+	return 1;
 }

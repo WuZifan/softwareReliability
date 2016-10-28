@@ -106,11 +106,23 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 		return null;
 	}
 	
+	@Override public String visitOldExpr(SimpleCParser.OldExprContext ctx) { 
+	
+		int varCount = variCount.get(ctx.getChild(2).getText()).get(1);
+		if(varCount == 0){
+		
+			return ctx.getChild(2).getText() + "0"; 
+		}else{
+			return ctx.getChild(2).getText() + (varCount - 1);
+		}
+	}
 	@Override 
 	public String visitResultExpr(ResultExprContext ctx) {
 		
 		return returnExp;
 	}
+	
+	
 		
 	@Override
 	public String visitExpr(ExprContext ctx) {
@@ -459,7 +471,6 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 		if (single != null) {
 			resSmt.append(visitAddExpr(ctx.single));
 		} else {
-			resSmt.append("(or )");
 			Iterator<AddExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {

@@ -423,7 +423,6 @@ public class PreConditionVisitor extends SimpleCBaseVisitor<String> {
 		if (single != null) {
 			resSmt.append(visitAddExpr(ctx.single));
 		} else {
-			resSmt.append("(or )");
 			Iterator<AddExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {
