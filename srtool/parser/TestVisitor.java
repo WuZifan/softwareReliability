@@ -580,7 +580,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 						tempSmt.append("(bv2int (bvshl )");
 					}
 					else {
-						tempSmt.append("(bv2int (bvlshr )");
+						tempSmt.append("(bv2int (bvashr )");
 					}
 					
 					i++;

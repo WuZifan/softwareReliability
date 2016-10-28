@@ -5,10 +5,10 @@ int s;
 int foo(int a, int b)
 requires a!=0,
 requires b > 0,
-ensures \result >(1<<3)
+ensures \result == 0
 {
 	int i;
- 	assume(1!=1);
+ 	assume(1==1);
 // 	j=1;
 // 	i=i/(j-j);
 // // 	if (i == 0) {
@@ -25,6 +25,6 @@ ensures \result >(1<<3)
 // 	}
 // 	return 0;
 
-	i = 7;
+	i = 1>>5;
 	return i;
 }
