@@ -33,6 +33,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
 	private HashMap<Integer, HashMap<String, Integer >> ifLayer;
+	
 
 
 	public TestVisitor() {
@@ -62,9 +63,18 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String text = this.visitExpr(ctx.expr());
 		System.out.println("assert:++++++++" + text);
 		if(!text.contains("(")){
-			text="(and true "+text+")";
+			text=isNotCondition(text);
 		}
 		this.assVisitor.visitunnomAss(text);
+		return null;
+	}
+	
+	@Override
+	public String visitAssumeStmt(AssumeStmtContext ctx) {
+		
+		String text = this.visitExpr(ctx.expr());
+		text = ("(assert " +text+ ")\n");
+		this.smtResult.append(text);
 		return null;
 	}
 
@@ -94,25 +104,25 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	// 赋值语句的SMT转换
 	@Override
 	public String visitAssignStmt(AssignStmtContext ctx) {
-
+		System.out.println("**\nAssign: "+ctx.getText());
 		// String num = ctx.getChild(2).getText();
 		// 右边的表达式语句
 		String num = this.visitExpr((ExprContext) ctx.getChild(2));
 
+		//incSubscript(name);
 		// 被赋值的变量名，且取下标
 		String name = ctx.getChild(0).getText();
-		String variName = name + getSubscript(name);
-
 		incSubscript(name);
-
+		String variName = name + getSubscript(name);
 		// not类型的assert.
 		StringBuilder unnomAss = new StringBuilder();
 
 		// 普通类型的assert
 		StringBuilder nomoAss = new StringBuilder();
 		// 赋值语句
+		num=isCondition(num);
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
-//		assVisitor.visitnomorAss(nomoAss.toString());
+		//assVisitor.visitnomorAss(nomoAss.toString());
 		this.smtResult.append(nomoAss.toString());
 
 		// 判断是否超过限制
@@ -146,7 +156,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		/** visit if bloc statement **/
 		strif = visitBlockStmt(ctx.thenBlock);
-		smtResult.append(strif);
+//		smtResult.append(strif);
 		
 		/** store variable info after if **/
 		afif = copyMap(this.variCount);
@@ -155,35 +165,30 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if(ctx.elseBlock != null) {
 			this.ifLayer.get(layer + 1).put(cond, 0);
 			strelse = visitBlockStmt(ctx.elseBlock);
-			smtResult.append(strelse);
+//			smtResult.append(strelse);
 
 			/** Compare differences and generate Smt for if **/
 			for(String key : afif.keySet()) {
 
 				String tempSmt = "";
 				if(afif.get(key).get(1) > this.variCount.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + Integer.toString(afif.get(key).get(1));
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1) - 1);
-					tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1) - 1) + "))\n";
+					tempSmt += "(assert (= " + key + (Integer.toString(afif.get(key).get(1)+1));
+					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1) );
+					tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1) ) + "))\n";
 					incSubscript(key);
-					incSubscript(key);
-
 				}
 				else if(afif.get(key).get(1) < this.variCount.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1));
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1) - 1);
-					tempSmt += " " + key + Integer.toString(afif.get(key).get(1) - 1) + ")))\n";
-					incSubscript(key);
+					tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1)+1));
+					tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1) );
+					tempSmt += " " + key + Integer.toString(afif.get(key).get(1) ) + ")))\n";
 					incSubscript(key);
 				}
 				else if(afif.get(key).get(1) > init.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + Integer.toString(this.variCount.get(key).get(1));
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1) - 1);
-					tempSmt += " " + key + Integer.toString((init.get(key).get(1)) - 1) + ")))\n";
-					incSubscript(key);
+					tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1)+1));
+					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1) );
+					tempSmt += " " + key + Integer.toString((init.get(key).get(1)) ) + ")))\n";
 					incSubscript(key);
 				}
-				
 				resSmt.append(tempSmt);
 			}
 		}
@@ -211,7 +216,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitExpr(ExprContext ctx) {
 		String resSmt;
 		resSmt = visitTernExpr(ctx.ternExpr());
-	//	 System.out.println("expr is " + resSmt + " " + ctx.getText());
+		System.out.println("-----");
+		 System.out.println("expr is " + resSmt);
+		 System.out.println(ctx.getText());
 		return resSmt;
 	}
 
@@ -225,7 +232,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			// System.out.println(single.getText());
 			resSmt.append(visitLorExpr(single));
 		} else {
-			resSmt.append("(ite (itb ) )");
+			resSmt.append("(ite  )");
 			for(int i = 0; i < ctx.args.size(); i++) {
 				LorExprContext temp;
 				temp = ctx.args.get(i);
@@ -234,9 +241,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitLorExpr(temp);
 //				System.out.println("res " + res + "   " + ctx.getText());
 				if ((i + 1) % 3 == 1) {
+					System.out.println(res);
+					res=isNotCondition(res);
 					resSmt.insert(resSmt.length() - 3, " " + res);
 				}
 				else {
+					res=isCondition(res);
 					resSmt.insert(resSmt.length() - 1, " " + res);
 				}
 				
@@ -246,7 +256,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	//		System.out.println("answer " + resSmt.toString() + " " + ctx.getText());
 
 		}
-
+		System.out.println(resSmt.toString());
+		System.out.println();
 		return resSmt.toString();
 
 	}
@@ -277,9 +288,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				// System.out.println("dealing " + temp.getText());
 				res = super.visitLandExpr(temp);
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " (itb " + res + ")");
+					res=isNotCondition(res);
+					resSmt.insert(resSmt.length() - i,  res );
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, "(itb " + res + ")");
+					res=isNotCondition(res);
+					tempSmt.insert(tempSmt.length() - 1, res );
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -289,6 +302,29 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	//	System.out.println("fde" + resSmt.toString());
 		return resSmt.toString();
 
+	}
+
+	private String isNotCondition(String sub) {
+		List<String> conOpList=new ArrayList<String>();
+		conOpList.add("or");conOpList.add("an");conOpList.add("=");conOpList.add("no");
+		conOpList.add("<");conOpList.add("<=");conOpList.add(">");conOpList.add(">=");
+		// (> 1 1)
+		if(!sub.contains("(")){
+			String result="(itb "+sub+")";
+			return result;
+		}
+		if(sub.trim().length()>3){
+			String op=sub.trim().substring(1, 3).trim();
+			if(conOpList.contains(op)){
+				return sub;
+			}else{
+				String result="(itb "+sub+")";
+				return result;
+			}
+		}else{
+			String result="(itb "+sub+")";
+			return result;
+		}
 	}
 
 	@Override
@@ -318,9 +354,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitBorExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " (itb " + res + ")");
+					res=isNotCondition(res);
+					resSmt.insert(resSmt.length() - i, " " + res);
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, "(itb " + res + ")");
+					res=isNotCondition(res);
+					tempSmt.insert(tempSmt.length() - 1, res);
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -494,10 +532,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					resSmt.insert(resSmt.length() - offset, " " + res);
 				} else {
 					if (sign.equals("==")) {
+						res=isCondition(res);
 						tempSmt.insert(tempSmt.length() - 1, res);
 						resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 					}
 					else {
+						res=isCondition(res);
 						tempSmt.insert(tempSmt.length() - 2, res);
 						resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 					}
@@ -506,9 +546,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			}
 		}
-
+	
 		return resSmt.toString();
-
 	}
 
 	@Override
@@ -521,6 +560,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			resSmt.append(visitShiftExpr(ctx.single));
 		}
 		else {
+			// （> (>1 2) 2）
 			Iterator<ShiftExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {
@@ -537,15 +577,17 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitShiftExpr(temp);
 
 				if (tempSmt.length() == 0) {
+					res=isCondition(res);
 					resSmt.insert(resSmt.length() - i, " " + res);
 				} else {
+					res=isCondition(res);
 					tempSmt.insert(tempSmt.length() - 1, res);
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
 			}
 		}
-
+//		System.out.println("IfSMT： "+resSmt.toString());
 		return resSmt.toString();
 
 	}
@@ -570,7 +612,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 						tempSmt.append("(bv2int (bvshl )");
 					}
 					else {
-						tempSmt.append("(bv2int (bvlshr )");
+						tempSmt.append("(bv2int (bvashr )");
 					}
 					
 					i++;
@@ -602,11 +644,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitVarrefExpr(VarrefExprContext ctx) {
 		String var = ctx.getText();
-		if (getSubscript(var) > 0) {
-			var += getSubscript(var) - 1;
-		} else {
-			var += getSubscript(var);
-		}
+		var += getSubscript(var);
 		return var;
 	}
 
@@ -630,15 +668,38 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (opsList.isEmpty()) {
 			return this.visitMulExpr((MulExprContext) ctx.getChild(0));
 		} else {
+			String sub;
 			for (int i = 0; i < opsList.size(); i++) {
-				result.append("(" + opsList.get(i) + " " + this.visitMulExpr(ctx.args.get(i)));
+				sub=this.visitMulExpr(ctx.args.get(i));
+				sub=isCondition(sub);
+				result.append("(" + opsList.get(i) + " " + sub);
 			}
-			result.append(" " + this.visitMulExpr(ctx.args.get(ctx.args.size() - 1)));
+			sub= this.visitMulExpr(ctx.args.get(ctx.args.size() - 1));
+			sub=isCondition(sub);
+			result.append(" " +sub);
 			for (int i = 0; i < opsList.size(); i++) {
 				result.append(")");
 			}
 		}
 		return result.toString();
+	}
+
+	private String isCondition(String sub) {
+		List<String> conOpList=new ArrayList<String>();
+		conOpList.add("or");conOpList.add("an");conOpList.add("=");conOpList.add("no");
+		conOpList.add("<");conOpList.add("<=");conOpList.add(">");conOpList.add(">=");
+		// (> 1 1)
+		if(sub.trim().length()>3){
+			String op=sub.trim().substring(1, 3).trim();
+			if(conOpList.contains(op)){
+				String result="(bti "+sub+")";
+				return result;
+			}else{
+				return sub;
+			}
+		}else{
+			return sub;
+		}
 	}
 
 	@Override

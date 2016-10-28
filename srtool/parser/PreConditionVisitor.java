@@ -414,6 +414,7 @@ public class PreConditionVisitor extends SimpleCBaseVisitor<String> {
 
 	}
 
+	
 	@Override
 	public String visitShiftExpr(ShiftExprContext ctx) {
 		StringBuilder resSmt = new StringBuilder("");
@@ -423,7 +424,6 @@ public class PreConditionVisitor extends SimpleCBaseVisitor<String> {
 		if (single != null) {
 			resSmt.append(visitAddExpr(ctx.single));
 		} else {
-			resSmt.append("(or )");
 			Iterator<AddExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {
@@ -431,11 +431,11 @@ public class PreConditionVisitor extends SimpleCBaseVisitor<String> {
 				AddExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					if (ctx.ops.get(i).toString().equals("<<")) {
-						tempSmt.append("(bvshl )");
+					if (ctx.ops.get(i).getText().equals("<<")) {
+						tempSmt.append("(bv2int (bvshl )");
 					}
 					else {
-						tempSmt.append("(bvlshr )");
+						tempSmt.append("(bv2int (bvashr )");
 					}
 					
 					i++;
@@ -443,13 +443,13 @@ public class PreConditionVisitor extends SimpleCBaseVisitor<String> {
 
 				temp = iter.next();
 
-				System.out.println("dealing " + temp.getText());
+		//		System.out.println("dealing " + temp.getText());
 				res = visitAddExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
