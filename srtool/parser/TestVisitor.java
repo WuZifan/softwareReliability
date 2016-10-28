@@ -68,14 +68,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.assVisitor.visitunnomAss(text);
 		return null;
 	}
-	/*
+	
 	@Override
 	public String visitAssumeStmt(AssumeStmtContext ctx) {
+		
 		String text = this.visitExpr(ctx.expr());
-		System.out.println("assert:++++++++" + text);
-		this.assVisitor.visitunnomAss(text);
+		text = ("(assert " +text+ ")\n");
+		this.smtResult.append(text);
 		return null;
-	}*/
+	}
 
 	// 声明语句的SMT转换
 	@Override
