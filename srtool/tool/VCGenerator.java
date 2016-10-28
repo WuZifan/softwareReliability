@@ -80,8 +80,8 @@ public class VCGenerator {
 		result.append(tv.getSMT());
 		System.out.println("TVSMT: \n" + tv.getSMT());
 		// 拼接assert语句
-		//////////////////////////////////////////////////////////////////////
 		result.append(mav.getAssSMT());
+
 		System.out.println("MavSMT: \n" + mav.getAssSMT());
 		
 		PreConditionVisitor preVisitor = new PreConditionVisitor(VarCount);
@@ -99,12 +99,27 @@ public class VCGenerator {
 	}
 	
 	private void getAssertNot(String preSMT,String postSMT){
+		String mavSMT= mav.getUnAssSMT();
+		
 		if(postSMT.isEmpty()){
-//			result.append("(assert false)");
+			if(mavSMT.isEmpty()){
+				result.append("(assert false)");
+			}else{
+				result.append("(assert (not ");
+				result.append(mavSMT);
+				result.append("))");
+			}			
 		}else{
-			result.append("(assert (not ");
-			result.append(postSMT);
-			result.append("))");
+			if(mavSMT.isEmpty()){
+				result.append("(assert (not ");
+				result.append(postSMT);
+				result.append("))");
+			}else{
+				result.append("(assert (not (and");
+				result.append(postSMT);
+				result.append(mavSMT);
+				result.append(")))");
+			}	
 		}			
 	}
 

@@ -3,6 +3,9 @@
 int s;
 
 int foo(int a, int b)
+requires a!=0,
+requires b > 0,
+ensures \result == 0
 {
 // 	int j;
 	int i;
@@ -36,5 +39,23 @@ int foo(int a, int b)
 // 	i=(1>=1)+2+(1<2)+(3>2)+(4<=5);
 // 	i=(1>(1>2))+1;
 // 	i=2+1;
-	return i+4;
+ 	assume(1==1);
+// 	j=1;
+// 	i=i/(j-j);
+// // 	if (i == 0) {
+// // 		j = 2;
+// // 	}
+// // 	else {
+// // 		i = 1;
+// // 	}
+// 	if (j != 0) {
+// 		j = 2;
+// 	}
+// 	else {
+// 		i = 1;
+// 	}
+// 	return 0;
+
+	i = 1>>5;
+	return i;
 }

@@ -33,6 +33,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
 	private HashMap<Integer, HashMap<String, Integer >> ifLayer;
+	
 
 
 	public TestVisitor() {
@@ -67,6 +68,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.assVisitor.visitunnomAss(text);
 		return null;
 	}
+	
+	@Override
+	public String visitAssumeStmt(AssumeStmtContext ctx) {
+		
+		String text = this.visitExpr(ctx.expr());
+		text = ("(assert " +text+ ")\n");
+		this.smtResult.append(text);
+		return null;
+	}
 
 	// 声明语句的SMT转换
 	@Override
@@ -99,13 +109,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// 右边的表达式语句
 		String num = this.visitExpr((ExprContext) ctx.getChild(2));
 
+		//incSubscript(name);
 		// 被赋值的变量名，且取下标
 		String name = ctx.getChild(0).getText();
 		incSubscript(name);
 		String variName = name + getSubscript(name);
-
-		
-
 		// not类型的assert.
 		StringBuilder unnomAss = new StringBuilder();
 
@@ -114,7 +122,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// 赋值语句
 		num=isCondition(num);
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
-//		assVisitor.visitnomorAss(nomoAss.toString());
+		//assVisitor.visitnomorAss(nomoAss.toString());
 		this.smtResult.append(nomoAss.toString());
 
 		// 判断是否超过限制
@@ -301,7 +309,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		conOpList.add("or");conOpList.add("an");conOpList.add("=");conOpList.add("no");
 		conOpList.add("<");conOpList.add("<=");conOpList.add(">");conOpList.add(">=");
 		// (> 1 1)
-		if(sub.contains("(")){
+		if(!sub.contains("(")){
 			String result="(itb "+sub+")";
 			return result;
 		}
@@ -600,11 +608,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				AddExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					if (ctx.ops.get(i).toString().equals("<<")) {
-						tempSmt.append("(bv2int (bvlshl )");
+					if (ctx.ops.get(i).getText().equals("<<")) {
+						tempSmt.append("(bv2int (bvshl )");
 					}
 					else {
-						tempSmt.append("(bv2int (bvlshr )");
+						tempSmt.append("(bv2int (bvashr )");
 					}
 					
 					i++;

@@ -106,11 +106,23 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 		return null;
 	}
 	
+	@Override public String visitOldExpr(SimpleCParser.OldExprContext ctx) { 
+	
+		int varCount = variCount.get(ctx.getChild(2).getText()).get(1);
+		if(varCount == 0){
+		
+			return ctx.getChild(2).getText() + "0"; 
+		}else{
+			return ctx.getChild(2).getText() + (varCount - 1);
+		}
+	}
 	@Override 
 	public String visitResultExpr(ResultExprContext ctx) {
 		
 		return returnExp;
 	}
+	
+	
 		
 	@Override
 	public String visitExpr(ExprContext ctx) {
@@ -466,11 +478,11 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 				AddExprContext temp;
 
 				if (i < ctx.ops.size()) {
-					if (ctx.ops.get(i).toString().equals("<<")) {
-						tempSmt.append("(bvshl )");
+					if (ctx.ops.get(i).getText().equals("<<")) {
+						tempSmt.append("(bv2int (bvshl )");
 					}
 					else {
-						tempSmt.append("(bvlshr )");
+						tempSmt.append("(bv2int (bvashr )");
 					}
 					
 					i++;
@@ -478,13 +490,13 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 
 				temp = iter.next();
 
-				System.out.println("dealing " + temp.getText());
+		//		System.out.println("dealing " + temp.getText());
 				res = visitAddExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 

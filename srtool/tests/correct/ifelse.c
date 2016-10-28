@@ -8,7 +8,7 @@ int iffy(int i, int j)
     int y;
     x = i;
     y = j;
-    if(x < (1 << 24)) {
+    if(x < (1 >> 24)) {
         x = x + 1;
         y = y + 1;
     } else {

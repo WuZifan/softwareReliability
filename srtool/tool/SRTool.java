@@ -1,7 +1,5 @@
 package tool;
-import java.io.BufferedWriter;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -17,8 +15,15 @@ import util.ProcessTimeoutException;
 public class SRTool {
 
     private static final int TIMEOUT = 30;
-
 	public static void main(String[] args) throws IOException, InterruptedException {
+
+		//String filename="tests/incorrect/faildivzero.c";
+		////String filename="tests/incorrect/failold.c";
+		//String filename="tests/incorrect/failovershift.c";
+		//String filename="tests/incorrect/failsimpleeq.c";
+		//String filename="tests/incorrect/failsimplelor.c";
+		////String filename="tests/incorrect/failsimplesub.c";
+		
 		String filename="example/Count42.c";
 		/*
 		 * Correct
@@ -26,9 +31,9 @@ public class SRTool {
 		// Pased
 //		String filename="tests/correct/divzero.c"; 
 		// Pased. But afarid of missing the assertation in the block
-//		String filename="tests/correct/if.c";
+		////String filename="tests/correct/if.c";
 		// Error:(error "line 28 column 21: unexpected character"):(assert (= x3 (ite  ([@31,151:151='<',<29>,11:9] x0 (or ) (bvlshr 1 24)) x2 x1)))
-//		String filename="tests/correct/ifelse.c";
+		//String filename="tests/correct/ifelse.c";
 		// (Error "line 8 column 36: invalid function application, arguments missing")
 //		String filename="tests/correct/overshift.c";
 		// Pased
@@ -49,6 +54,7 @@ public class SRTool {
 //		String filename="tests/incorrect/failsimpleeq.c";
 //		String filename="tests/incorrect/failsimplelor.c";
 //		String filename="tests/incorrect/failsimplesub.c";
+		
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
         SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -69,12 +75,11 @@ public class SRTool {
 		}
 		
 		assert ctx.procedures.size() == 1; // For Part 1 of the coursework, this can be assumed
-
-		VCGenerator vcgenGl = new VCGenerator(ctx, null);
-		vcgenGl.generateVCGlobal();
+		VCGenerator vcgenGL =new VCGenerator(ctx,null);
+		vcgenGL.generateVCGlobal();
 		System.out.println();
 		for(ProcedureDeclContext proc : ctx.procedures) {
-			VCGenerator vcgen = new VCGenerator(null, proc);
+			VCGenerator vcgen = new VCGenerator(null,proc);
 			String vc = vcgen.generateVC().toString();
 			ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
 			String queryResult = "";
