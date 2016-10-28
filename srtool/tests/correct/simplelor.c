@@ -9,7 +9,7 @@ int foo() {
     int l;
 
     l = k ? 1 : 1;
-    
+    l = 1 || 1;
     k = l || i;
 
     i = k || y || (i || j);

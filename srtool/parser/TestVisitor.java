@@ -45,8 +45,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.variCount = variCount.getVarCount();
 		this.ifLayer = variCount.getIfLayer();
 		this.smtResult = new StringBuilder();
-		this.smtResult.append(glSmt);
-		this.smtResult.append(plSmt);
+		// 以下声明在vcGenerate里面生成了，不再这里重复声明
+//		this.smtResult.append(glSmt);
+//		this.smtResult.append(plSmt);
 
 	}
 
@@ -61,6 +62,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		String text = this.visitExpr(ctx.expr());
 		System.out.println("assert:++++++++" + text);
+		if(!text.contains("(")){
+			text="(and true "+text+")";
+		}
 		this.assVisitor.visitunnomAss(text);
 		return null;
 	}
@@ -88,11 +92,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		variCount.put(variName, status);
 		variName = variName + "0";
 		// 编写SMT语句
-		result.append(getDeclStmt(variName));
+//		result.append(getDeclStmt(variName));
 		// 调用父类
 		super.visitVarDecl(ctx);
 		// 拼接完整SMT语句
-		smtResult.append(result.toString());
+//		smtResult.append(result.toString());
 		return null;
 	}
 
@@ -104,12 +108,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// 右边的表达式语句
 		String num = this.visitExpr((ExprContext) ctx.getChild(2));
 
+		//incSubscript(name);
 		// 被赋值的变量名，且取下标
 		String name = ctx.getChild(0).getText();
-		String variName = name + getSubscript(name);
-
 		incSubscript(name);
-
+		String variName = name + getSubscript(name);
+		incSubscript(name);
 		// not类型的assert.
 		StringBuilder unnomAss = new StringBuilder();
 
@@ -117,12 +121,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder nomoAss = new StringBuilder();
 		// 赋值语句
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
-		assVisitor.visitnomorAss(nomoAss.toString());
+		//assVisitor.visitnomorAss(nomoAss.toString());
+		this.smtResult.append(nomoAss.toString());
 
 		// 判断是否超过限制
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
-		assVisitor.visitunnomAss(unnomAss.toString());
+		//assVisitor.visitunnomAss(unnomAss.toString());
 		// 下标问题
 		return nomoAss.toString();
 	}
@@ -229,16 +234,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			// System.out.println(single.getText());
 			resSmt.append(visitLorExpr(single));
 		} else {
-			resSmt.append("(ite )");
-			Iterator<LorExprContext> iter = ctx.args.iterator();
-			while (iter.hasNext()) {
+			resSmt.append("(ite (itb ) )");
+			for(int i = 0; i < ctx.args.size(); i++) {
 				LorExprContext temp;
-				temp = iter.next();
+				temp = ctx.args.get(i);
 
 //				System.out.println("dealing " + temp.getText());
 				res = visitLorExpr(temp);
 //				System.out.println("res " + res + "   " + ctx.getText());
-				resSmt.insert(resSmt.length() - 1, " " + res);
+				if ((i + 1) % 3 == 1) {
+					resSmt.insert(resSmt.length() - 3, " " + res);
+				}
+				else {
+					resSmt.insert(resSmt.length() - 1, " " + res);
+				}
+				
 
 			}
 
@@ -276,9 +286,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				// System.out.println("dealing " + temp.getText());
 				res = super.visitLandExpr(temp);
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " (itb " + res + ")");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, "(itb " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -317,9 +327,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitBorExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " " + res);
+					resSmt.insert(resSmt.length() - i, " (itb " + res + ")");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, res);
+					tempSmt.insert(tempSmt.length() - 1, "(itb " + res + ")");
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
@@ -353,7 +363,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				temp = iter.next();
 
-				System.out.println("dealing " + temp.getText());
+		//		System.out.println("dealing " + temp.getText());
 				res = visitBxorExpr(temp);
 
 				if (tempSmt.length() == 0) {
@@ -566,7 +576,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				if (i < ctx.ops.size()) {
 					if (ctx.ops.get(i).toString().equals("<<")) {
-						tempSmt.append("(bvshl )");
+						tempSmt.append("(bvlshl )");
 					}
 					else {
 						tempSmt.append("(bvlshr )");
@@ -577,7 +587,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				temp = iter.next();
 
-				System.out.println("dealing " + temp.getText());
+		//		System.out.println("dealing " + temp.getText());
 				res = visitAddExpr(temp);
 
 				if (tempSmt.length() == 0) {

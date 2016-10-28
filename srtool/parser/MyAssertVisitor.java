@@ -8,7 +8,7 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 	private boolean unnomFlag=false;
 	
 	public MyAssertVisitor() {
-		unnomAss.append("(and ");
+		//unnomAss.append("(and ");
 	}
 	/**
 	 * 回去修改下Assert
@@ -48,6 +48,10 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 	}
 	
 	public String getUnAssSMT(){
-		return unnomAss.append(" )").toString();
+		if(!unnomAss.toString().isEmpty())
+			return "(and "+unnomAss.append(" )").toString();
+		
+		else
+			return "";
 	}
 }
