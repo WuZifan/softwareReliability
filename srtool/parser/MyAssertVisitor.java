@@ -11,7 +11,6 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 		//unnomAss.append("(and ");
 	}
 	/**
-	 * 回去修改下Assert
 	 */
 	@Override
 	public Void visitAssertStmt(AssertStmtContext ctx) {
@@ -20,7 +19,7 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 	}
 	
 	/**
-	 * 传入这样的参数：
+	 * 	Parameters:
 	 * 	(assert (not (and(<= i0 4294967295)(>= i0 0)(<= i1 4294967295)(>= i1 0))))
 	 * 	text="(>= i0 0)"
 	 * @param text
@@ -32,7 +31,6 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 		return null;
 	}
 	/**
-	 * 传入这样的参数：
 	 * 	text="(assert (= i0 4294967298))"
 	 * @param text
 	 * @return

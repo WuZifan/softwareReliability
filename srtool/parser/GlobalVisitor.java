@@ -55,11 +55,9 @@ public class GlobalVisitor extends SimpleCBaseVisitor<Void> {
 		
 	}
 	
-	// 获取声明语句的SMT语句
 	private String getDeclStmt(String variName) {
 		StringBuilder result = new StringBuilder();
 		String typeName="Int";
-		// 编写SMT语句
 		result.append("(declare-fun ");
 		result.append(variName + " ");
 		result.append("() ");
