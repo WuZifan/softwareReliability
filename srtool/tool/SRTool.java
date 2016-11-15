@@ -16,15 +16,9 @@ public class SRTool {
 
     private static final int TIMEOUT = 30;
 	public static void main(String[] args) throws IOException, InterruptedException {
-
-		//String filename="tests/incorrect/faildivzero.c";
-		////String filename="tests/incorrect/failold.c";
-		//String filename="tests/incorrect/failovershift.c";
-		//String filename="tests/incorrect/failsimpleeq.c";
-		//String filename="tests/incorrect/failsimplelor.c";
-		////String filename="tests/incorrect/failsimplesub.c";
 		
-		String filename= args[0];
+
+//		String filename= args[0];
 		/*
 		 * Correct
 		 */
@@ -54,6 +48,9 @@ public class SRTool {
 //		String filename="tests/incorrect/failsimpleeq.c";
 //		String filename="tests/incorrect/failsimplelor.c";
 //		String filename="tests/incorrect/failsimplesub.c";
+
+		String filename="example/Count42.c";
+
 		
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
         SimpleCLexer lexer = new SimpleCLexer(input);
@@ -74,7 +71,8 @@ public class SRTool {
 			System.exit(1);
 		}
 		
-		assert ctx.procedures.size() == 1; // For Part 1 of the coursework, this can be assumed
+		assert ctx.procedures.size() == 1; 
+		// For Part 1 of the coursework, this can be assumed
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
 		vcgenGL.generateVCGlobal();
 		System.out.println();

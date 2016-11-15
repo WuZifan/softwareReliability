@@ -20,14 +20,11 @@ public class Count42sVisitor2 extends SimpleCBaseVisitor<Void> {
 
 	private int num42s = 0;
 	private boolean inAssert = false;
-	// private List<String> opraList=new ArrayList<String>();
-	// private List<String> argList=new ArrayList<String>();
 	private Queue<String> oprQue = new LinkedList<String>();
 	private Queue<String> argQue = new LinkedList<String>();
 	private BTree root=new BTree();
 	private Queue<BTree> btList=new LinkedList<BTree>();
 
-	
 	@Override
 	public Void visitAssertStmt(AssertStmtContext ctx) {
 		inAssert = true;
@@ -35,7 +32,6 @@ public class Count42sVisitor2 extends SimpleCBaseVisitor<Void> {
 		inAssert = false;
 		return null;
 	}
-
 
 	@Override
 	public Void visitExpr(ExprContext ctx) {
@@ -49,10 +45,6 @@ public class Count42sVisitor2 extends SimpleCBaseVisitor<Void> {
 		}
 		super.visitAssignStmt(ctx);
 		System.out.println("BT SIZE:"+btList.size());
-//		BTree test=btList.poll();
-//		System.out.println(test.getValue());
-//		System.out.println(test.getLeft().getValue());
-//		this.frontFirstFind(test);
 		return null;
 	}
 	
