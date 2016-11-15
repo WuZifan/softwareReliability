@@ -5,6 +5,9 @@
 int foo(int a, int b)
  requires a!=0,
  ensures \result == 1
+// requires a!=0,
+// requires b > 0,
+// ensures \result == 0
 {
  	int i;
 // 	i=(1>2)?(2>1):0;

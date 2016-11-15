@@ -223,8 +223,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	@Override
 	public String visitAssignStmt(AssignStmtContext ctx) {
-//		System.out.println("**\nAssign: " + ctx.getText());
+
 		String num = this.visitExpr((ExprContext) ctx.getChild(2));
+
 
 		String name = ctx.getChild(0).getText();
 		incSubscript(name);
@@ -232,14 +233,16 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder unnomAss = new StringBuilder();
 
 		StringBuilder nomoAss = new StringBuilder();
+
 		num = isCondition(num);
+
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
 		// assVisitor.visitnomorAss(nomoAss.toString());
 		this.smtResult.append(nomoAss.toString());
 
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
-		// assVisitor.visitunnomAss(unnomAss.toString());
+
 		return nomoAss.toString();
 	}
 
@@ -863,6 +866,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return super.visitHavocStmt(ctx);
 	}
 
+
 	@Override
 	public String visitOldExpr(OldExprContext ctx) {
 //		for (int i = 0; i < ctx.getChildCount(); i++) {
@@ -871,6 +875,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String varible = ctx.getChild(2).getText();
 		return varible + this.getGlobaOldSubscript(varible);
 	}
+
 
 	/**
 	 * 
@@ -922,13 +927,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 	}
 
-	private HashMap<String, ArrayList<Integer>> copyMap(Map<String, ArrayList<Integer>> ori) {
-		HashMap<String, ArrayList<Integer>> res = new HashMap<String, ArrayList<Integer>>();
+	@SuppressWarnings("unchecked")
+	private HashMap<String, ArrayList<Integer> > copyMap( Map<String, ArrayList<Integer> > ori) {
+		 HashMap<String, ArrayList<Integer> > res = new HashMap<String, ArrayList<Integer> >();
+		 
+		 for ( Map.Entry<String, ArrayList<Integer> > entry : ori.entrySet()) {
+			 res.put(entry.getKey(), (ArrayList<Integer>) entry.getValue().clone());
+		 }
+		 return res;
 
-		for (Map.Entry<String, ArrayList<Integer>> entry : ori.entrySet()) {
-			res.put(entry.getKey(), (ArrayList<Integer>) entry.getValue().clone());
-		}
-		return res;
 	}
 
 	/** Return the whole SMT **/
