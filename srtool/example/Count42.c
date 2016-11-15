@@ -3,15 +3,14 @@
 // int s;
 
 int foo(int a, int b)
-// requires a!=0,
-// requires b > 0,
-// ensures \result == 0
+ requires a!=0,
+ ensures \result == 1
 {
-// 	int i;
+ 	int i;
 // 	i=(1>2)?(2>1):0;
 //  	assume(1==1);
-// 	i = 1>>5;
-	assert(3>4);
+ 	i = 1;
+	assert(3<4);
 // 	if(1==1){
 // 			//if(2==2){
 // 				assert(2>1);
@@ -26,5 +25,5 @@ int foo(int a, int b)
 // 			assert(3>2);
 // 		}
 // 	}
-	return 1;
+	return i;
 }

@@ -9,33 +9,23 @@ import java.util.Map;
 import org.antlr.v4.runtime.Token;
 
 import parser.SimpleCParser.*;
-import parser.SimpleCParser.AddExprContext;
-import parser.SimpleCParser.AssignStmtContext;
-import parser.SimpleCParser.BandExprContext;
-import parser.SimpleCParser.BorExprContext;
-import parser.SimpleCParser.BxorExprContext;
-import parser.SimpleCParser.EqualityExprContext;
-import parser.SimpleCParser.ExprContext;
-import parser.SimpleCParser.IfStmtContext;
-import parser.SimpleCParser.LandExprContext;
-import parser.SimpleCParser.LorExprContext;
-import parser.SimpleCParser.NumberExprContext;
-import parser.SimpleCParser.ParenExprContext;
-import parser.SimpleCParser.RelExprContext;
-import parser.SimpleCParser.ShiftExprContext;
-import parser.SimpleCParser.TernExprContext;
-import parser.SimpleCParser.UnaryExprContext;
-import parser.SimpleCParser.VarDeclContext;
-import parser.SimpleCParser.VarrefExprContext;
 
 public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
 	private HashMap<Integer, HashMap<String, Integer>> ifLayer;
-
-	public TestVisitor() {
+	private ArrayList<String> preCon = new ArrayList<String>();
+	private ArrayList<String> postCon = new ArrayList<String>();
+	private StringBuilder preSmtResult = new StringBuilder();
+	private StringBuilder postSmtResult = new StringBuilder();
+	private int postNumber = 0;
+	private int preNumber = 0;
+	private String returnExp;
+	
+	public TestVisitor() {postNumber = 0;
 		this.smtResult = new StringBuilder();
+		this.preSmtResult = new StringBuilder();
 	}
 
 	public TestVisitor(MyAssertVisitor assVisitor, VariCount variCount, String glSmt, String plSmt) {
@@ -51,7 +41,114 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.ifLayer = variCount.getIfLayer();
 		this.smtResult = new StringBuilder();
 	}
+	
+	/////////////////////////////////
+	public String getPreSMT(){		
+		return preSmtResult.toString();		
+	}
+	
+	public void preCombine (){
+		
+		if(preCon.isEmpty()){
+			preCon.add("null");
+		}
+		
+		preSmtResult = new StringBuilder();
+		
+		for(int i =0 ; i< preNumber-1; i++){
+			preSmtResult.append(" (and ");
+		}
+		
+		preSmtResult.append(preCon.get(0));
+		
+		for(int i =1 ; i< preNumber; i++){
+			preSmtResult.append(preCon.get(i) + ") ");
+		}		
+	}
+	
+	@Override
+	public String visitPrepost (SimpleCParser.PrepostContext ctx){	
+		super.visitPrepost(ctx);	
+		return null;
+	}	
+	
+	
+	@Override
+	public String visitRequires (SimpleCParser.RequiresContext ctx){
+		String requires;	
+		requires = super.visitRequires(ctx);
+		
+		preNumber++;
+		preCon.add(requires);
+		return null;
+	}	
+	
+	public String visitProcedureDecl (SimpleCParser.ProcedureDeclContext ctx){	
 
+		super.visitProcedureDecl(ctx);
+		returnExp = super.visitExpr(ctx.returnExpr);
+		preCombine ();		
+		
+		postNumber = 0;
+		postCon = new ArrayList<String>();
+		postSmtResult = new StringBuilder();
+		int num = ctx.contract.size();
+		for(int i = 0;i<num;i++){
+			if(ctx.contract.get(i).getText().contains("ensures")){
+				super.visitPrepost(ctx.contract.get(i));
+			}
+		}
+		postCombine ();
+		return null;
+	}	
+	
+	public String getPostSMT(){	
+		return postSmtResult.toString();		
+	}
+	
+	public void postCombine(){
+		
+		if(postCon.isEmpty()){		
+			postSmtResult.append("null");		
+		}else{				
+			postSmtResult = new StringBuilder();
+			for(int i =0 ; i< postNumber-1; i++){
+				postSmtResult.append(" (and ");
+			}			
+			postSmtResult.append(postCon.get(0));		
+			for(int i =1 ; i< postNumber; i++){
+				postSmtResult.append(postCon.get(i) + ")");
+			}		
+		}
+	}	
+	
+	@Override
+	public String visitEnsures (SimpleCParser.EnsuresContext ctx){
+		String ensures;	
+		StringBuilder ensuresSMT = new StringBuilder();
+		ensures = super.visitEnsures(ctx);
+		
+		if(!preSmtResult.equals("null")){
+			ensuresSMT.append("(=> ");
+			ensuresSMT.append(preSmtResult);
+			ensuresSMT.append(ensures);
+			ensuresSMT.append(") ");
+		}else{	
+			ensuresSMT.append(ensures);
+		}
+		postNumber++;
+		postCon.add(ensuresSMT.toString());
+		return null;
+	}
+	
+	@Override 
+	public String visitResultExpr(ResultExprContext ctx) {
+		
+		return returnExp;
+	}
+	
+	//////////////////////////////////
+	
 	@Override
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		String text = this.visitExpr(ctx.expr());

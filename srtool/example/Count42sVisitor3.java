@@ -197,4 +197,5 @@ public class Count42sVisitor3 extends SimpleCBaseVisitor<String> {
 		System.out.println(test.pollFirst());
 		System.out.println(test.pollLast());
 	}
+	
 }

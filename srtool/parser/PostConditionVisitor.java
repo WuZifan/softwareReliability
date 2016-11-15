@@ -78,7 +78,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 						
 		returnExp = super.visitExpr((ExprContext)ctx.getChild(child_num));
 		super.visitProcedureDecl(ctx);
-		System.out.println("return :: " + returnExp);
+		//System.out.println("return :: " + returnExp);
 		
 		return null;
 	}	
@@ -116,6 +116,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 			return ctx.getChild(2).getText() + (varCount - 1);
 		}
 	}
+	
 	@Override 
 	public String visitResultExpr(ResultExprContext ctx) {
 		

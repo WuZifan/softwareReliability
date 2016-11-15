@@ -63,19 +63,14 @@ public class VCGenerator {
 		result.append(tv.getSMT());
 		result.append(mav.getAssSMT());
 
-		
-		PreConditionVisitor preVisitor = new PreConditionVisitor(VarCount);
-		preVisitor.visit(proc);
-		PostConditionVisitor postVisitor = new PostConditionVisitor(preVisitor.getSMT(),VarCount);
-		postVisitor.visit(proc);
-		getAssertNot(preVisitor.getSMT(),postVisitor.getSMT());
+		getAssertNot(tv.getPostSMT());
 		// TODO: generate the meat of the VC
 		result.append("\n(check-sat)\n");
 		System.out.println(result.toString());
 		return result;
 	}
 	
-	private void getAssertNot(String preSMT,String postSMT){
+	private void getAssertNot(String postSMT){
 		String mavSMT= mav.getUnAssSMT();
 		
 		if(postSMT.isEmpty()){
