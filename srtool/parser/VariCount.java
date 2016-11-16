@@ -9,7 +9,7 @@ import java.util.Map;
 public class VariCount {
 	/*
 	 * varCount stores all the varibles 
-	 * the first element shows whether it is global or local:
+	 * the first element in ArrayList shows whether it is global or local:
 	 * 0:global       1: local
 	 * the second one counts the times 
 	 * start with 0

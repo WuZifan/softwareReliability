@@ -9,24 +9,6 @@ import java.util.Map;
 import org.antlr.v4.runtime.Token;
 
 import parser.SimpleCParser.*;
-import parser.SimpleCParser.AddExprContext;
-import parser.SimpleCParser.AssignStmtContext;
-import parser.SimpleCParser.BandExprContext;
-import parser.SimpleCParser.BorExprContext;
-import parser.SimpleCParser.BxorExprContext;
-import parser.SimpleCParser.EqualityExprContext;
-import parser.SimpleCParser.ExprContext;
-import parser.SimpleCParser.IfStmtContext;
-import parser.SimpleCParser.LandExprContext;
-import parser.SimpleCParser.LorExprContext;
-import parser.SimpleCParser.NumberExprContext;
-import parser.SimpleCParser.ParenExprContext;
-import parser.SimpleCParser.RelExprContext;
-import parser.SimpleCParser.ShiftExprContext;
-import parser.SimpleCParser.TernExprContext;
-import parser.SimpleCParser.UnaryExprContext;
-import parser.SimpleCParser.VarDeclContext;
-import parser.SimpleCParser.VarrefExprContext;
 
 public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
@@ -766,23 +748,43 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return super.visitHavocStmt(ctx);
 	}
 
+	// TODO: To complete the \old part
 	@Override
 	public String visitOldExpr(OldExprContext ctx) {
+		// every time enter in a procedure,
+		// use tempGlobal to store the statue of all global variable
+		// so that in this procedure ,we can get the entry value of every global variable.
+		List<String> tempGlobal=new ArrayList<String>();
+		for(String str: variCount.keySet()){
+			List<Integer> tempList=variCount.get(str);
+			tempList=this.variCount.get(str);
+			// this means the variable is a global variable
+			if(tempList.get(0)==0){
+				String variStr=str+getSubscript(str);
+				tempGlobal.add(variStr);
+			}
+		}
+		
 //		for (int i = 0; i < ctx.getChildCount(); i++) {
 //			System.out.println("Old: " + ctx.getChild(i).getText());
 //		}
+		// Get the globa variable
 		String varible = ctx.getChild(2).getText();
 		return varible + this.getGlobaOldSubscript(varible);
 	}
-
+	
 	/**
-	 * 
 	 * @param varible
 	 * @return
 	 */
 	private int getGlobaOldSubscript(String varible) {
 		int sub = 0;
+		// variCount here is a HashMap<String, ArrayList<Integer>>
+		// String is means the name of variable
+		// The first element in ArrayList means whether its a global(1) or locally(1)
+		// The second element in ArrayList means the times of appearance of variable
 		if (variCount.get(varible).size() < 3) {
+			// here variCOunt.get(varible) get the arrayList
 			sub = 0;
 		} else {
 			sub = variCount.get(varible).get(2);
