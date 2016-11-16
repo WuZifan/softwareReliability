@@ -16,8 +16,6 @@ public class SRTool {
 
     private static final int TIMEOUT = 30;
 	public static void main(String[] args) throws IOException, InterruptedException {
-		
-
 //		String filename= args[0];
 		/*
 		 * Correct

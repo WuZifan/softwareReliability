@@ -21,9 +21,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private StringBuilder postSmtResult = new StringBuilder();
 	private int postNumber = 0;
 	private int preNumber = 0;
+	private int inProcedure;
 	private String returnExp;
 	
-	public TestVisitor() {postNumber = 0;
+	public TestVisitor() {
+		postNumber = 0;
 		this.smtResult = new StringBuilder();
 		this.preSmtResult = new StringBuilder();
 	}
@@ -67,6 +69,28 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 	
 	@Override
+	public String visitProgram(SimpleCParser.ProgramContext ctx) {
+		StringBuilder resSmt = new StringBuilder("");
+		List<VarDeclContext> gobls = ctx.globals;
+		List<ProcedureDeclContext> procedures = ctx.procedures;
+		this.inProcedure = 0;
+		for(VarDeclContext item : gobls) {
+			resSmt.append(visitVarDecl(item));
+		}
+		
+		this.inProcedure = 1;
+		for(ProcedureDeclContext item : procedures) {
+			String res = visitProcedureDecl(item);
+			resSmt.append(res);
+			
+			/* need to verified each procedure after generation */
+			/* Todo */ 
+		}
+		
+		return resSmt.toString();
+	}
+	
+	@Override
 	public String visitPrepost (SimpleCParser.PrepostContext ctx){	
 		super.visitPrepost(ctx);	
 		return null;
@@ -84,9 +108,39 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}	
 	
 	public String visitProcedureDecl (SimpleCParser.ProcedureDeclContext ctx){	
-
-		super.visitProcedureDecl(ctx);
-		returnExp = super.visitExpr(ctx.returnExpr);
+		StringBuilder resSmt = new StringBuilder("");
+		List<FormalParamContext> paras;
+		List<StmtContext> stmts;
+		ArrayList<Integer> status = new ArrayList<Integer>();
+		Map<String, ArrayList<Integer>> initial = new HashMap<String, ArrayList<Integer>>();
+		String procName;
+		
+		procName = ctx.name.toString();
+		
+		paras = ctx.formals;
+		for(FormalParamContext para : paras) {
+			String name = para.name.getText();
+			resSmt.append(this.getDeclStmt(name));
+			status.add(1);
+			status.add(0);
+			this.variCount.put(name, status);
+		}
+			
+		initial = copyMap(this.variCount);
+		
+		stmts = ctx.stmts;
+		for(StmtContext stmt : stmts) {
+			String res = visitStmt(stmt);
+			resSmt.append(res);
+		}
+		
+		
+	/*  
+	 * parameter, statement execute finish.  
+	 * 	PrePost constraint part
+	 */
+	//	super.visitProcedureDecl(ctx);
+		returnExp = visitExpr(ctx.returnExpr);
 		preCombine ();		
 		
 		postNumber = 0;
@@ -209,11 +263,24 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	@Override
+	// need finish ~~~~~
 	public String visitVarDecl(VarDeclContext ctx) {
 		StringBuilder result = new StringBuilder();
 		String variName = ctx.getChild(1).getText();
 		ArrayList<Integer> status = new ArrayList<Integer>();
-		status.add(1);
+		
+		// Declaration global
+		if(inProcedure == 0) {
+			status.add(0);
+		}
+		// Declaration in procedure
+		else {
+			status.add(1);
+		}
+		
+		// if we dont want to be to clear to reader XD, we can do this XD
+		// status.add(inProcedure);
+		// XD
 		status.add(0);
 		variCount.put(variName, status);
 		variName = variName + "0";
