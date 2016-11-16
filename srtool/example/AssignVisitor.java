@@ -36,7 +36,7 @@ public class AssignVisitor  extends SimpleCBaseVisitor<String>{
 	@Override
 	public String visitAddExpr(AddExprContext ctx) {
 		/*
-		 *		注意，没有操作符，就没有操作数 
+		 *		
 		 */
 		StringBuilder result=new StringBuilder();
 		List<String> opsList=new ArrayList<String>();

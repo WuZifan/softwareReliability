@@ -78,7 +78,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 						
 		returnExp = super.visitExpr((ExprContext)ctx.getChild(child_num));
 		super.visitProcedureDecl(ctx);
-		System.out.println("return :: " + returnExp);
+		//System.out.println("return :: " + returnExp);
 		
 		return null;
 	}	
@@ -116,6 +116,7 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 			return ctx.getChild(2).getText() + (varCount - 1);
 		}
 	}
+	
 	@Override 
 	public String visitResultExpr(ResultExprContext ctx) {
 		
@@ -536,7 +537,6 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitAddExpr(AddExprContext ctx) {
 		/*
-		 * 注意，没有操作符，就没有操作数
 		 */
 		StringBuilder result = new StringBuilder();
 		List<String> opsList = new ArrayList<String>();
@@ -571,7 +571,6 @@ public class PostConditionVisitor extends SimpleCBaseVisitor<String> {
 		} else {
 			for (int i = 0; i < opsList.size(); i++) {
 				String operator = opsList.get(i);
-				// 不能用%，只能用mod
 				if (operator.equals("%")) {
 					operator = "mymod";
 				}
