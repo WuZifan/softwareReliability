@@ -84,9 +84,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			resSmt.append(res);
 			
 			/* need to verified each procedure after generation */
-			/* Todo */ 
+			// TODO  
 		}
-		
+		System.out.println(resSmt.toString());
 		return resSmt.toString();
 	}
 	
@@ -197,9 +197,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	
 	@Override 
 	public String visitResultExpr(ResultExprContext ctx) {
-		
 		return returnExp;
 	}
+	
 	
 	//////////////////////////////////
 	
@@ -287,10 +287,20 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		super.visitVarDecl(ctx);
 		return null;
 	}
+	
+	@Override
+	public String visitCallStmt(CallStmtContext ctx) {
+		for(int i=0;i<ctx.getChildCount();i++){
+			System.out.println("call: "+ctx.getChild(i).getText());
+		}
+		return super.visitCallStmt(ctx);
+	}
 
 	@Override
 	public String visitAssignStmt(AssignStmtContext ctx) {
-
+		for(int i=0;i<ctx.getChildCount();i++){
+			System.out.println("assign: "+ctx.getChild(i).getText());
+		}
 		String num = this.visitExpr((ExprContext) ctx.getChild(2));
 
 
@@ -815,6 +825,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	@Override
 	public String visitParenExpr(ParenExprContext ctx) {
+		for(int i=0;i<ctx.getChildCount();i++){
+			System.out.println("Par: "+ctx.getChild(i).getText());
+		}
 		String res = super.visitExpr(ctx.arg);
 		return res;
 	}

@@ -59,13 +59,9 @@ public class VCGenerator {
 		result.append(getDivFunSMT());
 		result.append(getInttoBoolSmt());
 		result.append(getBooltoIntSmt());
-
 		result.append(getDeclSMTofRest());
-
 		result.append(tv.getSMT());
-
 		result.append(mav.getAssSMT());
-
 		getAssertNot(tv.getPostSMT());
 		// TODO: generate the meat of the VC
 		result.append("\n(check-sat)\n");

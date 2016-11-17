@@ -13,21 +13,10 @@ int foo(int a, int b)
  	int i;
 // 	i=(1>2)?(2>1):0;
 //  	assume(1==1);
- 	i = 1;
-	assert(3<4);
-// 	if(1==1){
-// 			//if(2==2){
-// 				assert(2>1);
-// // 			}else{
-// // 				assert(5>4);
-// // 			}
-// 	}
-// 	else{
-// 		if(3==3){
-// 			assert(4>3);
-// 		}else{
-// 			assert(3>2);
-// 		}
-// 	}
-	return i;
+	i=bar( (2+1)/3 );	
+	return 2;
+}
+
+int bar(int a){
+	return 0;
 }
