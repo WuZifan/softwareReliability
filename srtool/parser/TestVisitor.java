@@ -134,25 +134,27 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			resSmt.append(res);
 		}
 		
-		
-	/*  
-	 * parameter, statement execute finish.  
-	 * 	PrePost constraint part
-	 */
-	//	super.visitProcedureDecl(ctx);
 		returnExp = visitExpr(ctx.returnExpr);
-		preCombine ();		
-		
+
 		postNumber = 0;
 		postCon = new ArrayList<String>();
 		postSmtResult = new StringBuilder();
 		int num = ctx.contract.size();
+		for(int i = 0;i<num;i++){
+			if(ctx.contract.get(i).getText().contains("requires")){
+				super.visitPrepost(ctx.contract.get(i));
+			}
+		}
+		preCombine ();	
+		
 		for(int i = 0;i<num;i++){
 			if(ctx.contract.get(i).getText().contains("ensures")){
 				super.visitPrepost(ctx.contract.get(i));
 			}
 		}
 		postCombine ();
+		
+		/*wait to change return prepost */
 		return null;
 	}	
 	
