@@ -23,7 +23,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private int preNumber = 0;
 	private int inProcedure;
 	private String returnExp;
-	
+
 	public TestVisitor() {
 		postNumber = 0;
 		this.smtResult = new StringBuilder();
@@ -43,168 +43,171 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.ifLayer = variCount.getIfLayer();
 		this.smtResult = new StringBuilder();
 	}
-	
+
 	/////////////////////////////////
-	public String getPreSMT(){		
-		return preSmtResult.toString();		
+	public String getPreSMT() {
+		return preSmtResult.toString();
 	}
-	
-	public void preCombine (){
-		
-		if(preCon.isEmpty()){
+
+	public void preCombine() {
+
+		if (preCon.isEmpty()) {
 			preCon.add("null");
 		}
-		
+
 		preSmtResult = new StringBuilder();
-		
-		for(int i =0 ; i< preNumber-1; i++){
+
+		for (int i = 0; i < preNumber - 1; i++) {
 			preSmtResult.append(" (and ");
 		}
-		
+
 		preSmtResult.append(preCon.get(0));
-		
-		for(int i =1 ; i< preNumber; i++){
+
+		for (int i = 1; i < preNumber; i++) {
 			preSmtResult.append(preCon.get(i) + ") ");
-		}		
+		}
 	}
-	
+
 	@Override
 	public String visitProgram(SimpleCParser.ProgramContext ctx) {
 		StringBuilder resSmt = new StringBuilder("");
 		List<VarDeclContext> gobls = ctx.globals;
 		List<ProcedureDeclContext> procedures = ctx.procedures;
 		this.inProcedure = 0;
-		for(VarDeclContext item : gobls) {
+		for (VarDeclContext item : gobls) {
 			resSmt.append(visitVarDecl(item));
 		}
-		
+
 		this.inProcedure = 1;
-		for(ProcedureDeclContext item : procedures) {
+		for (ProcedureDeclContext item : procedures) {
 			String res = visitProcedureDecl(item);
 			resSmt.append(res);
-			
+
 			/* need to verified each procedure after generation */
-			/* Todo */ 
+			/* Todo */
 		}
-		
+
 		return resSmt.toString();
 	}
-	
+
 	@Override
-	public String visitPrepost (SimpleCParser.PrepostContext ctx){	
-		super.visitPrepost(ctx);	
+	public String visitPrepost(SimpleCParser.PrepostContext ctx) {
+		super.visitPrepost(ctx);
 		return null;
-	}	
-	
-	
+	}
+
 	@Override
-	public String visitRequires (SimpleCParser.RequiresContext ctx){
-		String requires;	
+	public String visitRequires(SimpleCParser.RequiresContext ctx) {
+		String requires;
 		requires = super.visitRequires(ctx);
-		
+
 		preNumber++;
 		preCon.add(requires);
 		return null;
-	}	
-	
-	public String visitProcedureDecl (SimpleCParser.ProcedureDeclContext ctx){	
+	}
+
+	public String visitProcedureDecl(SimpleCParser.ProcedureDeclContext ctx) {
 		StringBuilder resSmt = new StringBuilder("");
 		List<FormalParamContext> paras;
 		List<StmtContext> stmts;
 		ArrayList<Integer> status = new ArrayList<Integer>();
 		Map<String, ArrayList<Integer>> initial = new HashMap<String, ArrayList<Integer>>();
 		String procName;
-		
+
 		procName = ctx.name.toString();
-		
+
 		paras = ctx.formals;
-		for(FormalParamContext para : paras) {
+		for (FormalParamContext para : paras) {
 			String name = para.name.getText();
 			resSmt.append(this.getDeclStmt(name));
 			status.add(1);
 			status.add(0);
 			this.variCount.put(name, status);
 		}
-			
+
 		initial = copyMap(this.variCount);
-		
+
 		stmts = ctx.stmts;
-		for(StmtContext stmt : stmts) {
+		for (StmtContext stmt : stmts) {
 			String res = visitStmt(stmt);
 			resSmt.append(res);
 		}
-		
+
 		returnExp = visitExpr(ctx.returnExpr);
 
 		postNumber = 0;
 		postCon = new ArrayList<String>();
 		postSmtResult = new StringBuilder();
 		int num = ctx.contract.size();
-		for(int i = 0;i<num;i++){
-			if(ctx.contract.get(i).getText().contains("requires")){
+		for (int i = 0; i < num; i++) {
+			if (ctx.contract.get(i).getText().contains("requires")) {
 				super.visitPrepost(ctx.contract.get(i));
 			}
 		}
-		preCombine ();	
-		
-		for(int i = 0;i<num;i++){
-			if(ctx.contract.get(i).getText().contains("ensures")){
+		preCombine();
+
+		for (int i = 0; i < num; i++) {
+			if (ctx.contract.get(i).getText().contains("ensures")) {
 				super.visitPrepost(ctx.contract.get(i));
 			}
 		}
-		postCombine ();
-		
-		/*wait to change return prepost */
+		postCombine();
+
+		/* wait to change return prepost */
 		return null;
-	}	
-	
-	public String getPostSMT(){	
-		return postSmtResult.toString();		
 	}
-	
+
+	public String getPostSMT() {
+		return postSmtResult.toString();
+	}
+
 	public void postCombine(){
 		
 		if(postCon.isEmpty()){		
 			postSmtResult.append("null");		
 		}else{				
-			postSmtResult = new StringBuilder();
-			for(int i =0 ; i< postNumber-1; i++){
-				postSmtResult.append(" (and ");
-			}			
-			postSmtResult.append(postCon.get(0));		
-			for(int i =1 ; i< postNumber; i++){
-				postSmtResult.append(postCon.get(i) + ")");
-			}		
+//			postSmtResult = new StringBuilder();
+//			for(int i =0 ; i< postNumber-1; i++){
+//				postSmtResult.append(" (and ");
+//			}
+			for(int i=0;i<postCon.size();i++){
+				System.out.println("PostPREm: "+postCon.get(i));
+				assVisitor.visitunnomAss(postCon.get(i));
+			}
+//			postSmtResult.append(postCon.get(0));		
+//			for(int i =1 ; i< postNumber; i++){
+//				postSmtResult.append(postCon.get(i) + ")");
+//			}		
 		}
-	}	
-	
+	}
+
 	@Override
-	public String visitEnsures (SimpleCParser.EnsuresContext ctx){
-		String ensures;	
+	public String visitEnsures(SimpleCParser.EnsuresContext ctx) {
+		String ensures;
 		StringBuilder ensuresSMT = new StringBuilder();
 		ensures = super.visitEnsures(ctx);
-		
-		if(!preSmtResult.equals("null")){
+
+		if (!preSmtResult.equals("null")) {
 			ensuresSMT.append("(=> ");
 			ensuresSMT.append(preSmtResult);
 			ensuresSMT.append(ensures);
 			ensuresSMT.append(") ");
-		}else{	
+		} else {
 			ensuresSMT.append(ensures);
 		}
 		postNumber++;
 		postCon.add(ensuresSMT.toString());
 		return null;
 	}
-	
-	@Override 
+
+	@Override
 	public String visitResultExpr(ResultExprContext ctx) {
-		
+
 		return returnExp;
 	}
-	
+
 	//////////////////////////////////
-	
+
 	@Override
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		String text = this.visitExpr(ctx.expr());
@@ -212,7 +215,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (this.ifLayer.size() != 0) {
 			String finalTest = getIfSmt();
 			finalTest = "(=> " + finalTest + " " + text + ")";
-			text=finalTest;
+			text = finalTest;
 		}
 		if (!text.contains("(")) {
 			text = isNotCondition(text);
@@ -227,7 +230,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		/**
 		 * Hash<Integer,Hash<String,Integer>> The first HashMap's key is the
 		 * layer; inner hash, the key means condition,the integer means whether
-		 * in if or else 
+		 * in if or else
 		 */
 		for (Integer keyInt : this.ifLayer.keySet()) {
 			String tempStr = "";
@@ -270,22 +273,24 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder result = new StringBuilder();
 		String variName = ctx.getChild(1).getText();
 		ArrayList<Integer> status = new ArrayList<Integer>();
-		
+
 		// Declaration global
-		if(inProcedure == 0) {
+		if (inProcedure == 0) {
 			status.add(0);
 		}
 		// Declaration in procedure
 		else {
 			status.add(1);
 		}
-		
+
 		// if we dont want to be to clear to reader XD, we can do this XD
 		// status.add(inProcedure);
 		// XD
 		status.add(0);
 		variCount.put(variName, status);
 		variName = variName + "0";
+		String retSMT = "(declare-fun " + variName + " () " + "Int)";
+		System.out.println("VariDecl: " + variName + " SMT: " + retSMT);
 		super.visitVarDecl(ctx);
 		return null;
 	}
@@ -294,7 +299,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitAssignStmt(AssignStmtContext ctx) {
 
 		String num = this.visitExpr((ExprContext) ctx.getChild(2));
-
 
 		String name = ctx.getChild(0).getText();
 		incSubscript(name);
@@ -935,16 +939,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return super.visitHavocStmt(ctx);
 	}
 
-
 	@Override
 	public String visitOldExpr(OldExprContext ctx) {
-//		for (int i = 0; i < ctx.getChildCount(); i++) {
-//			System.out.println("Old: " + ctx.getChild(i).getText());
-//		}
+		// for (int i = 0; i < ctx.getChildCount(); i++) {
+		// System.out.println("Old: " + ctx.getChild(i).getText());
+		// }
 		String varible = ctx.getChild(2).getText();
 		return varible + this.getGlobaOldSubscript(varible);
 	}
-
 
 	/**
 	 * 
@@ -997,13 +999,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private HashMap<String, ArrayList<Integer> > copyMap( Map<String, ArrayList<Integer> > ori) {
-		 HashMap<String, ArrayList<Integer> > res = new HashMap<String, ArrayList<Integer> >();
-		 
-		 for ( Map.Entry<String, ArrayList<Integer> > entry : ori.entrySet()) {
-			 res.put(entry.getKey(), (ArrayList<Integer>) entry.getValue().clone());
-		 }
-		 return res;
+	private HashMap<String, ArrayList<Integer>> copyMap(Map<String, ArrayList<Integer>> ori) {
+		HashMap<String, ArrayList<Integer>> res = new HashMap<String, ArrayList<Integer>>();
+
+		for (Map.Entry<String, ArrayList<Integer>> entry : ori.entrySet()) {
+			res.put(entry.getKey(), (ArrayList<Integer>) entry.getValue().clone());
+		}
+		return res;
 
 	}
 

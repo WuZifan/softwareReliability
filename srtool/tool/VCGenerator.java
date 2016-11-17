@@ -56,14 +56,17 @@ public class VCGenerator {
 		tv = new TestVisitor(mav, VarCount, VCGenerator.glSmt, paRes);
 
 		tv.visit(proc);
+		// Define of Function
 		result.append(getDivFunSMT());
+		// Define of a int to bool smt
 		result.append(getInttoBoolSmt());
+		// Define of a bool to int smt
 		result.append(getBooltoIntSmt());
-
+		// get declaration smt
 		result.append(getDeclSMTofRest());
-
+		// get testvistor smt
 		result.append(tv.getSMT());
-
+		// get assertation
 		result.append(mav.getAssSMT());
 
 		getAssertNot(tv.getPostSMT());
@@ -76,7 +79,7 @@ public class VCGenerator {
 	private void getAssertNot(String postSMT){
 		String mavSMT= mav.getUnAssSMT();
 		
-		if(postSMT.isEmpty()){
+		if(postSMT.isEmpty()|| postSMT.equals("null")){
 			if(mavSMT.isEmpty()){
 				result.append("(assert false)");
 			}else{
