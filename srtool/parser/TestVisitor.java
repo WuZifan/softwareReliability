@@ -51,18 +51,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	public void preCombine() {
 
-		if (preCon.isEmpty()) {
-			preCon.add("null");
-		}
-
 		preSmtResult = new StringBuilder();
 
 		for (int i = 0; i < preNumber - 1; i++) {
 			preSmtResult.append(" (and ");
 		}
-
-		preSmtResult.append(preCon.get(0));
-
+		if(!preCon.isEmpty()){
+			preSmtResult.append(preCon.get(0));
+		}
 		for (int i = 1; i < preNumber; i++) {
 			preSmtResult.append(preCon.get(i) + ") ");
 		}
@@ -187,7 +183,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder ensuresSMT = new StringBuilder();
 		ensures = super.visitEnsures(ctx);
 
-		if (!preSmtResult.equals("null")) {
+		if (!(preSmtResult.length()==0)) {
 			ensuresSMT.append("(=> ");
 			ensuresSMT.append(preSmtResult);
 			ensuresSMT.append(ensures);
