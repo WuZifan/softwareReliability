@@ -307,7 +307,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
 		// assVisitor.visitnomorAss(nomoAss.toString());
-		this.smtResult.append(nomoAss.toString());
+//		this.smtResult.append(nomoAss.toString());
 
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
