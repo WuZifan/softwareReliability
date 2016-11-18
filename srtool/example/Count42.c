@@ -11,7 +11,12 @@ int foo(int a, int b)
  	int i;
  	int j;
  	i = 1;
-	assert(3<4);
+ 	if(1==1){
+		assert(3<4);
+		i=2;
+	}else{
+		i=3;
+	}
 	assert(2<3);
 	assert(4<5);
 	return 2;

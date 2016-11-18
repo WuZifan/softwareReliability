@@ -24,7 +24,7 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 		unnomFlag = true;
 		unnomAss.append(text);
 		unnoList.add(text);
-		System.out.println("myassert: "+text);
+//		System.out.println("myassert: "+text);
 		return null;
 	}
 

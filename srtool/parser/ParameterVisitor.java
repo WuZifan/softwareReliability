@@ -24,7 +24,9 @@ public class ParameterVisitor extends SimpleCBaseVisitor<Void> {
 		for(FormalParamContext para : paras) {
 			String name = para.name.getText();
 			this.ResSmt.append(this.getDeclStmt(name));
+			// here means is a local variable
 			status.add(1);
+			// here means the subscript is 0
 			status.add(0);
 			this.variCount.put(name, status);
 //			System.out.println(ResSmt);
