@@ -132,7 +132,30 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		System.out.println("Program: "+finalProgramSMT.toString());
 		return resSmt.toString();
 	}
-
+	
+//	@Override
+//	public String visitCallStmt(SimpleCParser.CallStmtContext ctx){
+//		
+//		String name = ctx.callee.getText();
+//				
+//		System.out.println("In Call Statement:: ");
+//		System.out.println(ctx.lhs.getText());
+//		System.out.println(ctx.callee.getText());
+//		System.out.println(ctx.expr.getText());
+//		
+//		if(procedureContext.containsKey(ctx.callee.getText())){
+//			
+//			ProcedureDeclContext thisProcedure = procedureContext.get(ctx.callee.getText());
+//			List<PrepostContext> contract = thisProcedure.contract;
+//			
+//			for(PrepostContext item:contract){
+//				//String smt = visitPrepost(item);
+//				
+//			}
+//		}
+//		return null;
+//	}
+	
 	private void smtCheckSat(String procSMT){
 		String vc = procSMT;
 		ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
@@ -522,10 +545,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitAssumeStmt(AssumeStmtContext ctx) {
 
-		String text = this.visitExpr(ctx.expr());
-		text = ("(assert " + text + ")\n");
-		this.smtResult.append(text);
-		return null;
+		String assertion = this.assVisitor.getUnAssSMT();
+
+		String assumeSmt = this.visitExpr(ctx.expr());
+		
+		if(!assertion.isEmpty())
+			assumeSmt = "(assert (=> " + assertion + " "+ assumeSmt + "))\n";
+		else
+			assumeSmt = "(assert " + assumeSmt +" )\n";
+		return assumeSmt;
 	}
 
 	@Override
