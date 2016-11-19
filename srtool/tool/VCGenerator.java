@@ -1,16 +1,10 @@
 package tool;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
-import org.omg.CORBA.TCKind;
 
 import parser.GlobalVisitor;
 import parser.MyAssertVisitor;
 import parser.ParameterVisitor;
-import parser.PostConditionVisitor;
-import parser.PreConditionVisitor;
 import parser.SimpleCParser.ProcedureDeclContext;
 import parser.SimpleCParser.ProgramContext;
 import parser.TestVisitor;
@@ -50,37 +44,18 @@ public class VCGenerator {
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	public StringBuilder generateVC() {
 		String paRes;
-//		this.paVisitor.visit(proc);
-//		paRes = this.paVisitor.getSMT().toString();
 
 		mav = new MyAssertVisitor();
-//		tv = new TestVisitor(mav, VarCount, VCGenerator.glSmt, paRes);
 		tv = new TestVisitor(mav, VarCount, VCGenerator.glSmt, null);
 
-//		tv.visit(proc);
 		tv.visit(this.prog);
-//		// Define of Function
-//		result.append(getDivFunSMT());
-//		// Define of a int to bool smt
-//		result.append(getInttoBoolSmt());
-//		// Define of a bool to int smt
-//		result.append(getBooltoIntSmt());
-//		// get declaration smt
-//		result.append(getDeclSMTofRest());
-//		// get testvistor smt
-//		result.append(tv.getSMT());
-//		// get assertation
-//		result.append(mav.getAssSMT());
-//
-//		getAssertNot(tv.getPostSMT());
-//		// TODO: generate the meat of the VC
-//		result.append("\n(check-sat)\n");
-//		System.out.println(result.toString());
 		return result;
 	}
 	
+	@SuppressWarnings("unused")
 	private void getAssertNot(String postSMT){
 		String mavSMT= mav.getUnAssSMT();
 		
@@ -105,59 +80,4 @@ public class VCGenerator {
 			}	
 		}			
 	}
-
-	private String getDivFunSMT() {
-		StringBuilder result = new StringBuilder();
-		result.append("(define-fun mydiv ((x Int) (y Int)) Int\n" + "(ite (= y 0) x (div x y)))\n");
-		result.append("(define-fun mymod ((x Int) (y Int)) Int\n" + "(ite (= y 0) x (mod x y)))\n");
-		// TODO Test assume
-		return result.toString();
-	}
-	
-	private String getInttoBoolSmt() {
-		StringBuilder result = new StringBuilder();
-		result.append("(define-fun itb ((x Int)) Bool\n");
-		result.append("(ite (= x 0) false true))\n");
-		return result.toString();
-	}
-	
-	private String getBooltoIntSmt() {
-		StringBuilder result = new StringBuilder();
-		result.append("(define-fun bti ((x Bool)) Int\n");
-		result.append("(ite (= x true) 1 0))\n");
-		return result.toString();
-	}
-
-	private String getDeclSMTofRest() {
-		StringBuilder re = new StringBuilder();
-		Map<String, ArrayList<Integer>> decMap = VarCount.getVarCount();
-		for (String key : decMap.keySet()) {
-			List<Integer> varList = decMap.get(key);
-			if (varList.get(1) == 0) {
-				re.append("(declare-fun ");
-				re.append(key + 0 + " ");
-				re.append("() ");
-				re.append("Int" + ")");
-				re.append("\n");
-			} else {
-				for (int i = 0; i <1+ varList.get(1); i++) {
-					re.append("(declare-fun ");
-					re.append(key + i + " ");
-					re.append("() ");
-					re.append("Int" + ")");
-					re.append("\n");
-				}
-			}
-		}
-			return re.toString();
-
-	}
-//	private String getReplceforAsser(){
-//		List<String> list=this.mav.unnoList;
-////		StringBuffer result=
-//		for(int i=0;i<list.size();i++){
-//			
-//		}
-//		return null;
-//	}
 }

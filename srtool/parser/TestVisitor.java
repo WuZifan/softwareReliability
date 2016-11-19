@@ -55,6 +55,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private int inProcedure;
 	private String returnExp;
 	private List<String> assertList = new ArrayList<String>();
+	private List<String> requirList=new ArrayList<String>();
 	private static final int TIMEOUT = 30;
 	public TestVisitor() {
 		postNumber = 0;
@@ -118,8 +119,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			
 			String res = visitProcedureDecl(item);
 			resSmt.append(res);
-			
-			finalProgramSMT.append(res);
+			finalProgramSMT.append(res+"\n");
 			finalProgramSMT.append("(check-sat)\n");
 			/* need to verified each procedure after generation */
 			/* Todo */
@@ -192,7 +192,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitRequires(SimpleCParser.RequiresContext ctx) {
 		String requires;
 		requires = super.visitRequires(ctx);
-
+		this.requirList.add(requires);
 		preNumber++;
 		preCon.add(requires);
 		return null;
@@ -220,8 +220,20 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			status.add(0);
 			this.variCount.put(name, status);
 		}
-
+		////////////////////////
 		initial = copyMap(this.variCount);
+		////////////////////////
+		/*
+		 * To generate the pre condition
+		 */
+		int num = ctx.contract.size();
+		for (int i = 0; i < num; i++) {
+			if (ctx.contract.get(i).getText().contains("requires")) {
+				super.visitPrepost(ctx.contract.get(i));
+			}
+		}
+		preCombine();
+		System.out.println(this.requirList);
 		/*
 		 * To generate the if,assign and so on SMT
 		 */
@@ -241,13 +253,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		postNumber = 0;
 		postCon = new ArrayList<String>();
 		postSmtResult = new StringBuilder();
-		int num = ctx.contract.size();
-		for (int i = 0; i < num; i++) {
-			if (ctx.contract.get(i).getText().contains("requires")) {
-				super.visitPrepost(ctx.contract.get(i));
-			}
-		}
-		preCombine();
 
 		for (int i = 0; i < num; i++) {
 			if (ctx.contract.get(i).getText().contains("ensures")) {
@@ -266,11 +271,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// the assertion's SMT
 		// use the chengyuan bianliang
 		finalSMT.append(this.getAssertNot());
+		
 		System.out.println(getAssertNot());
 		System.out.println();
 		return finalSMT.toString();
 	}
-
+	
 	private String gettvUnAssSMT() {
 		if (!this.assertList.isEmpty()) {
 			// return "(and "+unnomAss.append(" )").toString();
@@ -410,17 +416,43 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	//////////////////////////////////
-
+	/**
+	 * 
+	 * @param assStr
+	 * @param flag: true means is in IF; false means is an outside assertion
+	 * @return
+	 */
+	private String getAssertWithRequire(String assStr,Boolean flag){
+		if(!this.requirList.isEmpty()){
+			String result=this.requirList.get(0);
+			for(int i=1;i<this.requirList.size();i++){
+				String temp=this.requirList.get(i);
+				result="(and "+temp+" "+result+")";
+			}
+			if(flag){
+				result="(and "+result+" "+assStr+")";
+			}else{
+				result="(=> "+result+" "+assStr+")";
+			}
+			return result;
+		}else{
+			return assStr;
+		}
+	}
+	
 	@Override
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		String text = this.visitExpr(ctx.expr());
-		if (this.ifLayer.size() != 0) {
-			String finalTest = getIfSmt();
-			finalTest = "(=> " + finalTest + " " + text + ")";
-			text = finalTest;
-		}
 		if (!text.contains("(")) {
 			text = isNotCondition(text);
+		}
+		if (this.ifLayer.size() != 0) {
+			String finalTest = getIfSmt();
+			finalTest=getAssertWithRequire(finalTest,true);
+			finalTest = "(=> " + finalTest + " " + text + ")";
+			text = finalTest;
+		}else{
+			text=getAssertWithRequire(text,false);
 		}
 		this.assVisitor.visitunnomAss(text);
 		this.assertList.add(text);
