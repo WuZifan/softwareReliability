@@ -47,7 +47,7 @@ public class SRTool {
 //		String filename="tests/incorrect/failsimplelor.c";
 //		String filename="tests/incorrect/failsimplesub.c";
 
-		//String filename="example/Count42.c";
+//		String filename="example/Count42.c";
 
 		
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));

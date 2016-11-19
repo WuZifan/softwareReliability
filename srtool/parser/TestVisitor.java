@@ -527,8 +527,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			assumeSmt = "(assert (=> " + assertion + " "+ assumeSmt + "))\n";
 		else
 			assumeSmt = "(assert " + assumeSmt +" )\n";
-		this.smtResult.append(assumeSmt);
-		return null;
+		return assumeSmt;
 	}
 
 	@Override
