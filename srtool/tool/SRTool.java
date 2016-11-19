@@ -23,7 +23,7 @@ public class SRTool {
 		// Pased
 //		String filename="tests/correct/divzero.c"; 
 		// Pased. But afarid of missing the assertation in the block
-//		String filename="tests/correct/if.c";
+		String filename="tests/correct/if.c";
 		// Error:(error "line 28 column 21: unexpected character"):(assert (= x3 (ite  ([@31,151:151='<',<29>,11:9] x0 (or ) (bvlshr 1 24)) x2 x1)))
 //		String filename="tests/correct/ifelse.c";
 		// (Error "line 8 column 36: invalid function application, arguments missing")
@@ -47,7 +47,7 @@ public class SRTool {
 //		String filename="tests/incorrect/failsimplelor.c";
 //		String filename="tests/incorrect/failsimplesub.c";
 
-		String filename="example/Count42.c";
+//		String filename="example/Count42.c";
 
 		
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
@@ -73,7 +73,7 @@ public class SRTool {
 		// For Part 1 of the coursework, this can be assumed
 		
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
-		vcgenGL.generateVCGlobal();
+//		vcgenGL.generateVCGlobal();
 		String tempVc=vcgenGL.generateVC().toString();
 		
 		System.out.println("CORRECT");

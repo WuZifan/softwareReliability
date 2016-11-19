@@ -209,6 +209,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		procName = ctx.name.toString();
 
+		/*
+		 * To generate the parameter of the procedure
+		 */
 		paras = ctx.formals;
 		for (FormalParamContext para : paras) {
 			String name = para.name.getText();
@@ -219,13 +222,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 
 		initial = copyMap(this.variCount);
-
-		// stmts = ctx.stmts;
-		// for (StmtContext stmt : stmts) {
-		// String res = visitStmt(stmt);
-		// resSmt.append(res);
-		// }
-
+		/*
+		 * To generate the if,assign and so on SMT
+		 */
+		// the assign,if and so on SMT
+		StringBuffer stmtSMT = new StringBuffer();
+		for (int i = 0; i < ctx.stmts.size(); i++) {
+			String temp = this.visitStmt(ctx.stmts.get(i));
+			if (temp != null) {
+				// System.out.println(temp);
+				stmtSMT.append(temp);
+			}
+		}
+		/*
+		 *  below is to generate the pre/post SMT
+		 */
 		returnExp = visitExpr(ctx.returnExpr);
 		postNumber = 0;
 		postCon = new ArrayList<String>();
@@ -244,17 +255,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 		postCombine();
-		/* wait to change return prepost */
-
-		// the assign,if and so on SMT
-		StringBuffer stmtSMT = new StringBuffer();
-		for (int i = 0; i < ctx.stmts.size(); i++) {
-			String temp = this.visitStmt(ctx.stmts.get(i));
-			if (temp != null) {
-				// System.out.println(temp);
-				stmtSMT.append(temp);
-			}
-		}
 
 		// the decleration SMT
 		// use varicount
