@@ -61,23 +61,23 @@ public class VCGenerator {
 
 //		tv.visit(proc);
 		tv.visit(this.prog);
-		// Define of Function
-		result.append(getDivFunSMT());
-		// Define of a int to bool smt
-		result.append(getInttoBoolSmt());
-		// Define of a bool to int smt
-		result.append(getBooltoIntSmt());
-		// get declaration smt
-		result.append(getDeclSMTofRest());
-		// get testvistor smt
-		result.append(tv.getSMT());
-		// get assertation
-		result.append(mav.getAssSMT());
-
-		getAssertNot(tv.getPostSMT());
-		// TODO: generate the meat of the VC
-		result.append("\n(check-sat)\n");
-		System.out.println(result.toString());
+//		// Define of Function
+//		result.append(getDivFunSMT());
+//		// Define of a int to bool smt
+//		result.append(getInttoBoolSmt());
+//		// Define of a bool to int smt
+//		result.append(getBooltoIntSmt());
+//		// get declaration smt
+//		result.append(getDeclSMTofRest());
+//		// get testvistor smt
+//		result.append(tv.getSMT());
+//		// get assertation
+//		result.append(mav.getAssSMT());
+//
+//		getAssertNot(tv.getPostSMT());
+//		// TODO: generate the meat of the VC
+//		result.append("\n(check-sat)\n");
+//		System.out.println(result.toString());
 		return result;
 	}
 	

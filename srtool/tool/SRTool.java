@@ -76,32 +76,6 @@ public class SRTool {
 		vcgenGL.generateVCGlobal();
 		String tempVc=vcgenGL.generateVC().toString();
 		
-//		for(ProcedureDeclContext proc : ctx.procedures) {
-//			
-//			VCGenerator vcgen = new VCGenerator(null,proc);
-//			String vc = vcgen.generateVC().toString();
-//			ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
-//			String queryResult = "";
-//			try {
-//				queryResult = process.execute(vc, TIMEOUT);
-//				System.out.println(queryResult);
-//			} catch (ProcessTimeoutException e) {
-//				System.out.println("UNKNOWN");
-//				System.exit(1);
-//			}
-//			
-//			if (queryResult.startsWith("sat")) {
-//				System.out.println("INCORRECT");
-//				System.exit(0);
-//			}
-//			
-//			if (!queryResult.startsWith("unsat")) {
-//				System.out.println("UNKNOWN");
-//				System.out.println(queryResult);
-//				System.exit(1);
-//			}
-//		}
-		
 		System.out.println("CORRECT");
 		System.exit(0);
 		
