@@ -57,7 +57,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private String returnExp;
 	private List<String> assertList = new ArrayList<String>();
 	private List<String> requirList = new ArrayList<String>();
-	Map<String, String> resultProxyMap=new HashMap<String,String>();
+	Map<String, String> resultProxyMap = new HashMap<String, String>();
 	private static final int TIMEOUT = 30;
 
 	public TestVisitor() {
@@ -119,8 +119,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(getDivFunSMT());
 			finalProgramSMT.append(getInttoBoolSmt());
 			finalProgramSMT.append(getBooltoIntSmt());
-			// finalProgramSMT.append(getMyShiftLeft());
-			// finalProgramSMT.append(getMyShiftRight());
+			finalProgramSMT.append(getMyShiftLeft());
+			finalProgramSMT.append(getMyShiftRight());
 			finalProgramSMT.append(getDeclSMT(0));
 			finalProgramSMT.append(res + "\n");
 			finalProgramSMT.append("(check-sat)\n");
@@ -130,7 +130,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			System.out.println("Program: \n" + finalProgramSMT.toString());
 			smtCheckSat(finalProgramSMT.toString());
 		}
-
 		return resSmt.toString();
 	}
 
@@ -179,7 +178,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String vc = procSMT;
 		ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
 		String queryResult = "";
-	
+
 		try {
 			queryResult = process.execute(vc, TIMEOUT);
 			if (!queryResult.contains("error")) {
@@ -187,8 +186,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				String tempStr = queryResult.substring(indexofparr + 1, queryResult.length() - 2);
 				String[] strIng = tempStr.split("\\)");
 				for (String str : strIng) {
-					String tempResult=str.replace('(', ' ').trim();
-					String[] tempStrArray=tempResult.split(" ");
+					String tempResult = str.replace('(', ' ').trim();
+					String[] tempStrArray = tempResult.split(" ");
 					resultProxyMap.put(tempStrArray[0], tempStrArray[1]);
 				}
 				System.out.println(resultProxyMap);
@@ -239,18 +238,18 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	// function for special shift problem
 	private String getMyShiftLeft() {
 		StringBuilder result = new StringBuilder();
-		result.append("(define-fun myshl ((x (_ BitVec 32)) (y (_ BitVec 32)))) (_ BitVec 32)\n)");
-		result.append("(ite (or (> y (_ bv32 32)) (< y (_ bv0 32))) (_ bv0 32) ((bvshl x y)))\n");
-
+		result.append("(define-fun myshl ((x Int) (y Int)) Int\n" + "(ite (or (>= y 32) (< y 0)) "
+				+ "0 (bv2int (bvshl ((_ int2bv 32) x) ((_ int2bv 32) y)))))");
+		result.append("\n");
 		return result.toString();
 	}
 
 	// function for special shift problem
 	private String getMyShiftRight() {
 		StringBuilder result = new StringBuilder();
-		result.append("(define-fun myashr ((x (_ BitVec 32)) (y (_ BitVec 32)))) (_ BitVec 32)\n)");
-		result.append("(ite (or (> y (_ bv32 32)) (< y (_ bv0 32))) (_ bv0 32) ((bvashr x y)))\n");
-
+		result.append("(define-fun myashr ((x Int) (y Int)) Int\n" + "(ite (or (>= y 32) (< y 0)) "
+				+ "0 (bv2int (bvashr ((_ int2bv 32) x) ((_ int2bv 32) y)))))");
+		result.append("\n");
 		return result.toString();
 	}
 
@@ -605,10 +604,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			status.add(0);
 			variCount.put(variName, status);
 			variName = variName + "0";
-		}else{
-			int subScriptnum=this.variCount.get(variName).get(1)+1;
+		} else {
+			int subScriptnum = this.variCount.get(variName).get(1) + 1;
 			this.variCount.get(variName).set(1, subScriptnum);
-			variName=variName+subScriptnum;
+			variName = variName + subScriptnum;
 		}
 		String retSMT = "(declare-fun " + variName + " () " + "Int)\n";
 		super.visitVarDecl(ctx);
@@ -1150,9 +1149,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				if (i < ctx.ops.size()) {
 					if (ctx.ops.get(i).getText().equals("<<")) {
-						tempSmt.append("(bv2int (bvshl )");
+						// tempSmt.append("(bv2int (myshl )");
+						tempSmt.append("(myshl ");
 					} else {
-						tempSmt.append("(bv2int (bvashr )");
+						// tempSmt.append("(bv2int (myashr )");
+						tempSmt.append("(myashr ");
 					}
 
 					i++;
@@ -1163,9 +1164,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitAddExpr(temp);
 
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
+					// resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " +
+					// res + "))");
+					resSmt.insert(resSmt.length() - i, " " + res + ")");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
+					// tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " +
+					// res + ")");
+					tempSmt.insert(tempSmt.length() - 1, " " + res);
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
