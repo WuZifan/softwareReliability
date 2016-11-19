@@ -56,6 +56,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private int inProcedure;
 	private String returnExp;
 	private List<String> assertList = new ArrayList<String>();
+	private List<String> requirList=new ArrayList<String>();
 	private static final int TIMEOUT = 30;
 	public TestVisitor() {
 		postNumber = 0;
@@ -115,12 +116,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(getDivFunSMT());
 			finalProgramSMT.append(getInttoBoolSmt());
 			finalProgramSMT.append(getBooltoIntSmt());
+			finalProgramSMT.append(getMyShiftLeft());
+			finalProgramSMT.append(getMyShiftRight());
 			finalProgramSMT.append(getDeclSMT(0));
 			
 			String res = visitProcedureDecl(item);
 			resSmt.append(res);
-			
-			finalProgramSMT.append(res);
+			finalProgramSMT.append(res+"\n");
 			finalProgramSMT.append("(check-sat)\n");
 			/* need to verified each procedure after generation */
 			/* Todo */
@@ -179,7 +181,25 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		result.append("(ite (= x true) 1 0))\n");
 		return result.toString();
 	}
+	
+	// function for special shift problem
+	private String getMyShiftLeft() {
+		StringBuilder result = new StringBuilder();
+		result.append("(define-fun myshl ((x (_ BitVec 32)) (y (_ BitVec 32)))) (_ BitVec 32)\n)");
+		result.append("(ite (or (> y (_ bv32 32)) (< y (_ bv0 32))) (_ bv0 32) ((bvshl x y)))\n");
+		
+		return result.toString();
+	}
 
+	// function for special shift problem
+	private String getMyShiftRight() {
+		StringBuilder result = new StringBuilder();
+		result.append("(define-fun myashr ((x (_ BitVec 32)) (y (_ BitVec 32)))) (_ BitVec 32)\n)");
+		result.append("(ite (or (> y (_ bv32 32)) (< y (_ bv0 32))) (_ bv0 32) ((bvashr x y)))\n");
+		
+		return result.toString();
+	}
+		
 	@Override
 	public String visitPrepost(SimpleCParser.PrepostContext ctx) {
 		for (int i = 0; i < ctx.getChildCount(); i++) {
@@ -193,7 +213,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitRequires(SimpleCParser.RequiresContext ctx) {
 		String requires;
 		requires = super.visitRequires(ctx);
-
+		this.requirList.add(requires);
 		preNumber++;
 		preCon.add(requires);
 		return null;
@@ -224,8 +244,20 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			status.add(0);
 			this.variCount.put(name, status);
 		}
-
+		////////////////////////
 		initial = copyMap(this.variCount);
+		////////////////////////
+		/*
+		 * To generate the pre condition
+		 */
+		int num = ctx.contract.size();
+		for (int i = 0; i < num; i++) {
+			if (ctx.contract.get(i).getText().contains("requires")) {
+				super.visitPrepost(ctx.contract.get(i));
+			}
+		}
+		preCombine();
+		System.out.println(this.requirList);
 		/*
 		 * To generate the if,assign and so on SMT
 		 */
@@ -245,13 +277,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		postNumber = 0;
 		postCon = new ArrayList<String>();
 		postSmtResult = new StringBuilder();
-		int num = ctx.contract.size();
-		for (int i = 0; i < num; i++) {
-			if (ctx.contract.get(i).getText().contains("requires")) {
-				super.visitPrepost(ctx.contract.get(i));
-			}
-		}
-		preCombine();
 
 		for (int i = 0; i < num; i++) {
 			if (ctx.contract.get(i).getText().contains("ensures")) {
@@ -270,14 +295,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// the assertion's SMT
 		// use the chengyuan bianliang
 		finalSMT.append(this.getAssertNot());
+		
 		System.out.println(getAssertNot());
 		System.out.println();
 		return finalSMT.toString();
-	}
-
-	
-	private String vistitStmt(SimpleCParser.StmtContext ctx) {
-		return super.visitStmt(ctx);
 	}
 	
 	private String gettvUnAssSMT() {
@@ -421,17 +442,43 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	//////////////////////////////////
-
+	/**
+	 * 
+	 * @param assStr
+	 * @param flag: true means is in IF; false means is an outside assertion
+	 * @return
+	 */
+	private String getAssertWithRequire(String assStr,Boolean flag){
+		if(!this.requirList.isEmpty()){
+			String result=this.requirList.get(0);
+			for(int i=1;i<this.requirList.size();i++){
+				String temp=this.requirList.get(i);
+				result="(and "+temp+" "+result+")";
+			}
+			if(flag){
+				result="(and "+result+" "+assStr+")";
+			}else{
+				result="(=> "+result+" "+assStr+")";
+			}
+			return result;
+		}else{
+			return assStr;
+		}
+	}
+	
 	@Override
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		String text = this.visitExpr(ctx.expr());
-		if (this.ifLayer.size() != 0) {
-			String finalTest = getIfSmt();
-			finalTest = "(=> " + finalTest + " " + text + ")";
-			text = finalTest;
-		}
 		if (!text.contains("(")) {
 			text = isNotCondition(text);
+		}
+		if (this.ifLayer.size() != 0) {
+			String finalTest = getIfSmt();
+			finalTest = getAssertWithRequire(finalTest,true);
+			finalTest = "(=> " + finalTest + " " + text + ")";
+			text = finalTest;
+		}else{
+			text=getAssertWithRequire(text,false);
 		}
 		this.assVisitor.visitunnomAss(text);
 		this.assertList.add(text);
@@ -650,19 +697,23 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override 
 	public String visitInvariant(SimpleCParser.InvariantContext ctx) {
 		StringBuilder resSmt = new StringBuilder("");
-		String text = this.visitExpr(ctx.expr());
-		if (this.ifLayer.size() != 0) {
+		String text = this.visitExpr(ctx.condition);
+		if(!text.contains("(")) {
+			text = isNotCondition(text);
+		}
+		if(this.ifLayer.size() != 0) {
 			String finalTest = getIfSmt();
+			finalTest=getAssertWithRequire(finalTest,true);
 			finalTest = "(=> " + finalTest + " " + text + ")";
 			text = finalTest;
 		}
-		if (!text.contains("(")) {
-			text = isNotCondition(text);
+		else {
+			text=getAssertWithRequire(text,false);
 		}
 		this.assVisitor.visitunnomAss(text);
-		this.assertList.add(text);
+		this.assertList.add(text);;
 		
-		return resSmt.toString();
+		return "";
 	}
 	
 	@Override
@@ -1047,9 +1098,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				if (i < ctx.ops.size()) {
 					if (ctx.ops.get(i).getText().equals("<<")) {
-						tempSmt.append("(bv2int (bvshl )");
+						tempSmt.append("(bv2int (myshl )");
 					} else {
-						tempSmt.append("(bv2int (bvashr )");
+						tempSmt.append("(bv2int (myashr )");
 					}
 
 					i++;
@@ -1058,7 +1109,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				temp = iter.next();
 
 				res = visitAddExpr(temp);
-
+		
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {

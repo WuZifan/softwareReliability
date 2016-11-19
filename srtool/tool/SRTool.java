@@ -73,10 +73,10 @@ public class SRTool {
 //		assert ctx.procedures.size() == 1; 
 		// For Part 1 of the coursework, this can be assumed
 		
+		
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
 //		vcgenGL.generateVCGlobal();
-		String tempVc=vcgenGL.generateVC().toString();
-		
+		String tempVc=vcgenGL.generateVC().toString();		
 		System.out.println("CORRECT");
 		System.exit(0);
 		
