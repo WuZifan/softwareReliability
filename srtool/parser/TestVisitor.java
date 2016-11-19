@@ -1,5 +1,6 @@
 package parser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -7,9 +8,39 @@ import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.ParseTree;
 
-import parser.SimpleCParser.*;
+import parser.SimpleCParser.AddExprContext;
+import parser.SimpleCParser.AssertStmtContext;
+import parser.SimpleCParser.AssignStmtContext;
+import parser.SimpleCParser.AssumeStmtContext;
+import parser.SimpleCParser.AtomExprContext;
+import parser.SimpleCParser.BandExprContext;
+import parser.SimpleCParser.BlockStmtContext;
+import parser.SimpleCParser.BorExprContext;
+import parser.SimpleCParser.BxorExprContext;
+import parser.SimpleCParser.EqualityExprContext;
+import parser.SimpleCParser.ExprContext;
+import parser.SimpleCParser.FormalParamContext;
+import parser.SimpleCParser.HavocStmtContext;
+import parser.SimpleCParser.IfStmtContext;
+import parser.SimpleCParser.LandExprContext;
+import parser.SimpleCParser.LoopInvariantContext;
+import parser.SimpleCParser.LorExprContext;
+import parser.SimpleCParser.MulExprContext;
+import parser.SimpleCParser.NumberExprContext;
+import parser.SimpleCParser.OldExprContext;
+import parser.SimpleCParser.ParenExprContext;
+import parser.SimpleCParser.ProcedureDeclContext;
+import parser.SimpleCParser.RelExprContext;
+import parser.SimpleCParser.ResultExprContext;
+import parser.SimpleCParser.ShiftExprContext;
+import parser.SimpleCParser.StmtContext;
+import parser.SimpleCParser.TernExprContext;
+import parser.SimpleCParser.UnaryExprContext;
+import parser.SimpleCParser.VarDeclContext;
+import parser.SimpleCParser.VarrefExprContext;
+import util.ProcessExec;
+import util.ProcessTimeoutException;
 
 public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
@@ -25,7 +56,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private int inProcedure;
 	private String returnExp;
 	private List<String> assertList = new ArrayList<String>();
-
+	private static final int TIMEOUT = 30;
 	public TestVisitor() {
 		postNumber = 0;
 		this.smtResult = new StringBuilder();
@@ -72,22 +103,58 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		List<VarDeclContext> gobls = ctx.globals;
 		List<ProcedureDeclContext> procedures = ctx.procedures;
 		this.inProcedure = 0;
-		
+		StringBuffer finalProgramSMT = new StringBuffer();
 		for (VarDeclContext item : gobls) {
-			resSmt.append(visitVarDecl(item));
+			// resSmt.append(visitVarDecl(item));
+			visitVarDecl(item);
 		}
-
+		
 		this.inProcedure = 1;
 		for (ProcedureDeclContext item : procedures) {
+			finalProgramSMT.append("(set-logic QF_IRA)\n");
+			finalProgramSMT.append(getDivFunSMT());
+			finalProgramSMT.append(getInttoBoolSmt());
+			finalProgramSMT.append(getBooltoIntSmt());
+			finalProgramSMT.append(getDeclSMT(0));
+			
 			String res = visitProcedureDecl(item);
 			resSmt.append(res);
-
+			
+			finalProgramSMT.append(res);
+			finalProgramSMT.append("(check-sat)\n");
 			/* need to verified each procedure after generation */
 			/* Todo */
+			smtCheckSat(finalProgramSMT.toString());
 		}
-
+		
+		System.out.println("Program: "+finalProgramSMT.toString());
 		return resSmt.toString();
 	}
+
+	private void smtCheckSat(String procSMT){
+		String vc = procSMT;
+		ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
+		String queryResult = "";
+		try {
+			queryResult = process.execute(vc, TIMEOUT);
+			System.out.println(queryResult);
+		} catch (ProcessTimeoutException | IOException | InterruptedException e) {
+			System.out.println("UNKNOWN");
+			System.exit(1);
+		}
+		
+		if (queryResult.startsWith("sat")) {
+			System.out.println("INCORRECT");
+			System.exit(0);
+		}
+		
+		if (!queryResult.startsWith("unsat")) {
+			System.out.println("UNKNOWN");
+			System.out.println(queryResult);
+			System.exit(1);
+		}
+	}
+	
 	// generate the function declaration
 	private String getDivFunSMT() {
 		StringBuilder result = new StringBuilder();
@@ -96,6 +163,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// TODO Test assume
 		return result.toString();
 	}
+
 	// generate the function declaration
 	private String getInttoBoolSmt() {
 		StringBuilder result = new StringBuilder();
@@ -103,6 +171,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		result.append("(ite (= x 0) false true))\n");
 		return result.toString();
 	}
+
 	// generate the function declaration
 	private String getBooltoIntSmt() {
 		StringBuilder result = new StringBuilder();
@@ -110,7 +179,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		result.append("(ite (= x true) 1 0))\n");
 		return result.toString();
 	}
-	
+
 	@Override
 	public String visitPrepost(SimpleCParser.PrepostContext ctx) {
 		for (int i = 0; i < ctx.getChildCount(); i++) {
@@ -137,10 +206,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		ArrayList<Integer> status = new ArrayList<Integer>();
 		Map<String, ArrayList<Integer>> initial = new HashMap<String, ArrayList<Integer>>();
 		String procName;
-		StringBuffer finalSMT=new StringBuffer();
+		StringBuffer finalSMT = new StringBuffer();
 
 		procName = ctx.name.toString();
 
+		/*
+		 * To generate the parameter of the procedure
+		 */
 		paras = ctx.formals;
 		for (FormalParamContext para : paras) {
 			String name = para.name.getText();
@@ -154,13 +226,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 
 		initial = copyMap(this.variCount);
-
-		// stmts = ctx.stmts;
-		// for (StmtContext stmt : stmts) {
-		// String res = visitStmt(stmt);
-		// resSmt.append(res);
-		// }
-
+		/*
+		 * To generate the if,assign and so on SMT
+		 */
+		// the assign,if and so on SMT
+		StringBuffer stmtSMT = new StringBuffer();
+		for (int i = 0; i < ctx.stmts.size(); i++) {
+			String temp = this.visitStmt(ctx.stmts.get(i));
+			if (temp != null) {
+				// System.out.println(temp);
+				stmtSMT.append(temp);
+			}
+		}
+		/*
+		 *  below is to generate the pre/post SMT
+		 */
 		returnExp = visitExpr(ctx.returnExpr);
 		postNumber = 0;
 		postCon = new ArrayList<String>();
@@ -179,22 +259,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 		postCombine();
-		/* wait to change return prepost */
 
-		// the assign,if and so on SMT
-		StringBuffer stmtSMT = new StringBuffer();
-		for (int i = 0; i < ctx.stmts.size(); i++) {
-			String temp = this.visitStmt(ctx.stmts.get(i));
-			if (temp != null) {
-				// System.out.println(temp);
-				stmtSMT.append(temp);
-			}
-		}
-		
 		// the decleration SMT
 		// use varicount
-		finalSMT.append(this.getDeclSMT());
-		System.out.print("FinalResult: \n" + this.getDeclSMT());
+		finalSMT.append(this.getDeclSMT(1));
+		System.out.print("FinalResult: \n" + this.getDeclSMT(1));
 		// print the assign,if and so on SMT
 		finalSMT.append(stmtSMT.toString());
 		System.out.println(stmtSMT.toString());
@@ -256,24 +325,26 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 * 
 	 * @return
 	 */
-	private String getDeclSMT() {
+	private String getDeclSMT(int gloOrLocal) {
 		// get declaration
 		StringBuilder re = new StringBuilder();
 		for (String key : this.variCount.keySet()) {
-			List<Integer> varList = this.variCount.get(key);
-			if (varList.get(1) == 0) {
-				re.append("(declare-fun ");
-				re.append(key + 0 + " ");
-				re.append("() ");
-				re.append("Int" + ")");
-				re.append("\n");
-			} else {
-				for (int i = 0; i < 1 + varList.get(1); i++) {
+			if (this.variCount.get(key).get(0) == gloOrLocal) {
+				List<Integer> varList = this.variCount.get(key);
+				if (varList.get(1) == 0) {
 					re.append("(declare-fun ");
-					re.append(key + i + " ");
+					re.append(key + 0 + " ");
 					re.append("() ");
 					re.append("Int" + ")");
 					re.append("\n");
+				} else {
+					for (int i = 0; i < 1 + varList.get(1); i++) {
+						re.append("(declare-fun ");
+						re.append(key + i + " ");
+						re.append("() ");
+						re.append("Int" + ")");
+						re.append("\n");
+					}
 				}
 			}
 		}
@@ -431,6 +502,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// XD
 		status.add(0);
 		status.add(0);
+		status.add(0);
 		variCount.put(variName, status);
 		variName = variName + "0";
 		String retSMT = "(declare-fun " + variName + " () " + "Int)\n";
@@ -511,8 +583,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			resSmt.append(strelse);
 		}
 		
-		
-		
 		/** Compare differences and generate Smt for if **/
 		for (String key : afif.keySet()) {
 
@@ -545,12 +615,58 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		
 		this.ifLayer.remove(layer + 1);
 
+		return resSmt.toString();
+	}
+	
+	@Override
+	public String visitWhileStmt(SimpleCParser.WhileStmtContext ctx) {
+		StringBuilder res = new StringBuilder("");
+		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
+		String cond;
+		
+		cond = visitExpr(ctx.condition);
+		
+		for(LoopInvariantContext invar : inVarList) {
+			
+		}
+		
+		
+		
+		return res.toString();
+	}
+	
+/*	
+ * @Override(non-Javadoc)
+ * @see parser.SimpleCBaseVisitor#visitLoopInvariant(parser.SimpleCParser.LoopInvariantContext)
+ *
+	public String visitLoopInvariant(SimpleCParser.LoopInvariantContext ctx) {
+		StringBuilder resSmt = new StringBuilder("");
+		
+		
+		return resSmt.toString();
+	}
+*/
+	
+	@Override 
+	public String visitInvariant(SimpleCParser.InvariantContext ctx) {
+		StringBuilder resSmt = new StringBuilder("");
+		String text = this.visitExpr(ctx.expr());
+		if (this.ifLayer.size() != 0) {
+			String finalTest = getIfSmt();
+			finalTest = "(=> " + finalTest + " " + text + ")";
+			text = finalTest;
+		}
+		if (!text.contains("(")) {
+			text = isNotCondition(text);
+		}
+		this.assVisitor.visitunnomAss(text);
+		this.assertList.add(text);
 		
 		return resSmt.toString();
 	}
 	
 	@Override
-	public String visitBlockStmt(BlockStmtContext ctx) {
+	public String visitBlockStmt(SimpleCParser.BlockStmtContext ctx) {
 		StringBuilder res = new StringBuilder();
 
 		for (StmtContext iter : ctx.stmts) {

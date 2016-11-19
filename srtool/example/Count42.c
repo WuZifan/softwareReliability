@@ -5,7 +5,7 @@ int s;
 int foo(int a, int b)
  requires a!=0,
 //  ensures \result == 4,
- ensures \result == 2
+ ensures \result == 3
 // requires a!=0
 {
  	int i;
