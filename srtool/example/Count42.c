@@ -3,21 +3,23 @@
 // int s;
 int s;
 int foo(int a, int b)
- requires a!=0
-//  ensures \result == 4,
-//  ensures \result == 3
+ requires a!=0,
+ requires b!=0,
+//  ensures 4 == 4,
+ ensures \result == 32
 // requires a!=0
 {
  	int i;
  	int j;
  	i = 1;
-//  	if(1==1){
-// 		assert(3<4);
-// 		i=2;
-// 	}else{
-// 		i=3;
-// 	}
-// 	assert(2<3);
+ 	j=2;
+ 	if(1==1){
+		i=2;
+	}else{
+		i=3;
+	}
+	i=(i)&&(j);
+	assert(2<3);
 	assert(4<5);
-	return 0;
+	return 32;
 }

@@ -56,8 +56,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private int inProcedure;
 	private String returnExp;
 	private List<String> assertList = new ArrayList<String>();
-	private List<String> requirList=new ArrayList<String>();
+	private List<String> requirList = new ArrayList<String>();
+	Map<String, String> resultProxyMap=new HashMap<String,String>();
 	private static final int TIMEOUT = 30;
+
 	public TestVisitor() {
 		postNumber = 0;
 		this.smtResult = new StringBuilder();
@@ -109,77 +111,106 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			// resSmt.append(visitVarDecl(item));
 			visitVarDecl(item);
 		}
-		
+
 		this.inProcedure = 1;
 		for (ProcedureDeclContext item : procedures) {
+			String res = visitProcedureDecl(item);
 			finalProgramSMT.append("(set-logic QF_IRA)\n");
 			finalProgramSMT.append(getDivFunSMT());
 			finalProgramSMT.append(getInttoBoolSmt());
 			finalProgramSMT.append(getBooltoIntSmt());
-			finalProgramSMT.append(getMyShiftLeft());
-			finalProgramSMT.append(getMyShiftRight());
+			// finalProgramSMT.append(getMyShiftLeft());
+			// finalProgramSMT.append(getMyShiftRight());
 			finalProgramSMT.append(getDeclSMT(0));
-			
-			String res = visitProcedureDecl(item);
-			resSmt.append(res);
-			finalProgramSMT.append(res+"\n");
+			finalProgramSMT.append(res + "\n");
 			finalProgramSMT.append("(check-sat)\n");
+			finalProgramSMT.append(getWhichOneIsWrong());
 			/* need to verified each procedure after generation */
 			/* Todo */
+			System.out.println("Program: \n" + finalProgramSMT.toString());
 			smtCheckSat(finalProgramSMT.toString());
 		}
-		
-		System.out.println("Program: "+finalProgramSMT.toString());
+
 		return resSmt.toString();
 	}
-	
-//	@Override
-//	public String visitCallStmt(SimpleCParser.CallStmtContext ctx){
-//		
-//		String name = ctx.callee.getText();
-//				
-//		System.out.println("In Call Statement:: ");
-//		System.out.println(ctx.lhs.getText());
-//		System.out.println(ctx.callee.getText());
-//		System.out.println(ctx.expr.getText());
-//		
-//		if(procedureContext.containsKey(ctx.callee.getText())){
-//			
-//			ProcedureDeclContext thisProcedure = procedureContext.get(ctx.callee.getText());
-//			List<PrepostContext> contract = thisProcedure.contract;
-//			
-//			for(PrepostContext item:contract){
-//				//String smt = visitPrepost(item);
-//				
-//			}
-//		}
-//		return null;
-//	}
-	
-	private void smtCheckSat(String procSMT){
+
+	/**
+	 * To get which one is wrong
+	 * 
+	 * @return
+	 */
+	private String getWhichOneIsWrong() {
+		StringBuffer result = new StringBuffer();
+		if (!this.assertList.isEmpty()) {
+			result.append("(get-value (");
+			for (int i = 0; i < this.assertList.size(); i++) {
+				result.append("proxy" + i + " ");
+			}
+			return result.append("))").toString();
+		} else {
+			return "";
+		}
+	}
+	// @Override
+	// public String visitCallStmt(SimpleCParser.CallStmtContext ctx){
+	//
+	// String name = ctx.callee.getText();
+	//
+	// System.out.println("In Call Statement:: ");
+	// System.out.println(ctx.lhs.getText());
+	// System.out.println(ctx.callee.getText());
+	// System.out.println(ctx.expr.getText());
+	//
+	// if(procedureContext.containsKey(ctx.callee.getText())){
+	//
+	// ProcedureDeclContext thisProcedure =
+	// procedureContext.get(ctx.callee.getText());
+	// List<PrepostContext> contract = thisProcedure.contract;
+	//
+	// for(PrepostContext item:contract){
+	// //String smt = visitPrepost(item);
+	//
+	// }
+	// }
+	// return null;
+	// }
+
+	private void smtCheckSat(String procSMT) {
 		String vc = procSMT;
 		ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
 		String queryResult = "";
+	
 		try {
 			queryResult = process.execute(vc, TIMEOUT);
+			if (!queryResult.contains("error")) {
+				int indexofparr = queryResult.indexOf("(");
+				String tempStr = queryResult.substring(indexofparr + 1, queryResult.length() - 2);
+				String[] strIng = tempStr.split("\\)");
+				for (String str : strIng) {
+					String tempResult=str.replace('(', ' ').trim();
+					String[] tempStrArray=tempResult.split(" ");
+					resultProxyMap.put(tempStrArray[0], tempStrArray[1]);
+				}
+				System.out.println(resultProxyMap);
+			}
 			System.out.println(queryResult);
 		} catch (ProcessTimeoutException | IOException | InterruptedException e) {
 			System.out.println("UNKNOWN");
 			System.exit(1);
 		}
-		
+
 		if (queryResult.startsWith("sat")) {
 			System.out.println("INCORRECT");
 			System.exit(0);
 		}
-		
+
 		if (!queryResult.startsWith("unsat")) {
 			System.out.println("UNKNOWN");
 			System.out.println(queryResult);
 			System.exit(1);
 		}
 	}
-	
+
 	// generate the function declaration
 	private String getDivFunSMT() {
 		StringBuilder result = new StringBuilder();
@@ -204,13 +235,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		result.append("(ite (= x true) 1 0))\n");
 		return result.toString();
 	}
-	
+
 	// function for special shift problem
 	private String getMyShiftLeft() {
 		StringBuilder result = new StringBuilder();
 		result.append("(define-fun myshl ((x (_ BitVec 32)) (y (_ BitVec 32)))) (_ BitVec 32)\n)");
 		result.append("(ite (or (> y (_ bv32 32)) (< y (_ bv0 32))) (_ bv0 32) ((bvshl x y)))\n");
-		
+
 		return result.toString();
 	}
 
@@ -219,15 +250,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder result = new StringBuilder();
 		result.append("(define-fun myashr ((x (_ BitVec 32)) (y (_ BitVec 32)))) (_ BitVec 32)\n)");
 		result.append("(ite (or (> y (_ bv32 32)) (< y (_ bv0 32))) (_ bv0 32) ((bvashr x y)))\n");
-		
+
 		return result.toString();
 	}
-		
+
 	@Override
 	public String visitPrepost(SimpleCParser.PrepostContext ctx) {
-		for (int i = 0; i < ctx.getChildCount(); i++) {
-			System.out.println("PrePost: " + ctx.getChild(i).getText());
-		}
 		super.visitPrepost(ctx);
 		return null;
 	}
@@ -280,7 +308,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 		preCombine();
-		System.out.println(this.requirList);
 		/*
 		 * To generate the if,assign and so on SMT
 		 */
@@ -294,7 +321,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 		/*
-		 *  below is to generate the pre/post SMT
+		 * below is to generate the pre/post SMT
 		 */
 		returnExp = visitExpr(ctx.returnExpr);
 		postNumber = 0;
@@ -311,57 +338,53 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// the decleration SMT
 		// use varicount
 		finalSMT.append(this.getDeclSMT(1));
-		System.out.print("FinalResult: \n" + this.getDeclSMT(1));
+
 		// print the assign,if and so on SMT
 		finalSMT.append(stmtSMT.toString());
-		System.out.println(stmtSMT.toString());
+
 		// the assertion's SMT
 		// use the chengyuan bianliang
-		finalSMT.append(this.getAssertNot());
-		
-		System.out.println(getAssertNot());
-		System.out.println();
+		// finalSMT.append(this.getAssertNot());
+		finalSMT.append(this.gettvUnAssSMT());
+
 		return finalSMT.toString();
 	}
-	
+
+	/**
+	 * To replace every assertion by proxy i(i from 0 to n)
+	 * 
+	 * @return
+	 */
+	private String getAssertReplaced() {
+		StringBuffer result = new StringBuffer();
+		for (int i = 0; i < this.assertList.size(); i++) {
+			result.append("(declare-fun proxy" + i + " () Bool)\n" + "(assert (= proxy" + i + " " + assertList.get(i)
+					+ "))\n");
+		}
+		return result.toString();
+	}
+
+	/**
+	 * get the assertion
+	 * 
+	 * @return
+	 */
 	private String gettvUnAssSMT() {
 		if (!this.assertList.isEmpty()) {
 			// return "(and "+unnomAss.append(" )").toString();
-			String unnomRe = this.assertList.get(0);
+			// String unnomRe = this.assertList.get(0);
+			String unnomRe = "proxy0";
+			String finalResult = getAssertReplaced();
 			for (int i = 1; i < this.assertList.size(); i++) {
-				unnomRe = "(and " + this.assertList.get(i) + " " + unnomRe + ")";
+				// unnomRe = "(and " + this.assertList.get(i) + " " + unnomRe +
+				// ")";
+				unnomRe = "(and " + "proxy" + i + " " + unnomRe + ")";
 			}
-			return unnomRe;
+			unnomRe = "(assert (not " + unnomRe + "))";
+			return finalResult + unnomRe;
 		} else {
-			return "";
+			return "(assert false)";
 		}
-	}
-
-	private String getAssertNot() {
-		String postSMT = this.postSmtResult.toString();
-		String mavSMT = this.gettvUnAssSMT();
-		StringBuffer result = new StringBuffer();
-		if (postSMT.isEmpty() || postSMT.equals("null")) {
-			if (mavSMT.isEmpty()) {
-				result.append("(assert false)");
-			} else {
-				result.append("(assert (not ");
-				result.append(mavSMT);
-				result.append("))");
-			}
-		} else {
-			if (mavSMT.isEmpty()) {
-				result.append("(assert (not ");
-				result.append(postSMT);
-				result.append("))");
-			} else {
-				result.append("(assert (not (and");
-				result.append(postSMT);
-				result.append(mavSMT);
-				result.append(")))");
-			}
-		}
-		return result.toString();
 	}
 
 	/**
@@ -430,7 +453,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			// }
 			for (int i = 0; i < postCon.size(); i++) {
 				this.assertList.add(postCon.get(i));
-				assVisitor.visitunnomAss(postCon.get(i));
 			}
 			// postSmtResult.append(postCon.get(0));
 			// for(int i =1 ; i< postNumber; i++){
@@ -468,27 +490,28 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	/**
 	 * 
 	 * @param assStr
-	 * @param flag: true means is in IF; false means is an outside assertion
+	 * @param flag:
+	 *            true means is in IF; false means is an outside assertion
 	 * @return
 	 */
-	private String getAssertWithRequire(String assStr,Boolean flag){
-		if(!this.requirList.isEmpty()){
-			String result=this.requirList.get(0);
-			for(int i=1;i<this.requirList.size();i++){
-				String temp=this.requirList.get(i);
-				result="(and "+temp+" "+result+")";
+	private String getAssertWithRequire(String assStr, Boolean flag) {
+		if (!this.requirList.isEmpty()) {
+			String result = this.requirList.get(0);
+			for (int i = 1; i < this.requirList.size(); i++) {
+				String temp = this.requirList.get(i);
+				result = "(and " + temp + " " + result + ")";
 			}
-			if(flag){
-				result="(and "+result+" "+assStr+")";
-			}else{
-				result="(=> "+result+" "+assStr+")";
+			if (flag) {
+				result = "(and " + result + " " + assStr + ")";
+			} else {
+				result = "(=> " + result + " " + assStr + ")";
 			}
 			return result;
-		}else{
+		} else {
 			return assStr;
 		}
 	}
-	
+
 	@Override
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		String text = this.visitExpr(ctx.expr());
@@ -497,11 +520,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 		if (this.ifLayer.size() != 0) {
 			String finalTest = getIfSmt();
-			finalTest = getAssertWithRequire(finalTest,true);
+			finalTest = getAssertWithRequire(finalTest, true);
 			finalTest = "(=> " + finalTest + " " + text + ")";
 			text = finalTest;
-		}else{
-			text=getAssertWithRequire(text,false);
+		} else {
+			text = getAssertWithRequire(text, false);
 		}
 		this.assVisitor.visitunnomAss(text);
 		this.assertList.add(text);
@@ -548,11 +571,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String assertion = this.assVisitor.getUnAssSMT();
 
 		String assumeSmt = this.visitExpr(ctx.expr());
-		
-		if(!assertion.isEmpty())
-			assumeSmt = "(assert (=> " + assertion + " "+ assumeSmt + "))\n";
+
+		if (!assertion.isEmpty())
+			assumeSmt = "(assert (=> " + assertion + " " + assumeSmt + "))\n";
 		else
-			assumeSmt = "(assert " + assumeSmt +" )\n";
+			assumeSmt = "(assert " + assumeSmt + " )\n";
 		return assumeSmt;
 	}
 
@@ -561,25 +584,32 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitVarDecl(VarDeclContext ctx) {
 		StringBuilder result = new StringBuilder();
 		String variName = ctx.getChild(1).getText();
-		ArrayList<Integer> status = new ArrayList<Integer>();
-
-		// Declaration global
-		if (inProcedure == 0) {
+		if (!this.variCount.keySet().contains(variName)) {
+			ArrayList<Integer> status = new ArrayList<Integer>();
+			// Declaration global
+			if (inProcedure == 0) {
+				status.add(0);
+			}
+			// Declaration in procedure
+			else {
+				status.add(1);
+			}
+			// if we dont want to be to clear to reader XD, we can do this XD
+			// status.add(inProcedure);
+			// XD
+			// subscript
 			status.add(0);
+			// for old
+			status.add(0);
+			// for if
+			status.add(0);
+			variCount.put(variName, status);
+			variName = variName + "0";
+		}else{
+			int subScriptnum=this.variCount.get(variName).get(1)+1;
+			this.variCount.get(variName).set(1, subScriptnum);
+			variName=variName+subScriptnum;
 		}
-		// Declaration in procedure
-		else {
-			status.add(1);
-		}
-
-		// if we dont want to be to clear to reader XD, we can do this XD
-		// status.add(inProcedure);
-		// XD
-		status.add(0);
-		status.add(0);
-		status.add(0);
-		variCount.put(variName, status);
-		variName = variName + "0";
 		String retSMT = "(declare-fun " + variName + " () " + "Int)\n";
 		super.visitVarDecl(ctx);
 		return null;
@@ -593,14 +623,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String name = ctx.getChild(0).getText();
 		incSubscript(name);
 		String variName = name + getSubscript(name);
-		
-		if(this.ifLayer.size() != 0) {
+
+		if (this.ifLayer.size() != 0) {
 			setAppSubscript(name);
-		}
-		else {
+		} else {
 			incAppSubscript(name);
 		}
-		
+
 		StringBuilder unnomAss = new StringBuilder();
 		StringBuilder nomoAss = new StringBuilder();
 		num = isCondition(num);
@@ -622,7 +651,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		HashMap<String, Integer> iftemp;
 		int layer;
 		String cond, strif, strelse;
-		
 
 		/** store initial info of variable **/
 		init = copyMap(this.variCount);
@@ -641,13 +669,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		resSmt.append(strif);
 
-
-		for(String var : variCount.keySet()) {
-			if(variCount.get(var).get(3) > init.get(var).get(3)) {
+		for (String var : variCount.keySet()) {
+			if (variCount.get(var).get(3) > init.get(var).get(3)) {
 				variCount.get(var).set(3, init.get(var).get(3));
 			}
 		}
-		
+
 		/** store variable info after if **/
 		afif = copyMap(this.variCount);
 
@@ -657,7 +684,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			strelse = visitBlockStmt(ctx.elseBlock);
 			resSmt.append(strelse);
 		}
-		
+
 		/** Compare differences and generate Smt for if **/
 		for (String key : afif.keySet()) {
 
@@ -683,67 +710,66 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 			resSmt.append(tempSmt);
 		}
-		
-		for(String var : variCount.keySet()) {
+
+		for (String var : variCount.keySet()) {
 			setAppSubscript(var);
 		}
-		
+
 		this.ifLayer.remove(layer + 1);
 
 		return resSmt.toString();
 	}
-	
+
 	@Override
 	public String visitWhileStmt(SimpleCParser.WhileStmtContext ctx) {
 		StringBuilder res = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
 		String cond;
-		
+
 		cond = visitExpr(ctx.condition);
-		
-		for(LoopInvariantContext invar : inVarList) {
-			
+
+		for (LoopInvariantContext invar : inVarList) {
+
 		}
-		
-		
-		
+
 		return res.toString();
 	}
-	
-/*	
- * @Override(non-Javadoc)
- * @see parser.SimpleCBaseVisitor#visitLoopInvariant(parser.SimpleCParser.LoopInvariantContext)
- *
-	public String visitLoopInvariant(SimpleCParser.LoopInvariantContext ctx) {
-		StringBuilder resSmt = new StringBuilder("");
-		
-		
-		return resSmt.toString();
-	}
-*/
-	
-	@Override 
+
+	/*
+	 * @Override(non-Javadoc)
+	 * 
+	 * @see parser.SimpleCBaseVisitor#visitLoopInvariant(parser.SimpleCParser.
+	 * LoopInvariantContext)
+	 *
+	 * public String visitLoopInvariant(SimpleCParser.LoopInvariantContext ctx)
+	 * { StringBuilder resSmt = new StringBuilder("");
+	 * 
+	 * 
+	 * return resSmt.toString(); }
+	 */
+
+	@Override
 	public String visitInvariant(SimpleCParser.InvariantContext ctx) {
 		StringBuilder resSmt = new StringBuilder("");
 		String text = this.visitExpr(ctx.condition);
-		if(!text.contains("(")) {
+		if (!text.contains("(")) {
 			text = isNotCondition(text);
 		}
-		if(this.ifLayer.size() != 0) {
+		if (this.ifLayer.size() != 0) {
 			String finalTest = getIfSmt();
-			finalTest=getAssertWithRequire(finalTest,true);
+			finalTest = getAssertWithRequire(finalTest, true);
 			finalTest = "(=> " + finalTest + " " + text + ")";
 			text = finalTest;
-		}
-		else {
-			text=getAssertWithRequire(text,false);
+		} else {
+			text = getAssertWithRequire(text, false);
 		}
 		this.assVisitor.visitunnomAss(text);
-		this.assertList.add(text);;
-		
+		this.assertList.add(text);
+		;
+
 		return "";
 	}
-	
+
 	@Override
 	public String visitBlockStmt(SimpleCParser.BlockStmtContext ctx) {
 		StringBuilder res = new StringBuilder();
@@ -843,7 +869,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		conOpList.add("<=");
 		conOpList.add(">");
 		conOpList.add(">=");
-		// (> 1 1)
 		if (!sub.contains("(")) {
 			String result = "(itb " + sub + ")";
 			return result;
@@ -1079,7 +1104,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (single != null) {
 			resSmt.append(visitShiftExpr(ctx.single));
 		} else {
-			// （> (>1 2) 2）
 			Iterator<ShiftExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {
@@ -1126,9 +1150,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				if (i < ctx.ops.size()) {
 					if (ctx.ops.get(i).getText().equals("<<")) {
-						tempSmt.append("(bv2int (myshl )");
+						tempSmt.append("(bv2int (bvshl )");
 					} else {
-						tempSmt.append("(bv2int (myashr )");
+						tempSmt.append("(bv2int (bvashr )");
 					}
 
 					i++;
@@ -1137,7 +1161,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				temp = iter.next();
 
 				res = visitAddExpr(temp);
-		
+
 				if (tempSmt.length() == 0) {
 					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
 				} else {
@@ -1159,13 +1183,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitVarrefExpr(VarrefExprContext ctx) {
 		String var = ctx.getText();
-		if(this.ifLayer.size() > 0) {
+		if (this.ifLayer.size() > 0) {
 			var += getAppSubscript(var);
-		}
-		else {
+		} else {
 			var += getSubscript(var);
 		}
-		
+
 		return var;
 	}
 
@@ -1334,7 +1357,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// TODO : Declaration
 		variCount.get(text).set(1, getSubscript(text) + 1);
 	}
-	
+
 	/** Get current available subscript when visit value **/
 	private int getAppSubscript(String text) {
 		return variCount.get(text).get(3);
@@ -1344,22 +1367,22 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private void incAppSubscript(String text) {
 		variCount.get(text).set(3, getAppSubscript(text) + 1);
 	}
-	
+
 	/** set the subscript value equal to assignment **/
 	private void setAppSubscript(String text) {
 		variCount.get(text).set(3, getSubscript(text));
 	}
-	
+
 	/** **/
 	private void setInitSubscript(String text, int value) {
 		variCount.get(text).set(4, value);
 	}
-	
+
 	/** **/
 	private int getInitSubscript(String text) {
 		return variCount.get(text).get(4);
 	}
-	
+
 	/** Remove all local variables, later use **/
 	@SuppressWarnings("unused")
 	private void rmLocalVar() {
@@ -1386,4 +1409,31 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		return smtResult.toString();
 	}
+
+	// private String getAssertNot() {
+	// String postSMT = this.postSmtResult.toString();
+	// String mavSMT = this.gettvUnAssSMT();
+	// StringBuffer result = new StringBuffer();
+	// if (postSMT.isEmpty() || postSMT.equals("null")) {
+	// if (mavSMT.isEmpty()) {
+	// result.append("(assert false)");
+	// } else {
+	// result.append("(assert (not ");
+	// result.append(mavSMT);
+	// result.append("))");
+	// }
+	// } else {
+	// if (mavSMT.isEmpty()) {
+	// result.append("(assert (not ");
+	// result.append(postSMT);
+	// result.append("))");
+	// } else {
+	// result.append("(assert (not (and");
+	// result.append(postSMT);
+	// result.append(mavSMT);
+	// result.append(")))");
+	// }
+	// }
+	// return result.toString();
+	// }
 }
