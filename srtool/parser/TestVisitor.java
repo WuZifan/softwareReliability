@@ -112,6 +112,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		
 		this.inProcedure = 1;
 		for (ProcedureDeclContext item : procedures) {
+			String res = visitProcedureDecl(item);
 			finalProgramSMT.append("(set-logic QF_IRA)\n");
 			finalProgramSMT.append(getDivFunSMT());
 			finalProgramSMT.append(getInttoBoolSmt());
@@ -120,16 +121,17 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(getMyShiftRight());
 			finalProgramSMT.append(getDeclSMT(0));
 			
-			String res = visitProcedureDecl(item);
+
 			resSmt.append(res);
 			finalProgramSMT.append(res+"\n");
 			finalProgramSMT.append("(check-sat)\n");
 			/* need to verified each procedure after generation */
 			/* Todo */
+			System.out.println("Program: "+finalProgramSMT.toString());
 			smtCheckSat(finalProgramSMT.toString());
 		}
 		
-		System.out.println("Program: "+finalProgramSMT.toString());
+
 		return resSmt.toString();
 	}
 	
@@ -208,8 +210,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	// function for special shift problem
 	private String getMyShiftLeft() {
 		StringBuilder result = new StringBuilder();
-		result.append("(define-fun myshl ((x (_ BitVec 32)) (y (_ BitVec 32)))) (_ BitVec 32)\n)");
-		result.append("(ite (or (> y (_ bv32 32)) (< y (_ bv0 32))) (_ bv0 32) ((bvshl x y)))\n");
+		result.append("(define-fun myshl ((x Int) (y Int)) Int\n"
+				+ "(ite (or (>= y 32) (< y 0)) "
+				+ "0 (bv2int (bvshl ((_ int2bv 32) x) ((_ int2bv 32) y)))))");
+		result.append("\n");
 		
 		return result.toString();
 	}
@@ -217,8 +221,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	// function for special shift problem
 	private String getMyShiftRight() {
 		StringBuilder result = new StringBuilder();
-		result.append("(define-fun myashr ((x (_ BitVec 32)) (y (_ BitVec 32)))) (_ BitVec 32)\n)");
-		result.append("(ite (or (> y (_ bv32 32)) (< y (_ bv0 32))) (_ bv0 32) ((bvashr x y)))\n");
+		result.append("(define-fun myashr ((x Int) (y Int)) Int\n"
+				+ "(ite (or (>= y 32) (< y 0)) "
+				+ "0 (bv2int (bvashr ((_ int2bv 32) x) ((_ int2bv 32) y)))))");
+		result.append("\n");
 		
 		return result.toString();
 	}
@@ -1126,9 +1132,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				if (i < ctx.ops.size()) {
 					if (ctx.ops.get(i).getText().equals("<<")) {
-						tempSmt.append("(bv2int (myshl )");
+					//	tempSmt.append("(bv2int (myshl )");
+						tempSmt.append("(myshl ");
 					} else {
-						tempSmt.append("(bv2int (myashr )");
+//						tempSmt.append("(bv2int (myashr )");
+						tempSmt.append("(myashr ");
 					}
 
 					i++;
@@ -1139,9 +1147,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				res = visitAddExpr(temp);
 		
 				if (tempSmt.length() == 0) {
-					resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
+				//	resSmt.insert(resSmt.length() - i, " ((_ int2bv 32) " + res + "))");
+					resSmt.insert(resSmt.length() - i, " " + res + ")");
 				} else {
-					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
+//					tempSmt.insert(tempSmt.length() - 1, " ((_ int2bv 32) " + res + ")");
+					tempSmt.insert(tempSmt.length() - 1,  " " + res);
 					resSmt.insert(resSmt.length() - i + 1, " " + tempSmt);
 				}
 
