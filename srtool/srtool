@@ -1,3 +1,10 @@
-#/bin/bash
+#!/bin/bash
 
-java -cp .:antlr-4.5.3-complete.jar $1/tool/SRTool.java $2
+# First argument: directory comtaining compiled solution and Antlr .jar file (if you are using the Java skeleton)
+# If you are using a language other than Java you may wish to ignore this argument.
+
+# Second argument: the .c program to be analysed
+
+DIR=$1
+
+java -cp ${DIR}:${DIR}/antlr-4.5.3-complete.jar tool.SRTool $2

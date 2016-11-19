@@ -122,6 +122,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			resSmt.append(this.getDeclStmt(name));
 			status.add(1);
 			status.add(0);
+			status.add(0);
+			status.add(0);
+			status.add(0);
 			this.variCount.put(name, status);
 		}
 
@@ -287,6 +290,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// status.add(inProcedure);
 		// XD
 		status.add(0);
+		status.add(0);
+		status.add(0);
+		status.add(0);
 		variCount.put(variName, status);
 		variName = variName + "0";
 		String retSMT = "(declare-fun " + variName + " () " + "Int)";
@@ -303,6 +309,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String name = ctx.getChild(0).getText();
 		incSubscript(name);
 		String variName = name + getSubscript(name);
+		
+		if(this.ifLayer.size() != 0) {
+			setAppSubscript(name);
+		}
+		else {
+			incAppSubscript(name);
+			setInitSubscript(name, getSubscript(name));
+		}
+		
 		StringBuilder unnomAss = new StringBuilder();
 
 		StringBuilder nomoAss = new StringBuilder();
@@ -342,8 +357,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		/** visit if bloc statement **/
 		strif = visitBlockStmt(ctx.thenBlock);
-		// smtResult.append(strif);
+	//	smtResult.append(strif);
 
+		for(String var : variCount.keySet()) {
+			if(variCount.get(var).get(3) > init.get(var).get(3)) {
+				variCount.get(var).set(3, init.get(var).get(3));
+			}
+		}
+		
 		/** store variable info after if **/
 		afif = copyMap(this.variCount);
 
@@ -351,32 +372,42 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (ctx.elseBlock != null) {
 			this.ifLayer.get(layer + 1).put(cond, 0);
 			strelse = visitBlockStmt(ctx.elseBlock);
-			// smtResult.append(strelse);
+//			smtResult.append(strelse);
+		}
+		
+		
+		
+		/** Compare differences and generate Smt for if **/
+		for (String key : afif.keySet()) {
 
-			/** Compare differences and generate Smt for if **/
-			for (String key : afif.keySet()) {
-
-				String tempSmt = "";
-				if (afif.get(key).get(1) > this.variCount.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + (Integer.toString(afif.get(key).get(1) + 1));
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
-					tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + "))\n";
-					incSubscript(key);
-				} else if (afif.get(key).get(1) < this.variCount.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1));
-					tempSmt += " " + key + Integer.toString(afif.get(key).get(1)) + ")))\n";
-					incSubscript(key);
-				} else if (afif.get(key).get(1) > init.get(key).get(1)) {
-					tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
-					tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
-					tempSmt += " " + key + Integer.toString((init.get(key).get(1))) + ")))\n";
-					incSubscript(key);
-				}
-				resSmt.append(tempSmt);
+			String tempSmt = "";
+			if (afif.get(key).get(1) > this.variCount.get(key).get(1)) {
+				tempSmt += "(assert (= " + key + (Integer.toString(afif.get(key).get(1) + 1));
+				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
+				tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + "))\n";
+				incSubscript(key);
+				incAppSubscript(key);
+			} else if (afif.get(key).get(1) < this.variCount.get(key).get(1)) {
+				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
+				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
+				tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + ")))\n";
+				incSubscript(key);
+				incAppSubscript(key);
+			} else if (afif.get(key).get(1) > init.get(key).get(3)) {
+				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
+				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
+				tempSmt += " " + key + Integer.toString((init.get(key).get(3))) + ")))\n";
+				incSubscript(key);
+				incAppSubscript(key);
 			}
+			resSmt.append(tempSmt);
 		}
 
+
+		for(String var : variCount.keySet()) {
+			setAppSubscript(var);
+		}
+		
 		this.ifLayer.remove(layer + 1);
 
 		// System.out.println("if res : " + resSmt.toString());
@@ -815,7 +846,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitVarrefExpr(VarrefExprContext ctx) {
 		String var = ctx.getText();
-		var += getSubscript(var);
+		if(this.ifLayer.size() > 0) {
+			var += getAppSubscript(var);
+		}
+		else {
+			var += getSubscript(var);
+		}
+		
 		return var;
 	}
 
@@ -977,7 +1014,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return result.toString();
 	}
 
-	/** Get current subscripte for a specific variable **/
+	/** Get current subscript for a specific variable **/
 	private int getSubscript(String text) {
 		return variCount.get(text).get(1);
 	}
@@ -987,7 +1024,32 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// TODO : Declaration
 		variCount.get(text).set(1, getSubscript(text) + 1);
 	}
+	
+	/** Get current available subscript when visit value **/
+	private int getAppSubscript(String text) {
+		return variCount.get(text).get(3);
+	}
 
+	/** Increase the subscript for available subscript **/
+	private void incAppSubscript(String text) {
+		variCount.get(text).set(3, getAppSubscript(text) + 1);
+	}
+	
+	/** set the subscript value equal to assignment **/
+	private void setAppSubscript(String text) {
+		variCount.get(text).set(3, getSubscript(text));
+	}
+	
+	/** **/
+	private void setInitSubscript(String text, int value) {
+		variCount.get(text).set(4, value);
+	}
+	
+	/** **/
+	private int getInitSubscript(String text) {
+		return variCount.get(text).get(4);
+	}
+	
 	/** Remove all local variables, later use **/
 	@SuppressWarnings("unused")
 	private void rmLocalVar() {
