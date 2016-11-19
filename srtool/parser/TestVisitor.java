@@ -29,6 +29,7 @@ import parser.SimpleCParser.MulExprContext;
 import parser.SimpleCParser.NumberExprContext;
 import parser.SimpleCParser.OldExprContext;
 import parser.SimpleCParser.ParenExprContext;
+import parser.SimpleCParser.PrepostContext;
 import parser.SimpleCParser.ProcedureDeclContext;
 import parser.SimpleCParser.RelExprContext;
 import parser.SimpleCParser.ResultExprContext;
@@ -43,6 +44,7 @@ import util.ProcessTimeoutException;
 
 public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
+	private Map<String, ProcedureDeclContext > procedureContext = new HashMap<String, ProcedureDeclContext>();
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
 	private HashMap<Integer, HashMap<String, Integer>> ifLayer;
@@ -55,7 +57,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private int inProcedure;
 	private String returnExp;
 	private List<String> assertList = new ArrayList<String>();
-	private List<String> requirList=new ArrayList<String>();
+	private List<String> requirList=new ArrayList<String>();	
+	private CallVisitor call = new CallVisitor();
 	private static final int TIMEOUT = 30;
 	public TestVisitor() {
 		postNumber = 0;
@@ -109,6 +112,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			visitVarDecl(item);
 		}
 		
+		for (ProcedureDeclContext item : procedures) {
+			
+			String name = item.name.getText();
+			procedureContext.put(name, item);
+			
+		}
+		
 		this.inProcedure = 1;
 		for (ProcedureDeclContext item : procedures) {
 			finalProgramSMT.append("(set-logic QF_IRA)\n");
@@ -130,28 +140,40 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return resSmt.toString();
 	}
 	
-//	@Override
-//	public String visitCallStmt(SimpleCParser.CallStmtContext ctx){
-//		
-//		String name = ctx.callee.getText();
-//				
-//		System.out.println("In Call Statement:: ");
+	@Override
+	public String visitCallStmt(SimpleCParser.CallStmtContext ctx){
+		
+		String name = ctx.callee.getText();
+				
+		System.out.println("In Call Statement:: ");
 //		System.out.println(ctx.lhs.getText());
 //		System.out.println(ctx.callee.getText());
 //		System.out.println(ctx.expr.getText());
-//		
-//		if(procedureContext.containsKey(ctx.callee.getText())){
-//			
-//			ProcedureDeclContext thisProcedure = procedureContext.get(ctx.callee.getText());
-//			List<PrepostContext> contract = thisProcedure.contract;
-//			
-//			for(PrepostContext item:contract){
-//				//String smt = visitPrepost(item);
-//				
-//			}
-//		}
-//		return null;
-//	}
+		String methodName = ctx.callee.getText();
+		
+		String assignedVar = ctx.lhs.getText();
+		List<ExprContext> actuals = ctx.actuals;
+		Map<String,String> exParameter = new HashMap<String,String>();
+		
+		if(procedureContext.containsKey(methodName)){
+			
+			ProcedureDeclContext thisProcedure = procedureContext.get(methodName);
+			
+			for(int i = 0; i < actuals.size();i++){		
+				exParameter.put(thisProcedure.formals.get(i).name.getText(),actuals.get(i).getText());
+				//System.out.println(exParameter.keySet());
+			}
+			
+			List<PrepostContext> contract = thisProcedure.contract;
+			
+			for(PrepostContext item:contract){
+				call.getAllVar(variCount,assignedVar,exParameter,thisProcedure);
+				call.visitPrepost(item);
+				
+			}
+		}
+		return null;
+	}
 	
 	private void smtCheckSat(String procSMT){
 		String vc = procSMT;
@@ -204,9 +226,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	@Override
 	public String visitPrepost(SimpleCParser.PrepostContext ctx) {
-		for (int i = 0; i < ctx.getChildCount(); i++) {
-			System.out.println("PrePost: " + ctx.getChild(i).getText());
-		}
 		super.visitPrepost(ctx);
 		return null;
 	}
@@ -534,7 +553,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	// need finish ~~~~~
 	public String visitVarDecl(VarDeclContext ctx) {
-		StringBuilder result = new StringBuilder();
 		String variName = ctx.getChild(1).getText();
 		ArrayList<Integer> status = new ArrayList<Integer>();
 
@@ -1111,7 +1129,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		conOpList.add("<=");
 		conOpList.add(">");
 		conOpList.add(">=");
-		// (> 1 1)
 		if (sub.trim().length() > 3) {
 			String op = sub.trim().substring(1, 3).trim();
 			if (conOpList.contains(op)) {
