@@ -38,6 +38,7 @@ public class VCGenerator {
 		// TODO: You will probably find it useful to add more fields and
 		// constructor arguments
 	}
+	
 
 	public Void generateVCGlobal() {
 
@@ -147,4 +148,12 @@ public class VCGenerator {
 			return re.toString();
 
 	}
+//	private String getReplceforAsser(){
+//		List<String> list=this.mav.unnoList;
+////		StringBuffer result=
+//		for(int i=0;i<list.size();i++){
+//			
+//		}
+//		return null;
+//	}
 }

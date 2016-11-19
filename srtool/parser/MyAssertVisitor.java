@@ -9,7 +9,7 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 	private StringBuilder nomorAss = new StringBuilder();
 	private StringBuilder unnomAss = new StringBuilder();
 	private boolean unnomFlag = false;
-	private List<String> unnoList = new ArrayList<String>();
+	public List<String> unnoList = new ArrayList<String>();
 
 	public MyAssertVisitor() {
 	}
@@ -24,6 +24,7 @@ public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
 		unnomFlag = true;
 		unnomAss.append(text);
 		unnoList.add(text);
+//		System.out.println("myassert: "+text);
 		return null;
 	}
 
