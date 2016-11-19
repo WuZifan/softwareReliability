@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import parser.SimpleCParser.*;
 
@@ -71,6 +72,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		List<VarDeclContext> gobls = ctx.globals;
 		List<ProcedureDeclContext> procedures = ctx.procedures;
 		this.inProcedure = 0;
+		
 		for (VarDeclContext item : gobls) {
 			resSmt.append(visitVarDecl(item));
 		}
@@ -86,7 +88,29 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		return resSmt.toString();
 	}
-
+	// generate the function declaration
+	private String getDivFunSMT() {
+		StringBuilder result = new StringBuilder();
+		result.append("(define-fun mydiv ((x Int) (y Int)) Int\n" + "(ite (= y 0) x (div x y)))\n");
+		result.append("(define-fun mymod ((x Int) (y Int)) Int\n" + "(ite (= y 0) x (mod x y)))\n");
+		// TODO Test assume
+		return result.toString();
+	}
+	// generate the function declaration
+	private String getInttoBoolSmt() {
+		StringBuilder result = new StringBuilder();
+		result.append("(define-fun itb ((x Int)) Bool\n");
+		result.append("(ite (= x 0) false true))\n");
+		return result.toString();
+	}
+	// generate the function declaration
+	private String getBooltoIntSmt() {
+		StringBuilder result = new StringBuilder();
+		result.append("(define-fun bti ((x Bool)) Int\n");
+		result.append("(ite (= x true) 1 0))\n");
+		return result.toString();
+	}
+	
 	@Override
 	public String visitPrepost(SimpleCParser.PrepostContext ctx) {
 		for (int i = 0; i < ctx.getChildCount(); i++) {
@@ -113,6 +137,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		ArrayList<Integer> status = new ArrayList<Integer>();
 		Map<String, ArrayList<Integer>> initial = new HashMap<String, ArrayList<Integer>>();
 		String procName;
+		StringBuffer finalSMT=new StringBuffer();
 
 		procName = ctx.name.toString();
 
@@ -130,11 +155,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		initial = copyMap(this.variCount);
 
-		stmts = ctx.stmts;
-		for (StmtContext stmt : stmts) {
-			String res = visitStmt(stmt);
-			resSmt.append(res);
-		}
+		// stmts = ctx.stmts;
+		// for (StmtContext stmt : stmts) {
+		// String res = visitStmt(stmt);
+		// resSmt.append(res);
+		// }
 
 		returnExp = visitExpr(ctx.returnExpr);
 		postNumber = 0;
@@ -156,23 +181,29 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		postCombine();
 		/* wait to change return prepost */
 
-		// the decleration SMT
-		// use varicount
-		System.out.print("FinalResult: \n" + this.getDeclSMT());
-
 		// the assign,if and so on SMT
-//		System.out.print(this.smtResult.toString());
+		StringBuffer stmtSMT = new StringBuffer();
 		for (int i = 0; i < ctx.stmts.size(); i++) {
 			String temp = this.visitStmt(ctx.stmts.get(i));
 			if (temp != null) {
-				System.out.println(temp);
+				// System.out.println(temp);
+				stmtSMT.append(temp);
 			}
 		}
+		
+		// the decleration SMT
+		// use varicount
+		finalSMT.append(this.getDeclSMT());
+		System.out.print("FinalResult: \n" + this.getDeclSMT());
+		// print the assign,if and so on SMT
+		finalSMT.append(stmtSMT.toString());
+		System.out.println(stmtSMT.toString());
 		// the assertion's SMT
 		// use the chengyuan bianliang
+		finalSMT.append(this.getAssertNot());
 		System.out.println(getAssertNot());
 		System.out.println();
-		return null;
+		return finalSMT.toString();
 	}
 
 	
@@ -261,6 +292,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		result.append("\n");
 		ArrayList<Integer> status = new ArrayList<Integer>();
 		status.add(1);
+		status.add(0);
+		status.add(0);
 		status.add(0);
 		this.variCount.put(variName, status);
 		// return result.toString();
@@ -398,8 +431,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// XD
 		status.add(0);
 		status.add(0);
-		status.add(0);
-		status.add(0);
 		variCount.put(variName, status);
 		variName = variName + "0";
 		String retSMT = "(declare-fun " + variName + " () " + "Int)\n";
@@ -421,7 +452,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 		else {
 			incAppSubscript(name);
-			setInitSubscript(name, getSubscript(name));
 		}
 		
 		StringBuilder unnomAss = new StringBuilder();
@@ -434,7 +464,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		unnomAss.append("(<= " + variName + " 4294967295)");
 		unnomAss.append("(>= " + variName + " 0)");
 
-		
 		return nomoAss.toString();
 	}
 

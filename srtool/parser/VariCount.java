@@ -15,7 +15,6 @@ public class VariCount {
 	 * start with 0
 	 * the third element indicates the initial index when entering the procedure
 	 * the fourth element indicates the current index of available number
-	 * the fifth element stores the initial index before enter the if-else
 	 * */
 	private Map<String, ArrayList<Integer> > varCount = new HashMap<String, ArrayList<Integer> >();
 	

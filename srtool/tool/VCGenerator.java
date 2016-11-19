@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.omg.CORBA.TCKind;
+
 import parser.GlobalVisitor;
 import parser.MyAssertVisitor;
 import parser.ParameterVisitor;
@@ -50,13 +52,15 @@ public class VCGenerator {
 
 	public StringBuilder generateVC() {
 		String paRes;
-		this.paVisitor.visit(proc);
-		paRes = this.paVisitor.getSMT().toString();
+//		this.paVisitor.visit(proc);
+//		paRes = this.paVisitor.getSMT().toString();
 
 		mav = new MyAssertVisitor();
-		tv = new TestVisitor(mav, VarCount, VCGenerator.glSmt, paRes);
+//		tv = new TestVisitor(mav, VarCount, VCGenerator.glSmt, paRes);
+		tv = new TestVisitor(mav, VarCount, VCGenerator.glSmt, null);
 
-		tv.visit(proc);
+//		tv.visit(proc);
+		tv.visit(this.prog);
 		// Define of Function
 		result.append(getDivFunSMT());
 		// Define of a int to bool smt

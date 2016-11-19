@@ -23,9 +23,9 @@ public class SRTool {
 		// Pased
 //		String filename="tests/correct/divzero.c"; 
 		// Pased. But afarid of missing the assertation in the block
-//		String filename="tests/correct/if.c";
+		String filename="tests/correct/if.c";
 		// Error:(error "line 28 column 21: unexpected character"):(assert (= x3 (ite  ([@31,151:151='<',<29>,11:9] x0 (or ) (bvlshr 1 24)) x2 x1)))
-		String filename="tests/correct/ifelse.c";
+//		String filename="tests/correct/ifelse.c";
 
 		// (Error "line 8 column 36: invalid function application, arguments missing")
 //		String filename="tests/correct/overshift.c";
@@ -70,35 +70,38 @@ public class SRTool {
 			System.exit(1);
 		}
 		
-		assert ctx.procedures.size() == 1; 
+//		assert ctx.procedures.size() == 1; 
 		// For Part 1 of the coursework, this can be assumed
+		
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
 		vcgenGL.generateVCGlobal();
-		System.out.println();
-		for(ProcedureDeclContext proc : ctx.procedures) {
-			VCGenerator vcgen = new VCGenerator(null,proc);
-			String vc = vcgen.generateVC().toString();
-			ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
-			String queryResult = "";
-			try {
-				queryResult = process.execute(vc, TIMEOUT);
-				System.out.println(queryResult);
-			} catch (ProcessTimeoutException e) {
-				System.out.println("UNKNOWN");
-				System.exit(1);
-			}
-			
-			if (queryResult.startsWith("sat")) {
-				System.out.println("INCORRECT");
-				System.exit(0);
-			}
-			
-			if (!queryResult.startsWith("unsat")) {
-				System.out.println("UNKNOWN");
-				System.out.println(queryResult);
-				System.exit(1);
-			}
-		}
+		String tempVc=vcgenGL.generateVC().toString();
+		
+//		for(ProcedureDeclContext proc : ctx.procedures) {
+//			
+//			VCGenerator vcgen = new VCGenerator(null,proc);
+//			String vc = vcgen.generateVC().toString();
+//			ProcessExec process = new ProcessExec("z3", "-smt2", "-in");
+//			String queryResult = "";
+//			try {
+//				queryResult = process.execute(vc, TIMEOUT);
+//				System.out.println(queryResult);
+//			} catch (ProcessTimeoutException e) {
+//				System.out.println("UNKNOWN");
+//				System.exit(1);
+//			}
+//			
+//			if (queryResult.startsWith("sat")) {
+//				System.out.println("INCORRECT");
+//				System.exit(0);
+//			}
+//			
+//			if (!queryResult.startsWith("unsat")) {
+//				System.out.println("UNKNOWN");
+//				System.out.println(queryResult);
+//				System.exit(1);
+//			}
+//		}
 		
 		System.out.println("CORRECT");
 		System.exit(0);
