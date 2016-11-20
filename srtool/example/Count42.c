@@ -27,5 +27,7 @@ int main(int i,int j,int z) {
 	assert(!(i&&!j)||(!a&&b&&!c&&!d));
 	assert(!(!i&&z)||(!a&&!b&&c&&!d));
 	assert(!(!i&&!z)||(!a&&!b&&!c&&d));
+
 	return 0;
+
 }
