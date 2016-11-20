@@ -44,8 +44,7 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	List<ExprContext> actuals;
 	Map<String,String> exParameter = new HashMap<String,String>();
 	ProcedureDeclContext thisProcedure;
-
-	private String returnExp;	
+	
 	
 	CallVisitor(){
 		actuals = new ArrayList<ExprContext>();

@@ -46,6 +46,7 @@ import util.ProcessTimeoutException;
 public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
 	private Map<String, ProcedureDeclContext > procedureContext = new HashMap<String, ProcedureDeclContext>();
+	private List<VarDeclContext> globals = new ArrayList<VarDeclContext>();
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
 	private HashMap<Integer, HashMap<String, Integer>> ifLayer;
@@ -109,6 +110,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder resSmt = new StringBuilder("");
 		List<VarDeclContext> gobls = ctx.globals;
 		List<ProcedureDeclContext> procedures = ctx.procedures;
+		globals = ctx.globals;
 		this.inProcedure = 0;
 		StringBuffer finalProgramSMT = new StringBuffer();
 		for (VarDeclContext item : gobls) {
@@ -162,6 +164,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				exParameter.put(thisProcedure.formals.get(i).name.getText(),actuals.get(i).getText());
 			}
 			
+			for(VarDeclContext items : globals){
+				if(!exParameter.containsKey(items.name.getText())){
+					exParameter.put(items.name.getText(),items.name.getText());
+				}
+			}
+			
 			List<PrepostContext> contract = thisProcedure.contract;
 			String assertion = this.assVisitor.getUnAssSMT();
 			
@@ -185,6 +193,22 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					this.assertList.add(smt);
 				}
 			}
+			
+			List<StmtContext> stmts = new ArrayList<StmtContext>();
+			stmts=thisProcedure.stmts;
+			
+			for(int i=0;i<stmts.size();i++){		
+				try{
+					String assignVar = stmts.get(i).assignStmt().lhs.getText();
+					for(VarDeclContext item : globals){
+						if(item.name.getText().equals(assignVar) && !item.name.getText().equals(assignedVar)){
+							variCount.get(assignVar).set(1, getSubscript(assignVar) + 1);
+						}
+					}
+						
+				}catch(NullPointerException e){	}
+			}
+		
 			variCount.get(assignedVar).set(1, getSubscript(assignedVar) + 1);
 			
 			for(PrepostContext item:contract){

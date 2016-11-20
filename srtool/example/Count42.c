@@ -6,7 +6,7 @@ int foo(int a, int b)
  requires a!=0,
  requires b!=0,
 //  ensures 4 == 4,
- ensures \result > 3
+ ensures \result <= 3
 // requires a!=0
 {
  	int i;
@@ -19,9 +19,9 @@ int foo(int a, int b)
 // 	}
 // 	assert(2<3);
 	assume( 1 == 1);
-	i = bar(i,9);
+	s = bar(i,9);
 	assert(4<5);
-	return i;
+	return s;
 }
 
 int bar(int a, int b)
@@ -31,7 +31,7 @@ int bar(int a, int b)
 {
  	int i;
  	int j;
- 	i = 1;
+ 	s = 1;
 //  	if(1==1){
 // 		assert(3<4);
 // 		i=2;
