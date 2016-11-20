@@ -1,5 +1,6 @@
 // RUN: %tool "%s" > "%t"
 // RUN: %diff %CORRECT "%t"
+<<<<<<< HEAD
 // int s;
 int s;
 int foo(int a, int b)
