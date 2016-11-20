@@ -504,6 +504,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		status.add(0);
 		status.add(0);
 		status.add(0);
+		status.add(0);
 		this.variCount.put(variName, status);
 		// return result.toString();
 		return null;
@@ -698,8 +699,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			status.add(0);
 			// for old
 			status.add(0);
-			// for if
+			// for appeal
 			status.add(0);
+			// for if init
+			status.add(0);
+			
 			variCount.put(variName, status);
 			variName = variName + "0";
 		} else {
@@ -721,10 +725,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		incSubscript(name);
 		String variName = name + getSubscript(name);
 
-		if (this.ifLayer.size() != 0) {
-			setAppSubscript(name);
-		} else {
+		if (this.ifLayer.size() == 0) {
 			incAppSubscript(name);
+			setInitSubscript(name, getSubscript(name));
+		}
+		else {
+			setAppSubscript(name);
 		}
 
 		StringBuilder unnomAss = new StringBuilder();
@@ -753,16 +759,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		/** store initial info of variable **/
 		init = copyMap(this.variCount);
 
-		
 		/** receive condition SMT **/
 		temp = ctx.condition.getText().toString();
 		if(variCount.containsKey(ctx.condition.getText())) {
-			cond = "(= " + temp + getSubscript(temp) + " 0)";
+			cond = "(not (= " + temp + getSubscript(temp) + " 0))";
 		} else {
 			cond = super.visitExpr(ctx.condition);
 		}
 		
-
 		/** prepare if information **/
 		layer = this.ifLayer.size();
 		iftemp = new HashMap<String, Integer>();
@@ -773,14 +777,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		strif = visitBlockStmt(ctx.thenBlock);
 
 		resSmt.append(strif);
-
+/*
 		for(String var : variCount.keySet()) {
 			if(init.containsKey(var) && variCount.get(var).get(3) > init.get(var).get(3)) {
-
 				variCount.get(var).set(3, init.get(var).get(3));
 			}
 		}
-
+*/
 		/** store variable info after if **/
 		afif = copyMap(this.variCount);
 
@@ -795,19 +798,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		for (String key : afif.keySet()) {
 
 			String tempSmt = "";
-			if (afif.get(key).get(1) > this.variCount.get(key).get(1)) {
+	/*		if (afif.get(key).get(1) > this.variCount.get(key).get(1)) {
 				tempSmt += "(assert (= " + key + (Integer.toString(afif.get(key).get(1) + 1));
 				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
 				tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + "))\n";
 				incSubscript(key);
 				incAppSubscript(key);
-			} else if (afif.get(key).get(1) < this.variCount.get(key).get(1)) {
+			} else 
+	*/
+			if (init.containsKey(key) && afif.get(key).get(1) < this.variCount.get(key).get(1)) {
 				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
 				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
 				tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + ")))\n";
 				incSubscript(key);
 				incAppSubscript(key);
-			} else if (init.containsKey(key) && afif.get(key).get(1) > init.get(key).get(3)) {
+			} else if (init.containsKey(key) && afif.get(key).get(1) > init.get(key).get(3) && afif.get(key).get(1) == variCount.get(key).get(1)) {
 				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
 				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
 				tempSmt += " " + key + Integer.toString((init.get(key).get(3))) + ")))\n";
@@ -818,10 +823,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			resSmt.append(tempSmt);
 		}
 
-		for (String var : variCount.keySet()) {
-			setAppSubscript(var);
+		if(layer == 0) {
+			for (String var : variCount.keySet()) {
+				setAppSubscript(var);
+			}
 		}
-
+		
 		this.ifLayer.remove(layer + 1);
 
 		return resSmt.toString();
@@ -1519,12 +1526,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		variCount.get(text).set(3, getSubscript(text));
 	}
 
-	/** **/
+	/** set the subscript value before enter if **/
 	private void setInitSubscript(String text, int value) {
 		variCount.get(text).set(4, value);
 	}
 
-	/** **/
+	/** return the subscript value before enter if **/
 	private int getInitSubscript(String text) {
 		return variCount.get(text).get(4);
 	}
