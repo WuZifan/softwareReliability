@@ -8,11 +8,13 @@ import java.util.Map;
 
 public class VariCount {
 	/*
-	 * varCount stores all the varibles 
-	 * the first element shows whether it is global or local:
+	 * varCount stores all the variables 
+	 * the first element indicates whether it is global or local:
 	 * 0:global       1: local
 	 * the second one counts the times 
 	 * start with 0
+	 * the third element indicates the initial index when entering the procedure
+	 * the fourth element indicates the current index of available number
 	 * */
 	private Map<String, ArrayList<Integer> > varCount = new HashMap<String, ArrayList<Integer> >();
 	

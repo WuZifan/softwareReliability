@@ -45,10 +45,7 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	Map<String,String> exParameter = new HashMap<String,String>();
 	ProcedureDeclContext thisProcedure;
 
-	private String currentVar;
-	private String returnExp;
-	private List<String> ensureList = new ArrayList<String>();
-	private List<String> requirList=new ArrayList<String>();	
+	private String returnExp;	
 	
 	CallVisitor(){
 		actuals = new ArrayList<ExprContext>();
@@ -69,10 +66,19 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	}
 	
 	@Override
+	public String visitResultExpr(ResultExprContext ctx) {
+
+		String postVar = assignedVar;
+		postVar += getSubscript(postVar);
+		return postVar;
+	}
+	
+	@Override
 	public String visitPrepost(SimpleCParser.PrepostContext ctx) {
-		System.out.println("Prepost::::"+ super.visitPrepost(ctx));		
+		String result = super.visitPrepost(ctx);
+		System.out.println("Prepost::::"+ result);		
 		
-		return null;
+		return result;
 	}
 
 	@Override
@@ -90,12 +96,6 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 		ensures = super.visitEnsures(ctx);
 
 		return ensures;
-	}
-	
-	@Override
-	public String visitResultExpr(ResultExprContext ctx) {
-
-		return returnExp;
 	}
 
 	@Override
