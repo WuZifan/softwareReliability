@@ -782,13 +782,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		resSmt.append(strif);
 
-		for(String var : variCount.keySet()) {
-			if(init.containsKey(var) && variCount.get(var).get(3) > init.get(var).get(3)) {
-
-				variCount.get(var).set(3, init.get(var).get(3));
-			}
-		}
-
 		/** store variable info after if **/
 		afif = copyMap(this.variCount);
 
