@@ -1,23 +1,31 @@
 // RUN: %tool "%s" > "%t"
 // RUN: %diff %CORRECT "%t"
-// int s;
-int s;
-int foo(int a, int b)
- requires a!=0
-//  ensures \result == 4,
-//  ensures \result == 3
-// requires a!=0
-{
- 	int i;
- 	int j;
- 	i = 1;
-//  	if(1==1){
-// 		assert(3<4);
-// 		i=2;
-// 	}else{
-// 		i=3;
-// 	}
-// 	assert(2<3);
-	assert(4<5);
+int main(int i,int j,int z) {
+	int a;
+	int b;
+	int c;
+	int d;
+	a=0; 
+	b=0;
+	c=0;
+	d=0;
+	if(i) {
+		if(j) {
+			a=1;
+		} else {
+			b=1;
+		}
+	} else {
+		if(z) {
+			c=1;
+		} else {
+			d=1;
+		}
+	}
+	
+	assert(!(i&&j)||(a&&!b&&!c&&!d));
+	assert(!(i&&!j)||(!a&&b&&!c&&!d));
+	assert(!(!i&&z)||(!a&&!b&&c&&!d));
+	assert(!(!i&&!z)||(!a&&!b&&!c&&d));
 	return 0;
 }

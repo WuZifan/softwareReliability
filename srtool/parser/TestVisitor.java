@@ -588,7 +588,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		variName = variName + "0";
 		String retSMT = "(declare-fun " + variName + " () " + "Int)\n";
 		super.visitVarDecl(ctx);
-		return null;
+		return "";
 	}
 
 	@Override
@@ -627,14 +627,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder resSmt = new StringBuilder("");
 		HashMap<String, Integer> iftemp;
 		int layer;
-		String cond, strif, strelse;
+		String cond, strif, strelse, temp;
 		
 
 		/** store initial info of variable **/
 		init = copyMap(this.variCount);
 
+		
 		/** receive condition SMT **/
-		cond = super.visitExpr(ctx.condition);
+		temp = ctx.condition.getText().toString();
+		if(variCount.containsKey(ctx.condition.getText())) {
+			cond = "(= " + temp + getSubscript(temp) + " 0)";
+		} else {
+			cond = super.visitExpr(ctx.condition);
+		}
+		
 
 		/** prepare if information **/
 		layer = this.ifLayer.size();
@@ -649,7 +656,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 
 		for(String var : variCount.keySet()) {
-			if(variCount.get(var).get(3) > init.get(var).get(3)) {
+			if(init.containsKey(var) && variCount.get(var).get(3) > init.get(var).get(3)) {
 				variCount.get(var).set(3, init.get(var).get(3));
 			}
 		}
@@ -680,13 +687,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + ")))\n";
 				incSubscript(key);
 				incAppSubscript(key);
-			} else if (afif.get(key).get(1) > init.get(key).get(3)) {
+			} else if (init.containsKey(key) && afif.get(key).get(1) > init.get(key).get(3)) {
 				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
 				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
 				tempSmt += " " + key + Integer.toString((init.get(key).get(3))) + ")))\n";
 				incSubscript(key);
 				incAppSubscript(key);
 			}
+			
 			resSmt.append(tempSmt);
 		}
 		
@@ -849,21 +857,39 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		conOpList.add("<=");
 		conOpList.add(">");
 		conOpList.add(">=");
-		// (> 1 1)
+	
+		String result = "";
 		if (!sub.contains("(")) {
-			String result = "(itb " + sub + ")";
+			result = "(itb " + sub + ")";
 			return result;
 		}
 		if (sub.trim().length() > 3) {
 			String op = sub.trim().substring(1, 3).trim();
 			if (conOpList.contains(op)) {
 				return sub;
-			} else {
-				String result = "(itb " + sub + ")";
+			} else if(op.contains("!")) {
+				String oop;
+				String temp = sub.trim();
+				if(temp.length() > 10) {
+					oop = temp.substring(6, 8).trim();
+				}
+				else {
+					oop = temp.substring(7).trim();
+				}
+				if(!conOpList.contains(oop)) {
+					result = "(itb " + sub + ")";
+					return result;
+				}
+				else {
+					return sub;
+				}
+			}
+			else {
+				result = "(itb " + sub + ")";
 				return result;
 			}
 		} else {
-			String result = "(itb " + sub + ")";
+			result = "(itb " + sub + ")";
 			return result;
 		}
 	}
@@ -1085,7 +1111,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (single != null) {
 			resSmt.append(visitShiftExpr(ctx.single));
 		} else {
-			// （> (>1 2) 2）
 			Iterator<ShiftExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {
@@ -1132,10 +1157,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 				if (i < ctx.ops.size()) {
 					if (ctx.ops.get(i).getText().equals("<<")) {
-					//	tempSmt.append("(bv2int (myshl )");
 						tempSmt.append("(myshl ");
 					} else {
-//						tempSmt.append("(bv2int (myashr )");
 						tempSmt.append("(myashr ");
 					}
 
@@ -1224,18 +1247,27 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		conOpList.add("<=");
 		conOpList.add(">");
 		conOpList.add(">=");
-		// (> 1 1)
+	
+		String result = "";
+		
 		if (sub.trim().length() > 3) {
 			String op = sub.trim().substring(1, 3).trim();
 			if (conOpList.contains(op)) {
-				String result = "(bti " + sub + ")";
+				result = "(bti " + sub + ")";
 				return result;
-			} else {
-				return sub;
+			} else if(op.contains("!")){
+				String oop = sub.trim().substring(6, 8).trim();
+				if(conOpList.contains(oop)) {
+					result = "(bti " + sub + ")";
+					return result;
+				}
+				else {
+					return sub;
+				}
 			}
-		} else {
-			return sub;
 		}
+		
+		return sub;
 	}
 
 	@Override
@@ -1278,11 +1310,16 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			return this.visitAtomExpr((AtomExprContext) ctx.getChild(0));
 		} else {
 			for (int i = 0; i < opsList.size(); i++) {
-				result.append("(" + opsList.get(i) + " ");
-			}
-			result.append(" " + this.visitAtomExpr(ctx.arg));
-			for (int i = 0; i < opsList.size(); i++) {
-				result.append(")");
+				switch(opsList.get(i)) {
+					case "~":
+						result.append("(bv2int (" + opsList.get(i) + " ");
+						result.append(" ((_ int2bv 32)" + this.visitAtomExpr(ctx.arg) + ")))");
+						break;
+					default:
+						result.append("(" + opsList.get(i) + " ");
+						result.append(" " + this.visitAtomExpr(ctx.arg));
+						result.append(")");
+				}
 			}
 		}
 		return result.toString();
