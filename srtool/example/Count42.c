@@ -20,13 +20,13 @@ int foo(int a, int b)
 // 	assert(2<3);
 	assume( 1 == 1);
 	s = bar(i,9);
-	assert(4<5);
+	assert(s<5);
 	return s;
 }
 
 int bar(int a, int b)
  requires a!=0,
- ensures \result == 3
+ ensures \result != s
 // requires a!=0
 {
  	int i;
