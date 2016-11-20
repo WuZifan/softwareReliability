@@ -45,7 +45,7 @@ import util.ProcessTimeoutException;
 
 public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
-	private Map<String, ProcedureDeclContext > procedureContext = new HashMap<String, ProcedureDeclContext>();
+	private Map<String, ProcedureDeclContext> procedureContext = new HashMap<String, ProcedureDeclContext>();
 	private List<VarDeclContext> globals = new ArrayList<VarDeclContext>();
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
@@ -121,12 +121,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			// resSmt.append(visitVarDecl(item));
 			visitVarDecl(item);
 		}
-		
+
 		for (ProcedureDeclContext item : procedures) {
-			
+
 			String name = item.name.getText();
 			procedureContext.put(name, item);
-			
+
 		}
 		this.inProcedure = 1;
 		for (ProcedureDeclContext item : procedures) {
@@ -148,38 +148,37 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 		return resSmt.toString();
 	}
-	
-	//TODO call
+
+	// TODO call
 	@Override
-	public String visitCallStmt(SimpleCParser.CallStmtContext ctx){
-						
+	public String visitCallStmt(SimpleCParser.CallStmtContext ctx) {
+
 		System.out.println("In Call Statement:: ");
-		String methodName = ctx.callee.getText();		
+		String methodName = ctx.callee.getText();
 		String assignedVar = ctx.lhs.getText();
 		List<ExprContext> actuals = ctx.actuals;
 		StringBuffer postAssume = new StringBuffer();
-		Map<String,String> exParameter = new HashMap<String,String>();
-		
-		if(procedureContext.containsKey(methodName)){
-			
+		Map<String, String> exParameter = new HashMap<String, String>();
+
+		if (procedureContext.containsKey(methodName)) {
+
 			ProcedureDeclContext thisProcedure = procedureContext.get(methodName);
-			
-			for(int i = 0; i < actuals.size();i++){		
-				exParameter.put(thisProcedure.formals.get(i).name.getText(),actuals.get(i).getText());
+
+			for (int i = 0; i < actuals.size(); i++) {
+				exParameter.put(thisProcedure.formals.get(i).name.getText(), actuals.get(i).getText());
 			}
-			
-			for(VarDeclContext items : globals){
-				if(!exParameter.containsKey(items.name.getText())){
-					exParameter.put(items.name.getText(),items.name.getText());
+
+			for (VarDeclContext items : globals) {
+				if (!exParameter.containsKey(items.name.getText())) {
+					exParameter.put(items.name.getText(), items.name.getText());
 				}
 			}
-			
+
 			List<PrepostContext> contract = thisProcedure.contract;
 			String assertion = this.assVisitor.getUnAssSMT();
-			
-			
-			for(PrepostContext item:contract){
-				call.getAllVar(variCount,assignedVar,exParameter,thisProcedure);
+
+			for (PrepostContext item : contract) {
+				call.getAllVar(variCount, assignedVar, exParameter, thisProcedure);
 				String smt = call.visitPrepost(item);
 				if (item.getText().contains("requires")) {
 					if (!smt.contains("(")) {
@@ -197,26 +196,27 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					this.assertList.add(smt);
 				}
 			}
-			
+
 			List<StmtContext> stmts = new ArrayList<StmtContext>();
-			stmts=thisProcedure.stmts;
-			
-			for(int i=0;i<stmts.size();i++){		
-				try{
+			stmts = thisProcedure.stmts;
+
+			for (int i = 0; i < stmts.size(); i++) {
+				try {
 					String assignVar = stmts.get(i).assignStmt().lhs.getText();
-					for(VarDeclContext item : globals){
-						if(item.name.getText().equals(assignVar) && !item.name.getText().equals(assignedVar)){
+					for (VarDeclContext item : globals) {
+						if (item.name.getText().equals(assignVar) && !item.name.getText().equals(assignedVar)) {
 							variCount.get(assignVar).set(1, getSubscript(assignVar) + 1);
 						}
 					}
-						
-				}catch(NullPointerException e){	}
+
+				} catch (NullPointerException e) {
+				}
 			}
-		
+
 			variCount.get(assignedVar).set(1, getSubscript(assignedVar) + 1);
-			
-			for(PrepostContext item:contract){
-				call.getAllVar(variCount,assignedVar,exParameter,thisProcedure);
+
+			for (PrepostContext item : contract) {
+				call.getAllVar(variCount, assignedVar, exParameter, thisProcedure);
 				String smt = call.visitPrepost(item);
 				if (item.getText().contains("ensures")) {
 					if (!assertion.isEmpty())
@@ -225,11 +225,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 						smt = "(assert " + smt + " )\n";
 					postAssume.append(smt);
 				}
-			}	
+			}
 		}
-		
+
 		return postAssume.toString();
 	}
+
 	/**
 	 * To get which one is wrong
 	 * 
@@ -432,8 +433,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuffer result = new StringBuffer();
 		for (int i = 0; i < this.assertList.size(); i++) {
 			this.proxyAssertMap.put("proxy" + i, this.assertList.get(i));
-			result.append("(declare-fun proxy" + i + " () Bool)\n" + "(assert (= proxy" + i + " " + assertList.get(i)
-					+ "))\n");
+			String assVari = this.assertList.get(i);
+			result.append("(declare-fun proxy" + i + " () Bool)\n" + "(assert (= proxy" + i + " " + assVari + "))\n");
 		}
 		return result.toString();
 	}
@@ -586,9 +587,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		String text = this.visitExpr(ctx.expr());
+
 		if (!text.contains("(")) {
 			text = isNotCondition(text);
 		}
+
 		if (this.ifLayer.size() != 0) {
 			String finalTest = getIfSmt();
 			finalTest = getAssertWithRequire(finalTest, true);
@@ -659,13 +662,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			String finalTest = getIfSmt();
 			// for if
 			finalTest = getAssertWithRequire(finalTest, true);
-			String text="";
+			String text = "";
 			if (!assertion.isEmpty()) {
-				text = "(=> " + assertion + " " + assumeSmt+")";
+				text = "(=> " + assertion + " " + assumeSmt + ")";
 			} else {
-				text =  assumeSmt;
+				text = assumeSmt;
 			}
-			// order is : if -> before assertion -> assume 
+			// order is : if -> before assertion -> assume
 			finalTest = "(assert (=> " + finalTest + " " + text + "))\n";
 			return finalTest;
 		} else {
@@ -753,15 +756,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		/** store initial info of variable **/
 		init = copyMap(this.variCount);
 
-		
 		/** receive condition SMT **/
 		temp = ctx.condition.getText().toString();
-		if(variCount.containsKey(ctx.condition.getText())) {
+		if (variCount.containsKey(ctx.condition.getText())) {
 			cond = "(= " + temp + getSubscript(temp) + " 0)";
 		} else {
 			cond = super.visitExpr(ctx.condition);
 		}
-		
 
 		/** prepare if information **/
 		layer = this.ifLayer.size();
@@ -774,8 +775,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		resSmt.append(strif);
 
-		for(String var : variCount.keySet()) {
-			if(init.containsKey(var) && variCount.get(var).get(3) > init.get(var).get(3)) {
+		for (String var : variCount.keySet()) {
+			if (init.containsKey(var) && variCount.get(var).get(3) > init.get(var).get(3)) {
 
 				variCount.get(var).set(3, init.get(var).get(3));
 			}
@@ -814,7 +815,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				incSubscript(key);
 				incAppSubscript(key);
 			}
-			
+
 			resSmt.append(tempSmt);
 		}
 
@@ -891,7 +892,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitExpr(ExprContext ctx) {
 		String resSmt;
-		resSmt = visitTernExpr(ctx.ternExpr());
+		resSmt = this.visitTernExpr(ctx.ternExpr());
 		return resSmt;
 	}
 
@@ -976,7 +977,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		conOpList.add("<=");
 		conOpList.add(">");
 		conOpList.add(">=");
-		
+
 		String result = "";
 
 		if (!sub.contains("(")) {
@@ -987,24 +988,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			String op = sub.trim().substring(1, 3).trim();
 			if (conOpList.contains(op)) {
 				return sub;
-			} else if(op.contains("!")) {
+			} else if (op.contains("!")) {
 				String oop;
 				String temp = sub.trim();
-				if(temp.length() > 10) {
+				if (temp.length() > 10) {
 					oop = temp.substring(6, 8).trim();
-				}
-				else {
+				} else {
 					oop = temp.substring(7).trim();
 				}
-				if(!conOpList.contains(oop)) {
+				if (!conOpList.contains(oop)) {
 					result = "(itb " + sub + ")";
 					return result;
-				}
-				else {
+				} else {
 					return sub;
 				}
-			}
-			else {
+			} else {
 				result = "(itb " + sub + ")";
 				return result;
 			}
@@ -1368,27 +1366,34 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		conOpList.add("<=");
 		conOpList.add(">");
 		conOpList.add(">=");
-	
-		String result = "";
 
+		String result = "";
 
 		if (sub.trim().length() > 3) {
 			String op = sub.trim().substring(1, 3).trim();
 			if (conOpList.contains(op)) {
 				result = "(bti " + sub + ")";
 				return result;
-			} else if(op.contains("!")){
-				String oop = sub.trim().substring(6, 8).trim();
-				if(conOpList.contains(oop)) {
+			} else if (op.contains("!")) { // (! (a))
+				String oop = "";
+				String temp = sub.trim();
+				if (sub.trim().length() > 10) {
+					oop = temp.substring(6, 8).trim();
+				} else {
+					oop = temp.substring(7).trim();
+				}
+				if (conOpList.contains(oop)) {
 					result = "(bti " + sub + ")";
 					return result;
-				}
-				else {
+				} else {
 					return sub;
 				}
+			} else {
+				result = "(bti " + sub + ")";
+				return result;
 			}
 		}
-		
+
 		return sub;
 	}
 
@@ -1426,21 +1431,28 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder result = new StringBuilder();
 		List<String> opsList = new ArrayList<String>();
 		for (Token token : ctx.ops) {
-			opsList.add(token.getText());
+			String tempOop = token.getText();
+			if (tempOop.equals("!")) {
+				opsList.add("not");
+			} else {
+				opsList.add(tempOop);
+			}
 		}
-		if (opsList.isEmpty()) {
+		
+		if (opsList.isEmpty())
+		{
 			return this.visitAtomExpr((AtomExprContext) ctx.getChild(0));
 		} else {
 			for (int i = 0; i < opsList.size(); i++) {
-				switch(opsList.get(i)) {
-					case "~":
-						result.append("(bv2int (" + opsList.get(i) + " ");
-						result.append(" ((_ int2bv 32)" + this.visitAtomExpr(ctx.arg) + ")))");
-						break;
-					default:
-						result.append("(" + opsList.get(i) + " ");
-						result.append(" " + this.visitAtomExpr(ctx.arg));
-						result.append(")");
+				switch (opsList.get(i)) {
+				case "~":
+					result.append("(bv2int (" + opsList.get(i) + " ");
+					result.append(" ((_ int2bv 32)" + this.visitAtomExpr(ctx.arg) + ")))");
+					break;
+				default:
+					result.append("(" + opsList.get(i) + " ");
+					result.append(" " + this.isNotCondition(this.visitAtomExpr(ctx.arg)));
+					result.append(")");
 				}
 			}
 		}
