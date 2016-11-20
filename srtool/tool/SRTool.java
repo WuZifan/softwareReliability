@@ -29,7 +29,7 @@ public class SRTool {
 //		String filename="tests/correct/ifelse.c";
 
 		// (Error "line 8 column 36: invalid function application, arguments missing")
-//		String filename="tests/correct/overshift.c";
+		//String filename="tests/correct/overshift.c";
 		// Pased
 //		String filename="tests/correct/simpleeq.c";
 		// (Error "line 15 column 29: Sort mismatch at argument #2 for function (declare-fun and (Bool Bool) Bool) supplied sort is Int")

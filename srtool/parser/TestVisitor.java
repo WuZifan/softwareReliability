@@ -30,6 +30,7 @@ import parser.SimpleCParser.MulExprContext;
 import parser.SimpleCParser.NumberExprContext;
 import parser.SimpleCParser.OldExprContext;
 import parser.SimpleCParser.ParenExprContext;
+import parser.SimpleCParser.PrepostContext;
 import parser.SimpleCParser.ProcedureDeclContext;
 import parser.SimpleCParser.RelExprContext;
 import parser.SimpleCParser.ResultExprContext;
@@ -44,6 +45,8 @@ import util.ProcessTimeoutException;
 
 public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
+	private Map<String, ProcedureDeclContext > procedureContext = new HashMap<String, ProcedureDeclContext>();
+	private List<VarDeclContext> globals = new ArrayList<VarDeclContext>();
 	private StringBuilder smtResult;
 	private MyAssertVisitor assVisitor;
 	private HashMap<Integer, HashMap<String, Integer>> ifLayer;
@@ -56,12 +59,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private int inProcedure;
 	private String returnExp;
 	private List<String> assertList = new ArrayList<String>();
+	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
 	private HashMap<String, String> proxyAssertMap = new HashMap<String, String>();
+
 	private static final int TIMEOUT = 30;
 
 	public TestVisitor() {
@@ -109,13 +114,20 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder resSmt = new StringBuilder("");
 		List<VarDeclContext> gobls = ctx.globals;
 		List<ProcedureDeclContext> procedures = ctx.procedures;
+		globals = ctx.globals;
 		this.inProcedure = 0;
 		StringBuffer finalProgramSMT = new StringBuffer();
 		for (VarDeclContext item : gobls) {
 			// resSmt.append(visitVarDecl(item));
 			visitVarDecl(item);
 		}
-
+		
+		for (ProcedureDeclContext item : procedures) {
+			
+			String name = item.name.getText();
+			procedureContext.put(name, item);
+			
+		}
 		this.inProcedure = 1;
 		for (ProcedureDeclContext item : procedures) {
 			String res = visitProcedureDecl(item);
@@ -136,7 +148,88 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 		return resSmt.toString();
 	}
-
+	
+	//TODO call
+	@Override
+	public String visitCallStmt(SimpleCParser.CallStmtContext ctx){
+						
+		System.out.println("In Call Statement:: ");
+		String methodName = ctx.callee.getText();		
+		String assignedVar = ctx.lhs.getText();
+		List<ExprContext> actuals = ctx.actuals;
+		StringBuffer postAssume = new StringBuffer();
+		Map<String,String> exParameter = new HashMap<String,String>();
+		
+		if(procedureContext.containsKey(methodName)){
+			
+			ProcedureDeclContext thisProcedure = procedureContext.get(methodName);
+			
+			for(int i = 0; i < actuals.size();i++){		
+				exParameter.put(thisProcedure.formals.get(i).name.getText(),actuals.get(i).getText());
+			}
+			
+			for(VarDeclContext items : globals){
+				if(!exParameter.containsKey(items.name.getText())){
+					exParameter.put(items.name.getText(),items.name.getText());
+				}
+			}
+			
+			List<PrepostContext> contract = thisProcedure.contract;
+			String assertion = this.assVisitor.getUnAssSMT();
+			
+			
+			for(PrepostContext item:contract){
+				call.getAllVar(variCount,assignedVar,exParameter,thisProcedure);
+				String smt = call.visitPrepost(item);
+				if (item.getText().contains("requires")) {
+					if (!smt.contains("(")) {
+						smt = isNotCondition(smt);
+					}
+					if (this.ifLayer.size() != 0) {
+						String finalTest = getIfSmt();
+						finalTest = getAssertWithRequire(finalTest, true);
+						finalTest = "(=> " + finalTest + " " + smt + ")";
+						smt = finalTest;
+					} else {
+						smt = getAssertWithRequire(smt, false);
+					}
+					this.assVisitor.visitunnomAss(smt);
+					this.assertList.add(smt);
+				}
+			}
+			
+			List<StmtContext> stmts = new ArrayList<StmtContext>();
+			stmts=thisProcedure.stmts;
+			
+			for(int i=0;i<stmts.size();i++){		
+				try{
+					String assignVar = stmts.get(i).assignStmt().lhs.getText();
+					for(VarDeclContext item : globals){
+						if(item.name.getText().equals(assignVar) && !item.name.getText().equals(assignedVar)){
+							variCount.get(assignVar).set(1, getSubscript(assignVar) + 1);
+						}
+					}
+						
+				}catch(NullPointerException e){	}
+			}
+		
+			variCount.get(assignedVar).set(1, getSubscript(assignedVar) + 1);
+			
+			for(PrepostContext item:contract){
+				call.getAllVar(variCount,assignedVar,exParameter,thisProcedure);
+				String smt = call.visitPrepost(item);
+				if (item.getText().contains("ensures")) {
+					if (!assertion.isEmpty())
+						smt = "(assert (=> " + assertion + " " + smt + "))\n";
+					else
+						smt = "(assert " + smt + " )\n";
+					postAssume.append(smt);
+				}
+			}	
+		}
+		
+		return postAssume.toString();
+	}
 	/**
 	 * To get which one is wrong
 	 * 
@@ -154,29 +247,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			return "";
 		}
 	}
-	// @Override
-	// public String visitCallStmt(SimpleCParser.CallStmtContext ctx){
-	//
-	// String name = ctx.callee.getText();
-	//
-	// System.out.println("In Call Statement:: ");
-	// System.out.println(ctx.lhs.getText());
-	// System.out.println(ctx.callee.getText());
-	// System.out.println(ctx.expr.getText());
-	//
-	// if(procedureContext.containsKey(ctx.callee.getText())){
-	//
-	// ProcedureDeclContext thisProcedure =
-	// procedureContext.get(ctx.callee.getText());
-	// List<PrepostContext> contract = thisProcedure.contract;
-	//
-	// for(PrepostContext item:contract){
-	// //String smt = visitPrepost(item);
-	//
-	// }
-	// }
-	// return null;
-	// }
 
 	private void smtCheckSat(String procSMT) {
 		String vc = procSMT;
@@ -220,7 +290,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder result = new StringBuilder();
 		result.append("(define-fun mydiv ((x Int) (y Int)) Int\n" + "(ite (= y 0) x (div x y)))\n");
 		result.append("(define-fun mymod ((x Int) (y Int)) Int\n" + "(ite (= y 0) x (mod x y)))\n");
-		// TODO Test assume
 		return result.toString();
 	}
 
@@ -611,7 +680,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	// need finish ~~~~~
 	public String visitVarDecl(VarDeclContext ctx) {
-		StringBuilder result = new StringBuilder();
 		String variName = ctx.getChild(1).getText();
 		if (!this.variCount.keySet().contains(variName)) {
 			ArrayList<Integer> status = new ArrayList<Integer>();
@@ -1272,7 +1340,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		conOpList.add("<=");
 		conOpList.add(">");
 		conOpList.add(">=");
-		// (> 1 1)
 		if (sub.trim().length() > 3) {
 			String op = sub.trim().substring(1, 3).trim();
 			if (conOpList.contains(op)) {
