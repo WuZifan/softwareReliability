@@ -28,33 +28,64 @@
 
 
 
-int flump;
-int __cl3nk()
-ensures \result==flump+(16<<1)
-{
-	int x;
-	x=1;
-	int i;
-	i=0;
-	
-	i=4;
-	x=32;
-	  if(i<5)
-	  { x=x+1; //x=33
-	  i=i+1; //i=5
-	  }
-	  if(i<5)
-	  {
-	  assume 4==5;
-	  x=x+1;
-	  i=i+1;}
-	  if(i<5)
-	  {
-	  assert 0;
-	  x=x+1;
-	  i=i+1;
-	  }
-	  assert x==32;
-	  return x+flump;
-	  }
+// RUN: %tool "%s" > "%t"
+
+// RUN: %diff %CORRECT "%t"
+
+int main(int i,int j,int z) {
+
+	int a;
+
+	int b;
+
+	int c;
+
+	int d;
+
+	a=0; 
+
+	b=0;
+
+	c=0;
+
+	d=0;
+
+	if(i) {
+
+	if(j) {
+
+	a=1;
+
+	} else {
+
+	b=1;
+
+	}
+
+	} else {
+
+	if(z) {
+
+	c=1;
+
+	} else {
+
+	d=1;
+
+	}
+
+	}
+
+	assert(!(i&&j)||(a&&!b&&!c&&!d));
+
+	assert(!(i&&!j)||(!a&&b&&!c&&!d));
+
+	assert(!(!i&&z)||(!a&&!b&&c&&!d));
+
+	assert(!(!i&&!z)||(!a&&!b&&!c&&d));
+
+	return 0;
+
+}
+
 
