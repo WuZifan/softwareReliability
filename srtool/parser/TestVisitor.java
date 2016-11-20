@@ -57,7 +57,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private String returnExp;
 	private List<String> assertList = new ArrayList<String>();
 	private List<String> requirList = new ArrayList<String>();
-	Map<String, String> resultProxyMap = new HashMap<String, String>();
+	private Map<String, String> resultProxyMap = new HashMap<String, String>();
+	// the fisrt string is proxy+i; the second string is the sentence of
+	// assertion,
+	// boolean represent is true or not
+	private HashMap<String, String> proxyAssertMap = new HashMap<String, String>();
 	private static final int TIMEOUT = 30;
 
 	public TestVisitor() {
@@ -190,7 +194,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					String[] tempStrArray = tempResult.split(" ");
 					resultProxyMap.put(tempStrArray[0], tempStrArray[1]);
 				}
-				System.out.println(resultProxyMap);
+				System.out.println(this.resultProxyMap);
+				System.out.println(this.proxyAssertMap);
 			}
 			System.out.println(queryResult);
 		} catch (ProcessTimeoutException | IOException | InterruptedException e) {
@@ -357,6 +362,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private String getAssertReplaced() {
 		StringBuffer result = new StringBuffer();
 		for (int i = 0; i < this.assertList.size(); i++) {
+			this.proxyAssertMap.put("proxy" + i, this.assertList.get(i));
 			result.append("(declare-fun proxy" + i + " () Bool)\n" + "(assert (= proxy" + i + " " + assertList.get(i)
 					+ "))\n");
 		}
@@ -370,19 +376,16 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 */
 	private String gettvUnAssSMT() {
 		if (!this.assertList.isEmpty()) {
-			// return "(and "+unnomAss.append(" )").toString();
-			// String unnomRe = this.assertList.get(0);
 			String unnomRe = "proxy0";
+			// in the below function,to generate the
 			String finalResult = getAssertReplaced();
 			for (int i = 1; i < this.assertList.size(); i++) {
-				// unnomRe = "(and " + this.assertList.get(i) + " " + unnomRe +
-				// ")";
 				unnomRe = "(and " + "proxy" + i + " " + unnomRe + ")";
 			}
 			unnomRe = "(assert (not " + unnomRe + "))";
 			return finalResult + unnomRe;
 		} else {
-			return "(assert false)";
+			return "";
 		}
 	}
 
@@ -564,18 +567,45 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return finalTest;
 	}
 
+	private String gettvUnAssSMTforAssume() {
+		if (!this.assertList.isEmpty()) {
+			String result = this.assertList.get(0);
+			for (int i = 1; i < this.assertList.size(); i++) {
+				result = "(and " + result + " " + this.assertList.get(i) + ")";
+			}
+			return result;
+		} else {
+			return "";
+		}
+	}
+
 	@Override
 	public String visitAssumeStmt(AssumeStmtContext ctx) {
 
-		String assertion = this.assVisitor.getUnAssSMT();
+		String assertion = this.gettvUnAssSMTforAssume();
 
 		String assumeSmt = this.visitExpr(ctx.expr());
 
-		if (!assertion.isEmpty())
-			assumeSmt = "(assert (=> " + assertion + " " + assumeSmt + "))\n";
-		else
-			assumeSmt = "(assert " + assumeSmt + " )\n";
-		return assumeSmt;
+		if (this.ifLayer.size() != 0) {
+			String finalTest = getIfSmt();
+			// for if
+			finalTest = getAssertWithRequire(finalTest, true);
+			String text="";
+			if (!assertion.isEmpty()) {
+				text = "(=> " + assertion + " " + assumeSmt+")";
+			} else {
+				text =  assumeSmt;
+			}
+			// order is : if -> before assertion -> assume 
+			finalTest = "(assert (=> " + finalTest + " " + text + "))\n";
+			return finalTest;
+		} else {
+			if (!assertion.isEmpty())
+				assumeSmt = "(assert (=> " + assertion + " " + assumeSmt + "))\n";
+			else
+				assumeSmt = "(assert " + assumeSmt + " )\n";
+			return assumeSmt;
+		}
 	}
 
 	@Override
@@ -633,7 +663,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder nomoAss = new StringBuilder();
 		num = isCondition(num);
 		nomoAss.append("(assert (= " + variName + " " + num + "))\n");
-		// assVisitor.visitnomorAss(nomoAss.toString());
+		assVisitor.visitnomorAss(nomoAss.toString());
 		this.smtResult.append(nomoAss.toString());
 		// here is for the checking whether it is out of bound
 		unnomAss.append("(<= " + variName + " 4294967295)");
