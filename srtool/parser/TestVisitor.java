@@ -1464,8 +1464,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			for (int i = 0; i < opsList.size(); i++) {
 				switch (opsList.get(i)) {
 				case "~":
-					result.append("(bv2int (" + opsList.get(i) + " ");
-					result.append(" ((_ int2bv 32) " + this.visitAtomExpr(ctx.arg) + ")))");
+//					result.append("(bv2int (" + opsList.get(i) + " ");
+//					result.append(" ((_ int2bv 32) " + this.visitAtomExpr(ctx.arg) + ")))");
+					String temp=this.isCondition(this.visitAtomExpr(ctx.arg));
+					result.append("(~ "+temp+")");
 					break;
 				case "+":
 					return this.visitAtomExpr(ctx.arg);
