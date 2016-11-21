@@ -17,7 +17,8 @@ public class SRTool {
     private static final int TIMEOUT = 30;
 	public static void main(String[] args) throws IOException, InterruptedException {
 //		String filename= args[0];
-		String filename="example/Count42.c";
+//		String filename="example/Count42.c";
+		String filename="tests/correct/simpleeq.c";
 
 		
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));

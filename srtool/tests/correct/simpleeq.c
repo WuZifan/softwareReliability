@@ -15,7 +15,6 @@ int blarp() {
     a = b;
     b = c;
     c = temp;
-
     temp = d;
     d = e;
     e = f;
