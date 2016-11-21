@@ -994,20 +994,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			String op = sub.trim().substring(1, 3).trim();
 			if (conOpList.contains(op)) {
 				return sub;
-			} else if (op.contains("!")) {
-				String oop;
-				String temp = sub.trim();
-				if (temp.length() > 10) {
-					oop = temp.substring(6, 8).trim();
-				} else {
-					oop = temp.substring(7).trim();
-				}
-				if (!conOpList.contains(oop)) {
-					result = "(itb " + sub + ")";
-					return result;
-				} else {
-					return sub;
-				}
 			} else {
 				result = "(itb " + sub + ")";
 				return result;
@@ -1380,21 +1366,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			if (conOpList.contains(op)) {
 				result = "(bti " + sub + ")";
 				return result;
-			} else if (op.contains("!")) { // (! (a))
-				String oop = "";
-				String temp = sub.trim();
-				if (sub.trim().length() > 10) {
-					oop = temp.substring(6, 8).trim();
-				} else {
-					oop = temp.substring(7).trim();
-				}
-				if (conOpList.contains(oop)) {
-					result = "(bti " + sub + ")";
-					return result;
-				} else {
-					return sub;
-				}
-			} else {
+			} 
+			else {
 				result = "(bti " + sub + ")";
 				return result;
 			}
