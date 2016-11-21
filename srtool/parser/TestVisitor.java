@@ -832,12 +832,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder res = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
 		String cond;
+		
+		System.out.println("");
 
 		cond = visitExpr(ctx.condition);
 
 		for (LoopInvariantContext invar : inVarList) {
 
 		}
+		
 
 		return res.toString();
 	}
