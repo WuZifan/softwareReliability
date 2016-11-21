@@ -147,7 +147,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			/* Todo */
 //			System.out.println("Program: \n" + finalProgramSMT.toString());
 
-//			 System.out.println("Program: \n" + finalProgramSMT.toString());
+			 System.out.println("Program: \n" + finalProgramSMT.toString());
 
 			smtCheckSat(finalProgramSMT.toString());
 		}
@@ -1456,10 +1456,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		} else {
 			for (int i = 0; i < opsList.size(); i++) {
 				switch (opsList.get(i)) {
-				case "~":
-					result.append("(bv2int (" + opsList.get(i) + " ");
-					result.append(" ((_ int2bv 32)" + this.visitAtomExpr(ctx.arg) + ")))");
-					break;
+				/*case "~":
+					result.append("(bv2int (" + opsList.get(i));
+					result.append(" ((_ int2bv 32) " + this.visitAtomExpr(ctx.arg) + ")))");
+					break;*/
 				case "+":
 					return this.visitAtomExpr(ctx.arg);
 				case "-":
@@ -1584,10 +1584,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	/*
-	 * generate smt of unwind 1 layer of while statement Para: Condition
-	 * Context, Block statementContext Return: string of "if" SMT
+	 * generate smt of unwind 1 layer of while statement 
+	 * Para: Condition Context, Block statementContext, lastloop assert and assume and flag for last loop
+	 * flag 1: last loop,       0:  not last loop
+	 * Return: string of "if" SMT
 	 */
-	private String getUnwindIf(SimpleCParser.ExprContext cond, SimpleCParser.BlockStmtContext ctx) {
+	private String getUnwindIf(SimpleCParser.ExprContext cond, SimpleCParser.BlockStmtContext ctx, String asaum, int last) {
 		StringBuilder resSmt = new StringBuilder();
 		HashMap<String, ArrayList<Integer>> init = new HashMap<String, ArrayList<Integer>>();
 		HashMap<String, Integer> iftemp;
@@ -1637,6 +1639,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		this.ifLayer.remove(layer + 1);
 
+		if(last == 1) {
+			resSmt.append(asaum);
+		}
+		
 		return resSmt.toString();
 	}
 

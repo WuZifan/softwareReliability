@@ -16,7 +16,7 @@ public class SRTool {
 
     private static final int TIMEOUT = 30;
 	public static void main(String[] args) throws IOException, InterruptedException {
-		String filename= args[0];
+//		String filename= args[0];
 		/*
 		 * Correct
 		 */
@@ -50,7 +50,7 @@ public class SRTool {
 //		String filename="tests/incorrect/failsimplelor.c";
 //		String filename="tests/incorrect/failsimplesub.c";
 
-//		String filename="example/Count42.c";
+		String filename="example/Count42.c";
 
 //		String filename="example/Count42.c";
 //		String filename="tests/correct/simpleeq.c";
