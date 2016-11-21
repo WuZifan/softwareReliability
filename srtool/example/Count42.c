@@ -49,7 +49,6 @@ d=1;
 
 }
 
-assert(0);
 assert(!(i&&j)||(a&&!b&&!c&&!d));
 
 assert(!(i&&!j)||(!a&&b&&!c&&!d));

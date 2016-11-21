@@ -144,7 +144,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(getWhichOneIsWrong());
 			/* need to verified each procedure after generation */
 			/* Todo */
-//			System.out.println("Program: \n" + finalProgramSMT.toString());
+			System.out.println("Program: \n" + finalProgramSMT.toString());
 			smtCheckSat(finalProgramSMT.toString());
 		}
 		return resSmt.toString();
@@ -266,8 +266,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					String[] tempStrArray = tempResult.split(" ");
 					resultProxyMap.put(tempStrArray[0], tempStrArray[1]);
 				}
-				System.out.println(this.resultProxyMap);
-				System.out.println(this.proxyAssertMap);
+//				System.out.println(this.resultProxyMap);
+//				System.out.println(this.proxyAssertMap);
 			}
 //			System.out.println(queryResult);
 		} catch (ProcessTimeoutException | IOException | InterruptedException e) {
