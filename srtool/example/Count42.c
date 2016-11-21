@@ -1,5 +1,9 @@
+
+
 // RUN: %tool "%s" > "%t"
+
 // RUN: %diff %CORRECT "%t"
+
 // int s;
 int s;
 int foo(int a, int b)
@@ -24,6 +28,5 @@ int foo(int a, int b)
 		i=i-1;
 		
 	}
-
 	return i;
 }
