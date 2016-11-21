@@ -1613,14 +1613,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		resSmt.append(strif);
 
-		/** Compare differences and generate Smt for if **/
+		/** Compare differences and generate SMT for if **/
 		for (String key : this.variCount.keySet()) {
 
 			String tempSmt = "";
 
 			if (init.containsKey(key) && this.variCount.get(key).get(1) > init.get(key).get(3)) {
 				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
-				tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1));
+				tempSmt += " (ite " + condition + " " + key + Integer.toString(this.variCount.get(key).get(1));
 				tempSmt += " " + key + Integer.toString((init.get(key).get(3))) + ")))\n";
 				incSubscript(key);
 				incAppSubscript(key);
