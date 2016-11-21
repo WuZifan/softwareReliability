@@ -1,56 +1,53 @@
 package parser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import parser.SimpleCParser.AssertStmtContext;
 
 public class MyAssertVisitor extends SimpleCBaseVisitor<Void> {
-	private StringBuilder nomorAss=new StringBuilder();
-	private StringBuilder unnomAss=new StringBuilder();
-	private boolean unnomFlag=false;
-	
+	private StringBuilder nomorAss = new StringBuilder();
+	private StringBuilder unnomAss = new StringBuilder();
+	private boolean unnomFlag = false;
+	public List<String> unnoList = new ArrayList<String>();
+
 	public MyAssertVisitor() {
-		//unnomAss.append("(and ");
 	}
-	/**
-	 */
+
 	@Override
 	public Void visitAssertStmt(AssertStmtContext ctx) {
-		unnomFlag=true;
+		unnomFlag = true;
 		return super.visitAssertStmt(ctx);
 	}
-	
-	/**
-	 * 	Parameters:
 
-	 * 	(assert (not (and(<= i0 4294967295)(>= i0 0)(<= i1 4294967295)(>= i1 0))))
-	 * 	text="(>= i0 0)"
-	 * @param text
-	 * @return
-	 */
-	public Void visitunnomAss(String text){
-		unnomFlag=true;
+	public Void visitunnomAss(String text) {
+		unnomFlag = true;
 		unnomAss.append(text);
+		unnoList.add(text);
+//		System.out.println("myassert: "+text);
 		return null;
 	}
-	/**
-	 * 	text="(assert (= i0 4294967298))"
-	 * @param text
-	 * @return
-	 */
-	public Void visitnomorAss(String text){
+
+	public Void visitnomorAss(String text) {
 		nomorAss.append(text);
 		return null;
 	}
-	
-	public String getAssSMT(){
-	
-		return nomorAss.toString();
-	}
-	
-	public String getUnAssSMT(){
-		if(!unnomAss.toString().isEmpty())
-			return "(and "+unnomAss.append(" )").toString();
-		
-		else
+
+	public String getUnAssSMT() {
+		if (!unnoList.isEmpty()) {
+			// return "(and "+unnomAss.append(" )").toString();
+			String unnomRe=unnoList.get(0);
+			for(int i=1;i<unnoList.size();i++){
+				unnomRe="(and "+unnoList.get(i)+" "+unnomRe+")";
+			}
+			return unnomRe;
+		} else {
 			return "";
+		}
+	}
+
+	public String getAssSMT() {
+
+		return nomorAss.toString();
 	}
 }
