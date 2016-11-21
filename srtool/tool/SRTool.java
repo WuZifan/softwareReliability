@@ -21,7 +21,7 @@ public class SRTool {
 		 * Correct
 		 */
 		// Pased
-		String filename="tests/correct/divzero.c"; 
+//		String filename="tests/correct/divzero.c"; 
 		// Pased. But afarid of missing the assertation in the block
 //		String filename="tests/correct/if.c";
 		// Error:(error "line 28 column 21: unexpected character"):(assert (= x3 (ite  ([@31,151:151='<',<29>,11:9] x0 (or ) (bvlshr 1 24)) x2 x1)))
@@ -48,9 +48,13 @@ public class SRTool {
 //		String filename="tests/incorrect/failovershift.c.c";
 //		String filename="tests/incorrect/failsimpleeq.c";
 //		String filename="tests/incorrect/failsimplelor.c";
-//		String filename="tests/incorrect/failsimplesub.c";
+		String filename="tests/incorrect/failsimplesub.c";
 
 //		String filename="example/Count42.c";
+
+//		String filename="example/Count42.c";
+//		String filename="tests/correct/simpleeq.c";
+
 
 		
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));

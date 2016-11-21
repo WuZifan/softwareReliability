@@ -18,6 +18,7 @@ import parser.SimpleCParser.BandExprContext;
 import parser.SimpleCParser.BlockStmtContext;
 import parser.SimpleCParser.BorExprContext;
 import parser.SimpleCParser.BxorExprContext;
+import parser.SimpleCParser.CallStmtContext;
 import parser.SimpleCParser.EqualityExprContext;
 import parser.SimpleCParser.ExprContext;
 import parser.SimpleCParser.FormalParamContext;
@@ -62,7 +63,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth=10;
+	private int unboundDepth = 10;
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
@@ -152,7 +153,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	// TODO call
 	@Override
-	public String visitCallStmt(SimpleCParser.CallStmtContext ctx) {
+	public String visitCallStmt(CallStmtContext ctx) {
 
 		System.out.println("In Call Statement:: ");
 		String methodName = ctx.callee.getText();
@@ -653,11 +654,35 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 	}
 
-	@Override
-	public String visitAssumeStmt(AssumeStmtContext ctx) {
-
+	private String getAssumeSMT(String assumeSmt) {
 		String assertion = this.gettvUnAssSMTforAssume();
 
+		if (this.ifLayer.size() != 0) {
+			String finalTest = getIfSmt();
+			// for if
+			finalTest = getAssertWithRequire(finalTest, true);
+			String text = "";
+			if (!assertion.isEmpty()) {
+				text = "(=> " + assertion + " " + assumeSmt + ")";
+			} else {
+				text = assumeSmt;
+			}
+			// order is : if -> before assertion -> assume
+			finalTest = "(assert (=> " + finalTest + " " + text + "))\n";
+			return finalTest;
+		} else {
+			if (!assertion.isEmpty())
+				assumeSmt = "(assert (=> " + assertion + " " + assumeSmt + "))\n";
+			else
+				assumeSmt = "(assert " + assumeSmt + " )\n";
+			return assumeSmt;
+		}
+	}
+
+	@Override
+	public String visitAssumeStmt(AssumeStmtContext ctx) {
+		// return this.getAssumeSMT(assumeSmt);
+		String assertion = this.gettvUnAssSMTforAssume();
 		String assumeSmt = this.visitExpr(ctx.expr());
 
 		if (this.ifLayer.size() != 0) {
@@ -707,7 +732,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			status.add(0);
 			// for if init
 			status.add(0);
-			
+
 			variCount.put(variName, status);
 			variName = variName + "0";
 		} else {
@@ -720,9 +745,16 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return "";
 	}
 
+	// @Override
+	// public String visitCallStmt(CallStmtContext ctx) {
+	// for(int i=0;i<ctx.getChildCount();i++){
+	// System.out.println("call: "+ctx.getChild(i).getText());
+	// }
+	// return super.visitCallStmt(ctx);
+	// }
+
 	@Override
 	public String visitAssignStmt(AssignStmtContext ctx) {
-
 		String num = this.visitExpr((ExprContext) ctx.getChild(2));
 
 		String name = ctx.getChild(0).getText();
@@ -732,8 +764,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (this.ifLayer.size() == 0) {
 			incAppSubscript(name);
 			setInitSubscript(name, getSubscript(name));
-		}
-		else {
+		} else {
 			setAppSubscript(name);
 		}
 
@@ -765,8 +796,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		/** receive condition SMT **/
 		temp = ctx.condition.getText().toString();
-		
-		if(variCount.containsKey(ctx.condition.getText())) {
+
+		if (variCount.containsKey(ctx.condition.getText())) {
 			cond = "(not (= " + temp + getSubscript(temp) + " 0))";
 		} else {
 			cond = super.visitExpr(ctx.condition);
@@ -797,13 +828,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			String tempSmt = "";
 
+
 			if (init.containsKey(key) && afif.get(key).get(1) < this.variCount.get(key).get(1)) {
 				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
 				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
 				tempSmt += " " + key + Integer.toString(this.variCount.get(key).get(1)) + ")))\n";
 				incSubscript(key);
 				incAppSubscript(key);
-			} else if (init.containsKey(key) && afif.get(key).get(1) > init.get(key).get(3) && afif.get(key).get(1) == variCount.get(key).get(1)) {
+			} else if (init.containsKey(key) && afif.get(key).get(1) > init.get(key).get(3)
+					&& afif.get(key).get(1) == variCount.get(key).get(1)) {
 				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
 				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
 				tempSmt += " " + key + Integer.toString((init.get(key).get(3))) + ")))\n";
@@ -814,12 +847,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			resSmt.append(tempSmt);
 		}
 
-		if(layer == 0) {
+		if (layer == 0) {
 			for (String var : variCount.keySet()) {
 				setAppSubscript(var);
 			}
 		}
-		
+
 		this.ifLayer.remove(layer + 1);
 
 		return resSmt.toString();
@@ -836,11 +869,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		for (LoopInvariantContext invar : inVarList) {
 
 		}
-		String whiCondition=ctx.condition.getText();
-		
-		StringBuffer finalResult=new StringBuffer();
-		int i=0;
-		while(i<this.unboundDepth){
+		String whiCondition = ctx.condition.getText();
+
+		StringBuffer finalResult = new StringBuffer();
+		/*
+		 * i is a loog index; this.unboundDepth is an artificial Upbound
+		 */
+		int i = 0;
+		while (i < this.unboundDepth) {
 
 		}
 		this.assertList.add("false");
@@ -987,7 +1023,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String result = "";
 
 		if (!sub.contains("(")) {
-			result = "(itb " + sub + ")";
+			result = "(itb " + sub + ") ";
 			return result;
 		}
 		if (sub.trim().length() > 3) {
@@ -995,11 +1031,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			if (conOpList.contains(op)) {
 				return sub;
 			} else {
-				result = "(itb " + sub + ")";
+				result = "(itb " + sub + ") ";
 				return result;
 			}
 		} else {
-			result = "(itb " + sub + ")";
+			result = "(itb " + sub + ") ";
 			return result;
 		}
 	}
@@ -1361,18 +1397,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		String result = "";
 
-		if (sub.trim().length() > 3) {
+		if (sub.trim().startsWith("(")&&sub.trim().length()>=3) {
 			String op = sub.trim().substring(1, 3).trim();
 			if (conOpList.contains(op)) {
 				result = "(bti " + sub + ")";
 				return result;
-			} 
-			else {
-				result = "(bti " + sub + ")";
-				return result;
 			}
 		}
-
 		return sub;
 	}
 
@@ -1417,9 +1448,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				opsList.add(tempOop);
 			}
 		}
-		
-		if (opsList.isEmpty())
-		{
+
+		if (opsList.isEmpty()) {
 			return this.visitAtomExpr((AtomExprContext) ctx.getChild(0));
 		} else {
 			for (int i = 0; i < opsList.size(); i++) {
@@ -1456,13 +1486,19 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	/**
-	 * 
 	 * @param varible
 	 * @return
 	 */
 	private int getGlobaOldSubscript(String varible) {
 		int sub = 0;
+		// variCount here is a HashMap<String, ArrayList<Integer>>
+		// String is means the name of variable
+		// The first element in ArrayList means whether its a global(1) or
+		// locally(1)
+		// The second element in ArrayList means the times of appearance of
+		// variable
 		if (variCount.get(varible).size() < 3) {
+			// here variCOunt.get(varible) get the arrayList
 			sub = 0;
 		} else {
 			sub = variCount.get(varible).get(2);
