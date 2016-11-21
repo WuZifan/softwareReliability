@@ -63,7 +63,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 10;
+	private int unboundDepth = 2;
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
@@ -875,10 +875,20 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuffer finalResult = new StringBuffer();
 		int i = 0;
 		//this.unboundDepth
-		while (i < 1) {
-			finalResult.append(this.getUnwindIf(ctx.condition, ctx.body));
+		while (i < this.unboundDepth) {
+			i++;
+			/*
+			 * if this is the last time,then add assert(false);assume(false) as the statement;
+			 * else, add the body inside the while loop as the statement.
+			 */
+			if(i==this.unboundDepth){
+			finalResult.append(this.getUnwindIf(ctx.condition, ctx.body,true));
+			}else{
+				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body,false));
+			}
 		}
-		
+		System.out.println("While: "+finalResult.toString());
+		System.out.println("iflayer: "+this.ifLayer.keySet());
 		this.assertList.add("false");
 		this.getAssumeSMT("false");
 		return res.toString();
@@ -1455,7 +1465,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				switch (opsList.get(i)) {
 				case "~":
 					result.append("(bv2int (" + opsList.get(i) + " ");
-					result.append(" ((_ int2bv 32)" + this.visitAtomExpr(ctx.arg) + ")))");
+					result.append(" ((_ int2bv 32) " + this.visitAtomExpr(ctx.arg) + ")))");
 					break;
 				case "+":
 					return this.visitAtomExpr(ctx.arg);
@@ -1584,7 +1594,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 * generate smt of unwind 1 layer of while statement Para: Condition
 	 * Context, Block statementContext Return: string of "if" SMT
 	 */
-	private String getUnwindIf(SimpleCParser.ExprContext cond, SimpleCParser.BlockStmtContext ctx) {
+	private String getUnwindIf(SimpleCParser.ExprContext cond, SimpleCParser.BlockStmtContext ctx,boolean flag) {
 		StringBuilder resSmt = new StringBuilder();
 		HashMap<String, ArrayList<Integer>> init = new HashMap<String, ArrayList<Integer>>();
 		HashMap<String, Integer> iftemp;
@@ -1617,7 +1627,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			if (init.containsKey(key) && this.variCount.get(key).get(1) > init.get(key).get(3)) {
 				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
-				tempSmt += " (ite " + cond + " " + key + Integer.toString(this.variCount.get(key).get(1));
+				tempSmt += " (ite " + condition + " " + key + Integer.toString(this.variCount.get(key).get(1));
 				tempSmt += " " + key + Integer.toString((init.get(key).get(3))) + ")))\n";
 				incSubscript(key);
 				incAppSubscript(key);

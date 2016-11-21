@@ -1,10 +1,10 @@
 // RUN: %tool "%s" > "%t"
 // RUN: %diff %CORRECT "%t"
-int main(int a) {
+int main(){
 	int i;
-	i=0;
-	while(i<1){
-		i=i+1;
-	}
-	return 0;
+	int j;
+	i=42;
+	j=~i;
+	assert(j<0);
+	return 3;
 }
