@@ -62,6 +62,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
+	private int unboundDepth=10;
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
@@ -781,7 +782,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		strif = visitBlockStmt(ctx.thenBlock);
 
 		resSmt.append(strif);
-
 		/** store variable info after if **/
 		afif = copyMap(this.variCount);
 
@@ -836,6 +836,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		for (LoopInvariantContext invar : inVarList) {
 
 		}
+		String whiCondition=ctx.condition.getText();
+		
+		StringBuffer finalResult=new StringBuffer();
+		int i=0;
+		while(i<this.unboundDepth){
+
+		}
+		this.assertList.add("false");
+		this.assertList.add("false");
 
 		return res.toString();
 	}

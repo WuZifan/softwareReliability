@@ -6,6 +6,7 @@
 
 int main(int i,int j,int z) {
 
+
 int a;
 
 int b;
