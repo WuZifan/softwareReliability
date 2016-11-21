@@ -145,7 +145,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(getWhichOneIsWrong());
 			/* need to verified each procedure after generation */
 			/* Todo */
-			System.out.println("Program: \n" + finalProgramSMT.toString());
+//			System.out.println("Program: \n" + finalProgramSMT.toString());
+
+//			 System.out.println("Program: \n" + finalProgramSMT.toString());
+
 			smtCheckSat(finalProgramSMT.toString());
 		}
 		return resSmt.toString();
@@ -270,7 +273,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 //				System.out.println(this.resultProxyMap);
 //				System.out.println(this.proxyAssertMap);
 			}
-//			System.out.println(queryResult);
+			// System.out.println(queryResult);
 		} catch (ProcessTimeoutException | IOException | InterruptedException e) {
 			System.out.println("UNKNOWN");
 			System.exit(1);
@@ -283,7 +286,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		if (!queryResult.startsWith("unsat")) {
 			System.out.println("UNKNOWN");
-//			System.out.println(queryResult);
+			// System.out.println(queryResult);
 			System.exit(1);
 		}
 	}
@@ -656,7 +659,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	private String getAssumeSMT(String assumeSmt) {
 		String assertion = this.gettvUnAssSMTforAssume();
-
 		if (this.ifLayer.size() != 0) {
 			String finalTest = getIfSmt();
 			// for if
@@ -681,30 +683,31 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	@Override
 	public String visitAssumeStmt(AssumeStmtContext ctx) {
-		// return this.getAssumeSMT(assumeSmt);
-		String assertion = this.gettvUnAssSMTforAssume();
 		String assumeSmt = this.visitExpr(ctx.expr());
-
-		if (this.ifLayer.size() != 0) {
-			String finalTest = getIfSmt();
-			// for if
-			finalTest = getAssertWithRequire(finalTest, true);
-			String text = "";
-			if (!assertion.isEmpty()) {
-				text = "(=> " + assertion + " " + assumeSmt + ")";
-			} else {
-				text = assumeSmt;
-			}
-			// order is : if -> before assertion -> assume
-			finalTest = "(assert (=> " + finalTest + " " + text + "))\n";
-			return finalTest;
-		} else {
-			if (!assertion.isEmpty())
-				assumeSmt = "(assert (=> " + assertion + " " + assumeSmt + "))\n";
-			else
-				assumeSmt = "(assert " + assumeSmt + " )\n";
-			return assumeSmt;
-		}
+		 return this.getAssumeSMT(assumeSmt);
+//		String assertion = this.gettvUnAssSMTforAssume();
+//		
+//
+//		if (this.ifLayer.size() != 0) {
+//			String finalTest = getIfSmt();
+//			// for if
+//			finalTest = getAssertWithRequire(finalTest, true);
+//			String text = "";
+//			if (!assertion.isEmpty()) {
+//				text = "(=> " + assertion + " " + assumeSmt + ")";
+//			} else {
+//				text = assumeSmt;
+//			}
+//			// order is : if -> before assertion -> assume
+//			finalTest = "(assert (=> " + finalTest + " " + text + "))\n";
+//			return finalTest;
+//		} else {
+//			if (!assertion.isEmpty())
+//				assumeSmt = "(assert (=> " + assertion + " " + assumeSmt + "))\n";
+//			else
+//				assumeSmt = "(assert " + assumeSmt + " )\n";
+//			return assumeSmt;
+//		}
 	}
 
 	@Override
@@ -828,7 +831,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			String tempSmt = "";
 
-
 			if (init.containsKey(key) && afif.get(key).get(1) < this.variCount.get(key).get(1)) {
 				tempSmt += "(assert (= " + key + (Integer.toString(this.variCount.get(key).get(1) + 1));
 				tempSmt += " (ite " + cond + " " + key + Integer.toString(afif.get(key).get(1));
@@ -867,21 +869,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		cond = visitExpr(ctx.condition);
 
 		for (LoopInvariantContext invar : inVarList) {
-
 		}
-		String whiCondition = ctx.condition.getText();
 
-		StringBuffer finalResult = new StringBuffer();
 		/*
-		 * i is a loog index; this.unboundDepth is an artificial Upbound
+		 * i is a loog index; this.unboundDepth is an artificial Upper bound
+		 * 
 		 */
+		StringBuffer finalResult = new StringBuffer();
 		int i = 0;
-		while (i < this.unboundDepth) {
-
+		//this.unboundDepth
+		while (i < 1) {
+			finalResult.append(this.getUnwindIf(ctx.condition, ctx.body));
 		}
+		
 		this.assertList.add("false");
-		this.assertList.add("false");
-
+		this.getAssumeSMT("false");
 		return res.toString();
 	}
 
@@ -1397,7 +1399,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		String result = "";
 
-		if (sub.trim().startsWith("(")&&sub.trim().length()>=3) {
+		if (sub.trim().startsWith("(") && sub.trim().length() >= 3) {
 			String op = sub.trim().substring(1, 3).trim();
 			if (conOpList.contains(op)) {
 				result = "(bti " + sub + ")";
@@ -1458,6 +1460,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					result.append("(bv2int (" + opsList.get(i) + " ");
 					result.append(" ((_ int2bv 32)" + this.visitAtomExpr(ctx.arg) + ")))");
 					break;
+				case "+":
+					return this.visitAtomExpr(ctx.arg);
+				case "-":
+					return "-"+this.visitAtomExpr(ctx.arg);
 				default:
 					result.append("(" + opsList.get(i) + " ");
 					result.append(" " + this.isNotCondition(this.visitAtomExpr(ctx.arg)));
@@ -1576,10 +1582,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return res;
 
 	}
-	
-	/* generate smt of unwind 1 layer of while statement 
-	 * Para: Condition Context, Block statementContext 
-	 * Return: string of "if" SMT 
+
+	/*
+	 * generate smt of unwind 1 layer of while statement Para: Condition
+	 * Context, Block statementContext Return: string of "if" SMT
 	 */
 	private String getUnwindIf(SimpleCParser.ExprContext cond, SimpleCParser.BlockStmtContext ctx) {
 		StringBuilder resSmt = new StringBuilder();
@@ -1589,8 +1595,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String strif;
 		int layer;
 		init = copyMap(this.variCount);
-		
-		if(variCount.containsKey(cond.getText())) {
+
+		if (variCount.containsKey(cond.getText())) {
 			condition = "(not (= " + cond.getText() + getSubscript(cond.getText()) + " 0))";
 		} else {
 			condition = super.visitExpr(cond);
@@ -1623,18 +1629,16 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			resSmt.append(tempSmt);
 		}
 
-		if(layer == 0) {
+		if (layer == 0) {
 			for (String var : variCount.keySet()) {
 				setAppSubscript(var);
 			}
 		}
-		
+
 		this.ifLayer.remove(layer + 1);
-		
-		
+
 		return resSmt.toString();
 	}
-	
 
 	/** Return the whole SMT **/
 	public String getSMT() {
