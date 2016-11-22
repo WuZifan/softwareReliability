@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.runtime.tree.RewriteRuleSubtreeStream;
 import org.antlr.v4.runtime.Token;
 
 import parser.SimpleCParser.AddExprContext;
@@ -64,6 +65,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
 	private int unboundDepth = 2;
+	private String z3Result="";
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
@@ -131,7 +133,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		}
 		this.inProcedure = 1;
-		for (ProcedureDeclContext item : procedures) {
+		for(int i=0;i<ctx.procedures.size();i++){
+			ProcedureDeclContext item=ctx.procedures.get(i);
 			String res = visitProcedureDecl(item);
 			finalProgramSMT.append("(set-logic QF_IRA)\n");
 			finalProgramSMT.append(getDivFunSMT());
@@ -145,15 +148,69 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(getWhichOneIsWrong());
 			/* need to verified each procedure after generation */
 			/* Todo */
-//			System.out.println("Program: \n" + finalProgramSMT.toString());
+			// System.out.println("Program: \n" + finalProgramSMT.toString());
 
-			 System.out.println("Program: \n" + finalProgramSMT.toString());
+			System.out.println("Program: \n" + finalProgramSMT.toString());
 
 			smtCheckSat(finalProgramSMT.toString());
+//			System.out.println("Z3RESULT:"+this.z3Result);
+			if(this.z3Result.equals("INCORRECT") && !this.isDeepEnough()){
+				i--;
+				this.unboundDepth++;
+				initProcedure();
+			}
+
 		}
+
+		System.exit(0);
 		return resSmt.toString();
 	}
-
+	/**
+	 *  still has problem
+	 */
+	private void initProcedure(){
+		this.variCount=new HashMap<String,ArrayList<Integer>>();
+		this.assertList=new ArrayList<String>();
+		this.requirList=new ArrayList<String>();
+		this.proxyAssertMap=new HashMap<String,String>();
+		this.resultProxyMap=new HashMap<String,String>();
+		this.ifLayer=new HashMap<Integer,HashMap<String,Integer>>();
+		
+		this.procedureContext = new HashMap<String, ProcedureDeclContext>();
+		this.globals = new ArrayList<VarDeclContext>();
+		this.smtResult=new StringBuilder();
+		this.preCon = new ArrayList<String>();
+		this.postCon = new ArrayList<String>();
+		this.preSmtResult = new StringBuilder();
+		this.postSmtResult = new StringBuilder();
+		this.postNumber = 0;
+		this.preNumber = 0;
+		this.inProcedure=0;
+		this.returnExp="";
+		this.call = new CallVisitor();
+		this.z3Result="";
+	}
+	
+	private boolean isDeepEnough(){
+		System.out.println("ResultProxyMap: "+this.resultProxyMap);
+		System.out.println("ProxyAssertMap: "+this.proxyAssertMap);
+		boolean flag=true;
+		for(String proxy:this.resultProxyMap.keySet()){
+			// if this assertion is false
+			if(this.resultProxyMap.get(proxy).equals("false")){
+				// if this failiar is caused by assert(false) which is definitely write by us.
+				if(this.proxyAssertMap.get(proxy).contains("false")){
+					flag=false;
+				}else{
+					return true;
+				}
+			}
+		}
+		
+		
+		return flag;
+	}
+	
 	// TODO call
 	@Override
 	public String visitCallStmt(CallStmtContext ctx) {
@@ -270,25 +327,35 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					String[] tempStrArray = tempResult.split(" ");
 					resultProxyMap.put(tempStrArray[0], tempStrArray[1]);
 				}
-//				System.out.println(this.resultProxyMap);
-//				System.out.println(this.proxyAssertMap);
+//				 System.out.println(this.resultProxyMap);
+//				 System.out.println(this.proxyAssertMap);
 			}
 			// System.out.println(queryResult);
 		} catch (ProcessTimeoutException | IOException | InterruptedException e) {
 			System.out.println("UNKNOWN");
-			System.exit(1);
+			this.z3Result="UNKNOWN";
+//			System.exit(1);
+			return;
 		}
 
 		if (queryResult.startsWith("sat")) {
 			System.out.println("INCORRECT");
-			System.exit(0);
+			this.z3Result="INCORRECT";
+//			System.exit(0);
+			return;
 		}
 
 		if (!queryResult.startsWith("unsat")) {
 			System.out.println("UNKNOWN");
 			// System.out.println(queryResult);
-			System.exit(1);
+			this.z3Result="UNKNOWN";
+//			System.exit(1);
+			return ;
 		}
+		System.out.println("CORRECT");
+		this.z3Result="CORRECT";
+//		System.exit(0);
+		return;
 	}
 
 	// generate the function declaration
@@ -590,10 +657,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 	}
 
-	@Override
-	public String visitAssertStmt(AssertStmtContext ctx) {
-		String text = this.visitExpr(ctx.expr());
-
+	private String insertAssertion(String text) {
 		if (!text.contains("(")) {
 			text = isNotCondition(text);
 		}
@@ -606,9 +670,31 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		} else {
 			text = getAssertWithRequire(text, false);
 		}
+
 		this.assVisitor.visitunnomAss(text);
 		this.assertList.add(text);
 		return "";
+	}
+
+	@Override
+	public String visitAssertStmt(AssertStmtContext ctx) {
+		String text = this.visitExpr(ctx.expr());
+		return this.insertAssertion(text);
+		// if (!text.contains("(")) {
+		// text = isNotCondition(text);
+		// }
+		//
+		// if (this.ifLayer.size() != 0) {
+		// String finalTest = getIfSmt();
+		// finalTest = getAssertWithRequire(finalTest, true);
+		// finalTest = "(=> " + finalTest + " " + text + ")";
+		// text = finalTest;
+		// } else {
+		// text = getAssertWithRequire(text, false);
+		// }
+		// this.assVisitor.visitunnomAss(text);
+		// this.assertList.add(text);
+		// return "";
 	}
 
 	private String getIfSmt() {
@@ -684,30 +770,30 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitAssumeStmt(AssumeStmtContext ctx) {
 		String assumeSmt = this.visitExpr(ctx.expr());
-		 return this.getAssumeSMT(assumeSmt);
-//		String assertion = this.gettvUnAssSMTforAssume();
-//		
-//
-//		if (this.ifLayer.size() != 0) {
-//			String finalTest = getIfSmt();
-//			// for if
-//			finalTest = getAssertWithRequire(finalTest, true);
-//			String text = "";
-//			if (!assertion.isEmpty()) {
-//				text = "(=> " + assertion + " " + assumeSmt + ")";
-//			} else {
-//				text = assumeSmt;
-//			}
-//			// order is : if -> before assertion -> assume
-//			finalTest = "(assert (=> " + finalTest + " " + text + "))\n";
-//			return finalTest;
-//		} else {
-//			if (!assertion.isEmpty())
-//				assumeSmt = "(assert (=> " + assertion + " " + assumeSmt + "))\n";
-//			else
-//				assumeSmt = "(assert " + assumeSmt + " )\n";
-//			return assumeSmt;
-//		}
+		return this.getAssumeSMT(assumeSmt);
+		// String assertion = this.gettvUnAssSMTforAssume();
+		//
+		//
+		// if (this.ifLayer.size() != 0) {
+		// String finalTest = getIfSmt();
+		// // for if
+		// finalTest = getAssertWithRequire(finalTest, true);
+		// String text = "";
+		// if (!assertion.isEmpty()) {
+		// text = "(=> " + assertion + " " + assumeSmt + ")";
+		// } else {
+		// text = assumeSmt;
+		// }
+		// // order is : if -> before assertion -> assume
+		// finalTest = "(assert (=> " + finalTest + " " + text + "))\n";
+		// return finalTest;
+		// } else {
+		// if (!assertion.isEmpty())
+		// assumeSmt = "(assert (=> " + assertion + " " + assumeSmt + "))\n";
+		// else
+		// assumeSmt = "(assert " + assumeSmt + " )\n";
+		// return assumeSmt;
+		// }
 	}
 
 	@Override
@@ -877,23 +963,27 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		 */
 		StringBuffer finalResult = new StringBuffer();
 		int i = 0;
-		//this.unboundDepth
+		// this.unboundDepth
 		while (i < this.unboundDepth) {
 			i++;
 			/*
-			 * if this is the last time,then add assert(false);assume(false) as the statement;
-			 * else, add the body inside the while loop as the statement.
+			 * if this is the last time,then add assert(false);assume(false) as
+			 * the statement; else, add the body inside the while loop as the
+			 * statement.
 			 */
-			if(i==this.unboundDepth){
-			finalResult.append(this.getUnwindIf(ctx.condition, ctx.body,true));
-			}else{
-				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body,false));
+			System.out.println("Condition:" + ctx.condition.getText());
+			if (i == this.unboundDepth) {
+				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, true));
+			} else {
+				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, false));
 			}
 		}
-		System.out.println("While: "+finalResult.toString());
-		System.out.println("iflayer: "+this.ifLayer.keySet());
-		this.assertList.add("false");
-		this.getAssumeSMT("false");
+		System.out.println("While: " + finalResult.toString());
+		System.out.println("iflayer: " + this.ifLayer);
+		this.insertAssertion("false");
+		System.out.println("AssumeInWhile: " + this.getAssumeSMT("false"));
+		res.append(finalResult.toString());
+		res.append(this.getAssumeSMT("false"));
 		return res.toString();
 	}
 
@@ -1035,7 +1125,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String result = "";
 
 		if (!sub.contains("(")) {
-			result = "(itb " + sub + ") ";
+			if (sub.equals("false") || sub.equals("true")) {
+				result = sub;
+			} else {
+				result = "(itb " + sub + ") ";
+			}
 			return result;
 		}
 		if (sub.trim().length() > 3) {
@@ -1467,14 +1561,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			for (int i = 0; i < opsList.size(); i++) {
 				switch (opsList.get(i)) {
 				case "~":
-
-					String temp=this.isCondition(this.visitAtomExpr(ctx.arg));
-					result.append("(~ "+temp+")");
+					String temp = this.isCondition(this.visitAtomExpr(ctx.arg));
+					result.append("(~ " + temp + ")");
 					break;
 				case "+":
 					return this.visitAtomExpr(ctx.arg);
 				case "-":
-					return "-"+this.visitAtomExpr(ctx.arg);
+					return "-" + this.visitAtomExpr(ctx.arg);
 				default:
 					result.append("(" + opsList.get(i) + " ");
 					result.append(" " + this.isNotCondition(this.visitAtomExpr(ctx.arg)));
@@ -1595,13 +1688,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	/*
-	 * generate smt of unwind 1 layer of while statement 
-	 * Para: Condition Context, Block statementContext, lastloop assert and assume and flag for last loop
-	 * flag true: last loop,       false:  not last loop
-	 * Return: string of "if" SMT
+	 * generate smt of unwind 1 layer of while statement Para: Condition
+	 * Context, Block statementContext, lastloop assert and assume and flag for
+	 * last loop flag true: last loop, false: not last loop Return: string of
+	 * "if" SMT
 	 */
 
-	private String getUnwindIf(SimpleCParser.ExprContext cond, SimpleCParser.BlockStmtContext ctx,  Boolean last) {
+	private String getUnwindIf(SimpleCParser.ExprContext cond, SimpleCParser.BlockStmtContext ctx, Boolean last) {
 		StringBuilder resSmt = new StringBuilder();
 		HashMap<String, ArrayList<Integer>> init = new HashMap<String, ArrayList<Integer>>();
 		HashMap<String, Integer> iftemp;
@@ -1649,12 +1742,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 
-		
-
-		if(!last) {
+		if (!last) {
 			this.ifLayer.remove(layer + 1);
 		}
-		
+
 		return resSmt.toString();
 	}
 
