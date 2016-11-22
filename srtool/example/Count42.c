@@ -2,15 +2,24 @@
 // RUN: %diff %CORRECT "%t"
 
 // int s;
+int y;
+int x;
 int s;
+
+int bar(int h)
+ensures \result <= \old(x){
+	return h;
+}
+
 int foo(int a, int b)
  requires a!=0,
  requires b!=0,
 //  ensures 4 == 4,
- ensures \result <= 5
+ ensures \result <= \old(x)
 // requires a!=0
 {
  	int i;
+ 	x=1;
  	i = 2;
 //  	if(1==1){
 // 		assert(3<4);
@@ -18,26 +27,10 @@ int foo(int a, int b)
 // 	}else{
 // 		i=3;
 // 	}
-	assert(2<3);
-	assume(1>2);
-	assert(2>5);
-	
-	while(i<=1)
-	invariant i <= 2 {
-		
-		i=i-1;
-		
-	}
-	return i;
+	s=1;
+	i = bar(x);
+	i = s;
+	return x;
 }
 
-int bar() {
-	int i;
-	int j;
-	i=42;
-	j=~i;
-	assert(j<0);
-	return 3;
-
-}
 

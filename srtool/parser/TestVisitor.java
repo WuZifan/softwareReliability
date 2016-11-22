@@ -183,9 +183,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			String assertion = this.assVisitor.getUnAssSMT();
 
 			for (PrepostContext item : contract) {
-				call.getAllVar(variCount, assignedVar, exParameter, thisProcedure);
-				String smt = call.visitPrepost(item);
+				call.getAllVar(variCount, assignedVar, exParameter, thisProcedure,procedureContext,globals);		
 				if (item.getText().contains("requires")) {
+					String smt = call.visitPrepost(item);
 					if (!smt.contains("(")) {
 						smt = isNotCondition(smt);
 					}
@@ -204,10 +204,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			List<StmtContext> stmts = new ArrayList<StmtContext>();
 			stmts = thisProcedure.stmts;
+			
+			call.visitCallStmt(ctx);
 
 			for (int i = 0; i < stmts.size(); i++) {
 				try {
 					String assignVar = stmts.get(i).assignStmt().lhs.getText();
+					System.out.println("Assigned  "+assignVar);
 					for (VarDeclContext item : globals) {
 						if (item.name.getText().equals(assignVar) && !item.name.getText().equals(assignedVar)) {
 							variCount.get(assignVar).set(1, getSubscript(assignVar) + 1);
@@ -220,10 +223,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			variCount.get(assignedVar).set(1, getSubscript(assignedVar) + 1);
 
-			for (PrepostContext item : contract) {
-				call.getAllVar(variCount, assignedVar, exParameter, thisProcedure);
-				String smt = call.visitPrepost(item);
+			for (PrepostContext item : contract) {	
 				if (item.getText().contains("ensures")) {
+					String smt = call.visitPrepost(item);
 					if (!assertion.isEmpty())
 						smt = "(assert (=> " + assertion + " " + smt + "))\n";
 					else

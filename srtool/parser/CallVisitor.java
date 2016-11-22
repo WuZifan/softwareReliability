@@ -16,6 +16,7 @@ import parser.SimpleCParser.BandExprContext;
 import parser.SimpleCParser.BlockStmtContext;
 import parser.SimpleCParser.BorExprContext;
 import parser.SimpleCParser.BxorExprContext;
+import parser.SimpleCParser.CallStmtContext;
 import parser.SimpleCParser.EqualityExprContext;
 import parser.SimpleCParser.ExprContext;
 import parser.SimpleCParser.FormalParamContext;
@@ -41,20 +42,67 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	
 	private Map<String, ArrayList<Integer>> variCount;
 	private String assignedVar;
-	List<ExprContext> actuals;
-	Map<String,String> exParameter = new HashMap<String,String>();
-	ProcedureDeclContext thisProcedure;
-	
+	private List<ExprContext> actuals;
+	private Map<String,String> exParameter = new HashMap<String,String>();
+	private Map<String, ProcedureDeclContext> procedureContext = new HashMap<String, ProcedureDeclContext>();
+	private ProcedureDeclContext thisProcedure;
+	private List<VarDeclContext> globals = new ArrayList<VarDeclContext>();
+	List<String> globalVars = new ArrayList<String>();
 	
 	CallVisitor(){
 		actuals = new ArrayList<ExprContext>();
 	}
 
-	public void getAllVar(Map<String, ArrayList<Integer>> variCount,String assignedVar,Map<String,String> exParameter,ProcedureDeclContext thisProcedure){
+	public void getAllVar(Map<String, ArrayList<Integer>> variCount,String assignedVar,Map<String,String> exParameter
+			,ProcedureDeclContext thisProcedure, Map<String, ProcedureDeclContext> procedureContext, List<VarDeclContext> globals){
 		this.variCount = variCount;
 		this.assignedVar = assignedVar;
 		this.exParameter = exParameter;
 		this.thisProcedure = thisProcedure;
+		this.procedureContext = procedureContext;
+		this.globals = globals;
+	}
+	
+	@Override
+	public String visitCallStmt(CallStmtContext ctx) {
+			
+		String methodName = ctx.callee.getText();
+		System.out.println("Inside Statement:: " + methodName);
+		
+		
+		if (procedureContext.containsKey(methodName)) {
+
+			this.thisProcedure = procedureContext.get(methodName);
+		}
+		
+		List<StmtContext> stmts = new ArrayList<StmtContext>();
+		stmts = thisProcedure.stmts;
+		
+		for (int i = 0; i < stmts.size(); i++) {
+			try {
+				String assignVar = stmts.get(i).assignStmt().lhs.getText();
+				for (VarDeclContext item : globals) {
+					if (item.name.getText().equals(assignVar) && !globalVars.contains(assignVar)) {
+						globalVars.add(assignVar);
+						System.out.println("Add globals :: " + assignVar);
+					}
+				}
+
+			} catch (NullPointerException e) {
+			}
+		}
+		
+		for (int i = 0; i < stmts.size(); i++) {
+			try {
+				this.visitCallStmt(stmts.get(i).callStmt());				
+			} catch (NullPointerException e) {
+			}
+		}
+		
+		System.out.println("globals are :: " + globalVars.toString());
+
+		return "";
+		
 	}
 	
 	@Override
@@ -75,7 +123,6 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	@Override
 	public String visitPrepost(SimpleCParser.PrepostContext ctx) {
 		String result = super.visitPrepost(ctx);
-		System.out.println("Prepost::::"+ result);		
 		
 		return result;
 	}
@@ -84,7 +131,7 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	public String visitRequires(SimpleCParser.RequiresContext ctx) {
 		String requires;
 		requires = super.visitRequires(ctx);
-	
+		System.out.println("pre::::"+ requires);		
 		return requires;
 	}
 	
@@ -93,10 +140,12 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	
 		String ensures;
 		ensures = super.visitEnsures(ctx);
-
+		System.out.println("Post::::"+ ensures);		
 		return ensures;
 	}
 
+	
+	//////////////////////////////////////////////////////////////////
 	@Override
 	public String visitExpr(ExprContext ctx) {
 		String resSmt;
