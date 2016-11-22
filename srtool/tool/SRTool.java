@@ -91,8 +91,8 @@ public class SRTool {
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
 //		vcgenGL.generateVCGlobal();
 		String tempVc=vcgenGL.generateVC().toString();		
-		System.out.println("CORRECT");
-		System.exit(0);
+//		System.out.println("CORRECT");
+//		System.exit(0);
 		
     }
 }
