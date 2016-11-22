@@ -1,0 +1,5 @@
+intmain(){inti;i=0;intj;i=42;j=~i;assert(j<0);return3;}
+example/Count42.c
+intmain(){inti;i=0;intj;i=42;j=~i;assert(j<0);return3;}
+example/Count42.c
+intmain(){inti;i=0;intj;i=42;j=~i;assert(j<0);return3;}

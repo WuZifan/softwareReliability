@@ -129,9 +129,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			visitVarDecl(item);
 		}
 
-		String cmd = "echo '" + ctx.getText() + "' >> temp";
+		String cmd [] = new String[] {"sh", "-c", "echo '" + ctx.getText() + "' >> temp"};
 
-		System.out.println(cmd);
+	//	System.out.println(cmd);
 		try {
 			Process p = Runtime.getRuntime().exec(cmd);
 //			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -139,7 +139,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 //			while ((s = stdInput.readLine()) != null) {
 //			    System.out.println(s);
 //			}
-		//	System.out.println(p.getOutputStream());
+	//		System.out.println(p.getOutputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
