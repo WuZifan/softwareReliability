@@ -165,6 +165,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			System.out.println();
 		}
 
+		System.out.println("unboundDepth: "+this.unboundDepth);
+			
 		System.exit(0);
 		return resSmt.toString();
 	}
@@ -1003,6 +1005,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.insertAssertion("false");
 		res.append(finalResult.toString());
 		res.append(this.getAssumeSMT("false"));
+		this.ifLayer.remove(this.ifLayer.size());
 		return res.toString();
 	}
 
