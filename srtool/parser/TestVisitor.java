@@ -6,9 +6,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import org.antlr.runtime.ANTLRReaderStream;
-import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 
 import parser.SimpleCParser.AddExprContext;
@@ -20,7 +25,6 @@ import parser.SimpleCParser.BandExprContext;
 import parser.SimpleCParser.BorExprContext;
 import parser.SimpleCParser.BxorExprContext;
 import parser.SimpleCParser.CallStmtContext;
-import parser.SimpleCParser.CandidateInvariantContext;
 import parser.SimpleCParser.EqualityExprContext;
 import parser.SimpleCParser.ExprContext;
 import parser.SimpleCParser.FormalParamContext;
@@ -67,7 +71,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 1;
+	private int unboundDepth = 5;
 	private List<String> z3Result = new ArrayList<String>();
 	// private String z3Result = "";
 	private Map<String, ArrayList<Integer>> backUpVariCount;
@@ -131,20 +135,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			visitVarDecl(item);
 		}
 
-		String cmd [] = new String[] {"sh", "-c", "echo '" + ctx.getText() + "' >> temp"};
+		String cmd[] = new String[] { "sh", "-c", "echo '" + ctx.getText() + "' >> temp" };
 
-	//	System.out.println(cmd);
+		// System.out.println(cmd);
 		try {
 			Process p = Runtime.getRuntime().exec(cmd);
-//			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-//			String s = null;
-//			while ((s = stdInput.readLine()) != null) {
-//			    System.out.println(s);
-//			}
-	//		System.out.println(p.getOutputStream());
+			// BufferedReader stdInput = new BufferedReader(new
+			// InputStreamReader(p.getInputStream()));
+			// String s = null;
+			// while ((s = stdInput.readLine()) != null) {
+			// System.out.println(s);
+			// }
+			// System.out.println(p.getOutputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 
 		for (ProcedureDeclContext item : procedures) {
@@ -153,44 +158,64 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			procedureContext.put(name, item);
 
 		}
+		ExecutorService executor = Executors.newSingleThreadExecutor();  
+		FutureTask<String> future =  
+		       new FutureTask<String>(new Callable<String>() {//使用Callable接口作为构造参数  
+		         public String call() {  
+		        	 return null;
+		           //真正的任务在这里执行，这里的返回值类型为String，可以为任意类型  
+		       }}); 
+		executor.execute(future);  
+		//在这里可以做别的任何事情  
+		try {  
+		    String result = future.get(5000, TimeUnit.MILLISECONDS); //取得结果，同时设置超时执行时间为5秒。同样可以用future.get()，不设置执行超时时间取得结果  
+		} catch (InterruptedException e) {  
+		    future.cancel(true);  
+		} catch (ExecutionException e) {  
+		    future.cancel(true);  
+		} catch (TimeoutException e) {  
+		    future.cancel(true);  
+		} finally {  
+		    executor.shutdown();  
+		}  
+		
+			for (int i = 0; i < ctx.procedures.size(); i++) {
+				this.inProcedure = 1;
+				StringBuffer finalProgramSMT = new StringBuffer();
+				ProcedureDeclContext item = ctx.procedures.get(i);
+				String res = visitProcedureDecl(item);
+				finalProgramSMT.append("(set-logic QF_IRA)\n");
+				finalProgramSMT.append(getDivFunSMT());
+				finalProgramSMT.append(getInttoBoolSmt());
+				finalProgramSMT.append(getBooltoIntSmt());
+				finalProgramSMT.append(getMyShiftLeft());
+				finalProgramSMT.append(getMyShiftRight());
+				finalProgramSMT.append(getDeclSMT(0));
+				finalProgramSMT.append(res + "\n");
+				finalProgramSMT.append("(check-sat)\n");
+				finalProgramSMT.append(getWhichOneIsWrong());
+				smtCheckSat(finalProgramSMT.toString(), i);
+				this.backUpVariCount = copyMap(this.variCount);
+				System.out.println(this.resultProxyMap);
+				System.out.println(this.proxyAssertMap);
 
-		for (int i = 0; i < ctx.procedures.size(); i++) {
-			this.inProcedure = 1;
-			StringBuffer finalProgramSMT = new StringBuffer();
-			ProcedureDeclContext item = ctx.procedures.get(i);
-			String res = visitProcedureDecl(item);
-			finalProgramSMT.append("(set-logic QF_IRA)\n");
-			finalProgramSMT.append(getDivFunSMT());
-			finalProgramSMT.append(getInttoBoolSmt());
-			finalProgramSMT.append(getBooltoIntSmt());
-			finalProgramSMT.append(getMyShiftLeft());
-			finalProgramSMT.append(getMyShiftRight());
-			finalProgramSMT.append(getDeclSMT(0));
-			finalProgramSMT.append(res + "\n");
-			finalProgramSMT.append("(check-sat)\n");
-			finalProgramSMT.append(getWhichOneIsWrong());
-			smtCheckSat(finalProgramSMT.toString(), i);
-			this.backUpVariCount = copyMap(this.variCount);
-			 System.out.println(this.resultProxyMap);
-			 System.out.println(this.proxyAssertMap);
-			 
-			if (this.z3Result.get(i).equals("INCORRECT") && !this.isDeepEnough()) {
-				i--;
-				this.unboundDepth++;
-			} else if (!this.z3Result.get(i).trim().isEmpty()) {
-				System.out.println(this.z3Result.get(i));
+				if (checkTheZ3Answer(i)) {
+					i--;
+					this.unboundDepth+=5;
+				}
+				initProcedure();
+				System.out.println();
 			}
-			initProcedure();
-			System.out.println();
-		}
+
+
 		// the final result
-		String finalTestAnswer="CORRECT";
-		for(String str:this.z3Result){
-			if(str.equals("INCORRECT")){
-				finalTestAnswer="INCORRECT";
+		String finalTestAnswer = "CORRECT";
+		for (String str : this.z3Result) {
+			if (str.equals("INCORRECT")) {
+				finalTestAnswer = "INCORRECT";
 				break;
-			}else if(str.equals("UNKNOWN")){
-				finalTestAnswer="UNKNOWN";
+			} else if (str.equals("UNKNOWN")) {
+				finalTestAnswer = "UNKNOWN";
 				break;
 			}
 		}
@@ -198,6 +223,24 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		System.out.println("unboundDepth: " + this.unboundDepth);
 		System.exit(0);
 		return resSmt.toString();
+	}
+
+	private boolean checkTheZ3Answer(int i) {
+		if (this.z3Result.get(i).equals("INCORRECT") && !this.isDeepEnough()) {
+			return true;
+		} else if (!this.z3Result.get(i).trim().isEmpty()) {
+			if (this.z3Result.get(i).equals("INCORRECT")) {
+				System.out.println("INCORRECT");
+				System.exit(0);
+			}
+			if (this.z3Result.get(i).equals("UNKNOWN")) {
+				System.out.println("UNKNOWN");
+				System.exit(0);
+			}
+			System.out.println(this.z3Result.get(i));
+			return false;
+		}
+		return false;
 	}
 
 	/**
@@ -246,8 +289,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	private boolean isDeepEnough() {
-//		System.out.println("ResultProxyMap: " + this.resultProxyMap);
-//		System.out.println("ProxyAssertMap: " + this.proxyAssertMap);
+		// System.out.println("ResultProxyMap: " + this.resultProxyMap);
+		// System.out.println("ProxyAssertMap: " + this.proxyAssertMap);
 		boolean flag = true;
 		for (String proxy : this.resultProxyMap.keySet()) {
 			// if this assertion is false
@@ -382,8 +425,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					String[] tempStrArray = tempResult.split(" ");
 					resultProxyMap.put(tempStrArray[0], tempStrArray[1]);
 				}
-//				 System.out.println(this.resultProxyMap);
-//				 System.out.println(this.proxyAssertMap);
+				// System.out.println(this.resultProxyMap);
+				// System.out.println(this.proxyAssertMap);
 			}
 		} catch (ProcessTimeoutException | IOException | InterruptedException e) {
 			// System.out.println("UNKNOWN");
@@ -413,9 +456,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (!queryResult.startsWith("unsat")) {
 			// System.out.println("UNKNOWN");
 			// System.out.println(queryResult);
-			if(this.z3Result.size()>=procedureTimes+1){
+			if (this.z3Result.size() >= procedureTimes + 1) {
 				this.z3Result.set(procedureTimes, "UNKNOWN");
-			}else{
+			} else {
 				this.z3Result.add(procedureTimes, "UNKNOWN");
 			}
 			// this.z3Result = "UNKNOWN";
@@ -423,9 +466,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			return;
 		}
 		// System.out.println("CORRECT");
-		if(this.z3Result.size()>=procedureTimes+1){
+		if (this.z3Result.size() >= procedureTimes + 1) {
 			this.z3Result.set(procedureTimes, "CORRECT");
-		}else{
+		} else {
 			this.z3Result.add(procedureTimes, "CORRECT");
 		}
 		// this.z3Result = "CORRECT";
@@ -566,7 +609,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// the assertion's SMT
 		// use the chengyuan bianliang
 		// finalSMT.append(this.getAssertNot());
-		if(this.assertList.isEmpty()){
+		if (this.assertList.isEmpty()) {
 			this.assertList.add("true");
 		}
 		finalSMT.append(this.gettvUnAssSMT());
@@ -1037,7 +1080,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		 * 
 		 */
 		// get the back up for the varicount;
-		
+
 		StringBuffer finalResult = new StringBuffer();
 		int i = 0;
 		// this.unboundDepth
@@ -1073,7 +1116,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 * 
 	 * return resSmt.toString(); }
 	 */
-	
+
 	@Override
 	public String visitInvariant(InvariantContext ctx) {
 
@@ -1112,7 +1155,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	@Override
 	public String visitExpr(ExprContext ctx) {
-		
+
 		String resSmt;
 		resSmt = this.visitTernExpr(ctx.ternExpr());
 		return resSmt;

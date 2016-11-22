@@ -1,13 +1,12 @@
 // RUN: %tool "%s" > "%t"
 // RUN: %diff %CORRECT "%t"
 int main(){
+	
 	int i;
 	i=0;
-	int j;
-
-	i=42;
-	j=~i;
-	assert(j<0);
+	while(i<2){
+		i=i+1;
+	}
 	return 3;
 }
 
@@ -17,6 +16,6 @@ int bar(){
 }
 
 int foo(){
-	assert(2<1);
+assert(2<1);	
 	return 1;
 }
