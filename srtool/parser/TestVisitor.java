@@ -64,8 +64,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 2;
+	private int unboundDepth = 1;
 	private String z3Result="";
+	private Map<String, ArrayList<Integer>> backUpVariCount;
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
@@ -120,7 +121,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		List<ProcedureDeclContext> procedures = ctx.procedures;
 		globals = ctx.globals;
 		this.inProcedure = 0;
-		StringBuffer finalProgramSMT = new StringBuffer();
+		
 		for (VarDeclContext item : gobls) {
 			// resSmt.append(visitVarDecl(item));
 			visitVarDecl(item);
@@ -132,8 +133,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			procedureContext.put(name, item);
 
 		}
-		this.inProcedure = 1;
+		
 		for(int i=0;i<ctx.procedures.size();i++){
+			this.inProcedure = 1;
+			StringBuffer finalProgramSMT = new StringBuffer();
 			ProcedureDeclContext item=ctx.procedures.get(i);
 			String res = visitProcedureDecl(item);
 			finalProgramSMT.append("(set-logic QF_IRA)\n");
@@ -159,7 +162,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				this.unboundDepth++;
 				initProcedure();
 			}
-
+			System.out.println();
 		}
 
 		System.exit(0);
@@ -169,14 +172,18 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 *  still has problem
 	 */
 	private void initProcedure(){
-		this.variCount=new HashMap<String,ArrayList<Integer>>();
+		
+		this.variCount=this.initVaricount(this.backUpVariCount);
+		
 		this.assertList=new ArrayList<String>();
 		this.requirList=new ArrayList<String>();
 		this.proxyAssertMap=new HashMap<String,String>();
 		this.resultProxyMap=new HashMap<String,String>();
 		this.ifLayer=new HashMap<Integer,HashMap<String,Integer>>();
 		
+		
 		this.procedureContext = new HashMap<String, ProcedureDeclContext>();
+		
 		this.globals = new ArrayList<VarDeclContext>();
 		this.smtResult=new StringBuilder();
 		this.preCon = new ArrayList<String>();
@@ -185,11 +192,28 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.postSmtResult = new StringBuilder();
 		this.postNumber = 0;
 		this.preNumber = 0;
-		this.inProcedure=0;
+		this.inProcedure=1;
 		this.returnExp="";
 		this.call = new CallVisitor();
 		this.z3Result="";
 	}
+	
+	private Map<String, ArrayList<Integer>> initVaricount(Map<String, ArrayList<Integer>> localMap) {
+		Map<String, ArrayList<Integer>> reMap=new HashMap<String,ArrayList<Integer>>();
+		for(String str:localMap.keySet()){
+			// if it is a globa variable
+			if(localMap.get(str).get(0)==0){
+				ArrayList<Integer> tempList=new ArrayList<Integer>();
+				for(int ij=0;ij<localMap.get(str).size();ij++){
+					tempList.add(ij, localMap.get(str).get(ij));
+				}
+				reMap.put(str, tempList);
+			}
+			
+		}
+		return reMap;
+	}
+
 	
 	private boolean isDeepEnough(){
 		System.out.println("ResultProxyMap: "+this.resultProxyMap);
@@ -954,13 +978,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		cond = visitExpr(ctx.condition);
 
-		for (LoopInvariantContext invar : inVarList) {
-		}
-
 		/*
 		 * i is a loog index; this.unboundDepth is an artificial Upper bound
 		 * 
 		 */
+		// get the back up for the varicount;
+		this.backUpVariCount=copyMap(this.variCount);
 		StringBuffer finalResult = new StringBuffer();
 		int i = 0;
 		// this.unboundDepth
@@ -971,17 +994,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			 * the statement; else, add the body inside the while loop as the
 			 * statement.
 			 */
-			System.out.println("Condition:" + ctx.condition.getText());
 			if (i == this.unboundDepth) {
 				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, true));
 			} else {
 				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, false));
 			}
 		}
-		System.out.println("While: " + finalResult.toString());
-		System.out.println("iflayer: " + this.ifLayer);
 		this.insertAssertion("false");
-		System.out.println("AssumeInWhile: " + this.getAssumeSMT("false"));
 		res.append(finalResult.toString());
 		res.append(this.getAssumeSMT("false"));
 		return res.toString();

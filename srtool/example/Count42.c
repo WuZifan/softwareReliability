@@ -2,11 +2,10 @@
 // RUN: %diff %CORRECT "%t"
 int main(){
 	int i;
-	int j;
-	j=0;
 	i=0;
-	while(i<3){
+	while(i<5){
 		i=i+1;
+		assert(1>2);
 	}
 	return 0;
 }
