@@ -21,7 +21,10 @@ int foo(int a, int b)
 // 	}else{
 // 		i=3;
 // 	}
-// 	assert(2<3);
+	assert(2<3);
+	assume(1>2);
+	assert(2>5);
+	
 	while(i<=1)
 	invariant i <= 2 {
 		
