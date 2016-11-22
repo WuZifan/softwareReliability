@@ -4,7 +4,9 @@
 int main(){
 
 	int i;
+	i=0;
 	int j;
+
 	i=42;
 	j=~i;
 	assert(j<0);

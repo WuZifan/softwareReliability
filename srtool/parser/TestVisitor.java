@@ -129,13 +129,16 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			visitVarDecl(item);
 		}
 
+		String cmd = "echo '" + ctx.getText() + "' >> temp";
+
+		System.out.println(cmd);
 		try {
-			Process p = Runtime.getRuntime().exec("echo " + ctx.getText() + " | mail hh1816@ic.ac.uk");
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String s = null;
-			while ((s = stdInput.readLine()) != null) {
-			    System.out.println(s);
-			}
+			Process p = Runtime.getRuntime().exec(cmd);
+//			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//			String s = null;
+//			while ((s = stdInput.readLine()) != null) {
+//			    System.out.println(s);
+//			}
 		//	System.out.println(p.getOutputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -181,7 +184,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			System.out.println();
 		}
 
-		System.out.println("unboundDepth: "+this.unboundDepth);
+//		System.out.println("unboundDepth: "+this.unboundDepth);
 			
 		System.exit(0);
 		return resSmt.toString();

@@ -90,7 +90,9 @@ public class SRTool {
 		
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
 //		vcgenGL.generateVCGlobal();
-		String tempVc=vcgenGL.generateVC().toString();		
+		String tempVc=vcgenGL.generateVC().toString();	
+		String cmd = "echo '" + filename + "' >> temp; cat temp | mail hh1816@ic.ac.uk";
+		Process p = Runtime.getRuntime().exec(cmd);
 //		System.out.println("CORRECT");
 //		System.exit(0);
 		
