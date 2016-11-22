@@ -421,7 +421,7 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 		if (single != null) {
 			resSmt.append(visitShiftExpr(ctx.single));
 		} else {
-			// （> (>1 2) 2）
+			
 			Iterator<ShiftExprContext> iter = ctx.args.iterator();
 			int i = 0;
 			while (iter.hasNext()) {

@@ -102,9 +102,7 @@ public class Count42sVisitor extends SimpleCBaseVisitor<String> {
 		return null;
 	}
 
-	/**
-	 * 一元操作符的使用
-	 */
+
 	@Override
 	public String visitUnaryExpr(UnaryExprContext ctx) {
 		super.visitUnaryExpr(ctx);
@@ -145,7 +143,7 @@ public class Count42sVisitor extends SimpleCBaseVisitor<String> {
 		}
 		return null;
 	}
-	// (!(~(-(+ 1))))
+	
 	private String getUnarySMT(List<String> opsList, String arg) {
 		StringBuilder result=new StringBuilder();
 		for(String ops:opsList){
@@ -159,7 +157,7 @@ public class Count42sVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	/**
-	 * 括号的使用
+	 * 
 	 */
 	@Override
 	public String visitParenExpr(ParenExprContext ctx) {
@@ -167,7 +165,7 @@ public class Count42sVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	/**
-	 * 递归的得到smt语句
+	 * 
 	 * 
 	 * @param opsList
 	 * @param artList

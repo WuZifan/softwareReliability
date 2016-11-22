@@ -1,7 +1,4 @@
-
-
 // RUN: %tool "%s" > "%t"
-
 // RUN: %diff %CORRECT "%t"
 
 // int s;
@@ -33,3 +30,14 @@ int foo(int a, int b)
 	}
 	return i;
 }
+
+int bar() {
+	int i;
+	int j;
+	i=42;
+	j=~i;
+	assert(j<0);
+	return 3;
+
+}
+
