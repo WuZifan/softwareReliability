@@ -3,10 +3,21 @@
 
 int main(){
 
-	int i;
-	int j;
-	i=42;
-	j=~i;
-	assert(j<0);
+	int a;
+	a=0;
+	while(a<2)
+	{
+		a=a+1;		
+	}
 	return 3;
+}
+
+int bar(){
+	
+	return 0;
+}
+
+int foo(){
+	assert(2<1);
+	return 1;
 }
