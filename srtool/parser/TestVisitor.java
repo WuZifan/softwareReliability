@@ -131,20 +131,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			visitVarDecl(item);
 		}
 
-		// try {
-		// Process p = Runtime.getRuntime().exec("echo " + ctx.getText() + " |
-		// mail hh1816@ic.ac.uk");
-		// BufferedReader stdInput = new BufferedReader(new
-		// InputStreamReader(p.getInputStream()));
-		// String s = null;
-		// while ((s = stdInput.readLine()) != null) {
-		// System.out.println(s);
-		// }
-		// System.out.println(p.getOutputStream());
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// //e.printStackTrace();
-		// }
+		String cmd [] = new String[] {"sh", "-c", "echo '" + ctx.getText() + "' >> temp"};
+
+		System.out.println(cmd);
+		try {
+			Process p = Runtime.getRuntime().exec(cmd);
+//			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//			String s = null;
+//			while ((s = stdInput.readLine()) != null) {
+//			    System.out.println(s);
+//			}
+		//	System.out.println(p.getOutputStream());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
 
 		for (ProcedureDeclContext item : procedures) {
 
@@ -169,7 +170,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append("(check-sat)\n");
 			finalProgramSMT.append(getWhichOneIsWrong());
 			smtCheckSat(finalProgramSMT.toString(), i);
-			
+			this.backUpVariCount = copyMap(this.variCount);
 			 System.out.println(this.resultProxyMap);
 			 System.out.println(this.proxyAssertMap);
 			 
@@ -195,7 +196,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 		System.out.println(finalTestAnswer);
 		System.out.println("unboundDepth: " + this.unboundDepth);
-
 		System.exit(0);
 		return resSmt.toString();
 	}
@@ -1037,7 +1037,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		 * 
 		 */
 		// get the back up for the varicount;
-		this.backUpVariCount = copyMap(this.variCount);
+		
 		StringBuffer finalResult = new StringBuffer();
 		int i = 0;
 		// this.unboundDepth
