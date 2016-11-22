@@ -891,7 +891,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 		System.out.println("While: "+finalResult.toString());
-		System.out.println("iflayer: "+this.ifLayer.keySet());
+		System.out.println(this.ifLayer);
 		this.assertList.add("false");
 		this.getAssumeSMT("false");
 		return res.toString();
