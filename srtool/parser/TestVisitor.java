@@ -1105,12 +1105,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			 * statement.
 			 */
 			if (i == this.unboundDepth) {
-				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, true));
+				finalResult.append(this.getUnwindIf(ctx, true));
 			} else {
-				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, false));
+				finalResult.append(this.getUnwindIf(ctx, false));
 			}
 			long insideWhile=System.currentTimeMillis();
-//			System.out.println("WhileTime: "+(insideWhile-initWhile));
 			if(insideWhile-initWhile>10){
 				this.isUnwindTimeOut=true;
 				break;
@@ -1834,7 +1833,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 * "if" SMT
 	 */
 
-	private String getUnwindIf(SimpleCParser.ExprContext cond, SimpleCParser.BlockStmtContext ctx, Boolean last) {
+	private String getUnwindIf(SimpleCParser.WhileStmtContext ctx, Boolean last) {
 		StringBuilder resSmt = new StringBuilder();
 		HashMap<String, ArrayList<Integer>> init = new HashMap<String, ArrayList<Integer>>();
 		HashMap<String, Integer> iftemp;
@@ -1843,10 +1842,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		int layer;
 		init = copyMap(this.variCount);
 
-		if (variCount.containsKey(cond.getText())) {
-			condition = "(not (= " + cond.getText() + getSubscript(cond.getText()) + " 0))";
+		if (variCount.containsKey(ctx.condition.getText())) {
+			condition = "(not (= " + ctx.condition.getText() + getSubscript(ctx.condition.getText()) + " 0))";
 		} else {
-			condition = visitExpr(cond);
+			condition = visitExpr(ctx.condition);
 		}
 
 		/** prepare if information **/
@@ -1856,10 +1855,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.ifLayer.put(layer + 1, iftemp);
 
 		/** visit bloc statement **/
-		strif = visitBlockStmt(ctx);
+		strif = visitBlockStmt(ctx.body);
 
 		resSmt.append(strif);
 
+		for(LoopInvariantContext item : ctx.invariantAnnotations) {
+			this.insertAssertion(visitLoopInvariant(item));
+		}
+		
 		/** Compare differences and generate SMT for if **/
 		for (String key : this.variCount.keySet()) {
 
