@@ -48,7 +48,7 @@ import parser.SimpleCParser.WhileStmtContext;
 import util.ProcessExec;
 import util.ProcessTimeoutException;
 
-public class TestVisitor extends SimpleCBaseVisitor<String> {
+public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 	private Map<String, ArrayList<Integer>> variCount;
 	private Map<String, ProcedureDeclContext> procedureContext = new HashMap<String, ProcedureDeclContext>();
 	private List<VarDeclContext> globals = new ArrayList<VarDeclContext>();
@@ -78,20 +78,20 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	private static final int TIMEOUT = 30;
 
-	public TestVisitor() {
+	public SummerizationVisitor() {
 		postNumber = 0;
 		this.smtResult = new StringBuilder();
 		this.preSmtResult = new StringBuilder();
 	}
 
-	public TestVisitor(MyAssertVisitor assVisitor, VariCount variCount, String glSmt, String plSmt) {
+	public SummerizationVisitor(MyAssertVisitor assVisitor, VariCount variCount, String glSmt, String plSmt) {
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
 		this.ifLayer = variCount.getIfLayer();
 		this.smtResult = new StringBuilder();
 	}
 
-	public TestVisitor(MyAssertVisitor assVisitor, VariCount variCount) {
+	public SummerizationVisitor(MyAssertVisitor assVisitor, VariCount variCount) {
 		this.assVisitor = assVisitor;
 		this.variCount = variCount.getVarCount();
 		this.ifLayer = variCount.getIfLayer();
@@ -957,6 +957,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		int layer;
 
 		String cond, strif, strelse, temp;
+
 		/** store initial info of variable **/
 		init = copyMap(this.variCount);
 
@@ -1025,40 +1026,64 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	@Override
 	public String visitWhileStmt(WhileStmtContext ctx) {
-		StringBuilder res = new StringBuilder("");
+		StringBuilder resSmt = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
 		String cond;
+		StringBuilder preAssume = new StringBuilder(""); 
+		ArrayList<String> indexVar = new ArrayList<String>();
+		ArrayList<String> inVarCond = new ArrayList<String>();
 
 		cond = visitExpr(ctx.condition);
-
-		/*
-		 * i is a loog index; this.unboundDepth is an artificial Upper bound
-		 * 
-		 */
-		// get the back up for the varicount;
 		
-		StringBuffer finalResult = new StringBuffer();
-		int i = 0;
-		// this.unboundDepth
-		while (i < this.unboundDepth) {
-			i++;
-			/*
-			 * if this is the last time,then add assert(false);assume(false) as
-			 * the statement; else, add the body inside the while loop as the
-			 * statement.
-			 */
-			if (i == this.unboundDepth) {
-				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, true));
-			} else {
-				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, false));
+		inVarList = ctx.invariantAnnotations;
+		for(LoopInvariantContext inVar : inVarList) {
+			String res = visitLoopInvariant(inVar);
+			this.insertAssertion(res);
+			inVarCond.add(res);
+		}
+		
+		//get index variable?
+		for(String key : variCount.keySet()) {
+			if(cond.contains(key)) {
+				indexVar.add(key);
 			}
 		}
-		this.insertAssertion("false");
-		res.append(finalResult.toString());
-		res.append(this.getAssumeSMT("false"));
+		
+		/* havoc index variable */
+		for(SimpleCParser.StmtContext stmt : ctx.body.stmts) {
+			SimpleCParser.AssignStmtContext temp;
+			if(stmt.assignStmt() != null) {
+				temp = stmt.assignStmt();
+				String name = temp.lhs.getText();
+				if(indexVar.contains(name)) {
+					incSubscript(name);
+					if(this.ifLayer.size() == 0) {
+						incAppSubscript(name);
+						setInitSubscript(name, getSubscript(name));
+					}
+					else {
+						setAppSubscript(name);
+					}
+				}
+			}
+		}
+		
+		for(String item : inVarCond) {
+			resSmt.append(this.getAssumeSMT(item));
+		}
+		
+		
+		resSmt.append(this.getUnwindIf(ctx.condition, ctx.body, true));
+		for(String item : inVarCond) {
+			this.insertAssertion(item);
+		}
+		
+		resSmt.append(this.getAssumeSMT("false"));
 		this.ifLayer.remove(this.ifLayer.size());
-		return res.toString();
+		return resSmt.toString();
 	}
+
+
 
 	/*
 	 * @Override(non-Javadoc)
@@ -1075,27 +1100,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	
 	@Override
 	public String visitInvariant(InvariantContext ctx) {
-
-		StringBuilder resSmt = new StringBuilder("");
-		String temp = ctx.condition.getText();
-//		System.out.println(temp);
 		String text = this.visitExpr(ctx.condition);
-		if (!text.contains("(")) {
-			text = isNotCondition(text);
-		}
-		if (this.ifLayer.size() != 0) {
-			String finalTest = getIfSmt();
-			finalTest = getAssertWithRequire(finalTest, true);
-			finalTest = "(=> " + finalTest + " " + text + ")";
-			text = finalTest;
-		} else {
-			text = getAssertWithRequire(text, false);
-		}
-		this.assVisitor.visitunnomAss(text);
-		this.assertList.add(text);
-		;
-
-		return "";
+		
+		return text;
 	}
 
 	@Override
