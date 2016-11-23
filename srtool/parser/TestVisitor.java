@@ -1077,9 +1077,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			 * statement.
 			 */
 			if (i == this.unboundDepth) {
-				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, true));
+				finalResult.append(this.getUnwindIf(ctx, true));
 			} else {
-				finalResult.append(this.getUnwindIf(ctx.condition, ctx.body, false));
+				finalResult.append(this.getUnwindIf(ctx, false));
 			}
 		}
 		this.insertAssertion("false");
