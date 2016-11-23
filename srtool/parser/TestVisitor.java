@@ -1030,8 +1030,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder res = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
 		String cond;
-		
-		System.out.println("");
 
 		cond = visitExpr(ctx.condition);
 
@@ -1822,11 +1820,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				setAppSubscript(var);
 			}
 		}
+		
+		
 
 		if (!last) {
 			this.ifLayer.remove(layer + 1);
 		}
 
+		
+		
 		return resSmt.toString();
 	}
 

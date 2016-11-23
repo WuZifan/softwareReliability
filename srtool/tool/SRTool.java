@@ -64,7 +64,7 @@ public class SRTool {
 //		String filename="tests/correct/simpleeq.c";
 //		String filename="tests/correct/if.c";
 
-		String filename="example/Count42.c";
+		String filename="Part2GivenTests/part2_correct_11.c";
 
 		
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
