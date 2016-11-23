@@ -13,7 +13,6 @@ assert(1>2);
 return 2;
 }
 
-
 int bar() 
 ensures \result != c{
 return c + 1;
