@@ -79,6 +79,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	// assertion,
 	// boolean represent is true or not
 	private HashMap<String, String> proxyAssertMap = new HashMap<String, String>();
+	private HashMap<String, Integer> candidate_condition = new HashMap<String, Integer>();
 
 	private static final int TIMEOUT = 30;
 
@@ -294,7 +295,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return flag;
 	}
 
-	// TODO call
+
 	@Override
 	public String visitCallStmt(CallStmtContext ctx) {
 
@@ -1692,7 +1693,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitHavocStmt(HavocStmtContext ctx) {
 		incSubscript(ctx.getChild(1).getText());
-		return super.visitHavocStmt(ctx);
+		if (this.ifLayer.size() == 0) {
+			incAppSubscript(ctx.getChild(1).getText());
+			setInitSubscript(ctx.getChild(1).getText(), getSubscript(ctx.getChild(1).getText()));
+		} else {
+			setAppSubscript(ctx.getChild(1).getText());
+		}
+		return "";
 	}
 
 	@Override
@@ -1743,7 +1750,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	/** Increase the subscript while assigned **/
 	private void incSubscript(String text) {
-		// TODO : Declaration
 		variCount.get(text).set(1, getSubscript(text) + 1);
 	}
 
@@ -1827,7 +1833,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		resSmt.append(strif);
 
 		for(LoopInvariantContext item : ctx.invariantAnnotations) {
-			this.insertAssertion(visitLoopInvariant(item));
+			String res = visitLoopInvariant(item);
+			if(!res.isEmpty()) {
+				this.insertAssertion(res);
+			}
 		}
 		
 		/** Compare differences and generate SMT for if **/
