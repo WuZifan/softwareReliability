@@ -1,14 +1,17 @@
 // RUN: %tool "%s" > "%t"
 // RUN: %diff %CORRECT "%t"
-
 // int s;
 int y;
 int x;
 int s;
 
+
+
 int bar(int h)
-ensures \result <= \old(x){
-	return h;
+ensures \result != x{
+	int i;
+	i=c(9);
+	return x+1;
 }
 
 int foo(int a, int b)
@@ -18,9 +21,8 @@ int foo(int a, int b)
  ensures \result <= \old(x)
 // requires a!=0
 {
- 	int i;
- 	x=1;
- 	i = 2;
+ 	int i1;
+ 	i1 = 2;
 //  	if(1==1){
 // 		assert(3<4);
 // 		i=2;
@@ -28,9 +30,15 @@ int foo(int a, int b)
 // 		i=3;
 // 	}
 	s=1;
-	i = bar(x);
-	i = s;
+	s = bar(x);
+	i1 = s;
 	return x;
+
 }
 
-
+int c(int h)
+requires h<10
+{
+	int i;
+	return h+1;
+}
