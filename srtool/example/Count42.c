@@ -6,7 +6,6 @@ int x;
 int s;
 
 
-
 int c;
 int  foo(int a) {
 c = bar();

@@ -64,7 +64,7 @@ public class SRTool {
 //		String filename="tests/correct/simpleeq.c";
 //		String filename="tests/correct/if.c";
 
-		String filename="Part2GivenTests/part2_correct_11.c";
+		String filename="Part2GivenTests/part2_correct_3.c";
 
 		
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
@@ -99,8 +99,6 @@ public class SRTool {
 //		while ((s = stdInput.readLine()) != null) {
 //		    System.out.println(s);
 //		}
-
-	
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
 //		vcgenGL.generateVCGlobal();
 		String tempVc=vcgenGL.generateVC().toString();	
