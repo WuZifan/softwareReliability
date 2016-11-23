@@ -1135,7 +1135,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder res = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
 		String cond;
-
+		String conditions=ctx.condition.getText();
 		cond = visitExpr(ctx.condition);
 
 		/*
@@ -1904,7 +1904,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		} else {
 			condition = visitExpr(ctx.condition);
 		}
-
+		condition=this.isNotCondition(condition);
 		/** prepare if information **/
 		layer = this.ifLayer.size();
 		iftemp = new HashMap<String, Integer>();
