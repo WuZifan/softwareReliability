@@ -131,21 +131,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			visitVarDecl(item);
 		}
 
-		String cmd [] = new String[] {"sh", "-c", "echo '" + ctx.getText() + "' >> temp"};
-
-	//	System.out.println(cmd);
-		try {
-			Process p = Runtime.getRuntime().exec(cmd);
-//			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-//			String s = null;
-//			while ((s = stdInput.readLine()) != null) {
-//			    System.out.println(s);
-//			}
-	//		System.out.println(p.getOutputStream());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		}
+	
 
 		for (ProcedureDeclContext item : procedures) {
 

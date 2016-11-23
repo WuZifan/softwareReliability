@@ -100,11 +100,7 @@ public class SRTool {
 //		    System.out.println(s);
 //		}
 
-		String cmd [] = new String[] {"sh", "-c", "echo '" + filename + "' >> temp"};
-		String cmd2 [] = new String[] {"sh", "-c", "cat temp | mail hh1816@ic.ac.uk"};
-		Process p = Runtime.getRuntime().exec(cmd);
-		Process p2 = Runtime.getRuntime().exec(cmd2);
-
+	
 		VCGenerator vcgenGL =new VCGenerator(ctx,null);
 //		vcgenGL.generateVCGlobal();
 		String tempVc=vcgenGL.generateVC().toString();	
