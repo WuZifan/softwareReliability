@@ -319,11 +319,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					String assignVar = stmts.get(i).assignStmt().lhs.getText();
 					for (VarDeclContext item : globals) {
 						if (item.name.getText().equals(assignVar) && !item.name.getText().equals(assignedVar)) {
-							String tempVar = "(declare-fun "+"bar_set"+callTimes+"0 () Int)\n";
-							String havocTempVar = "(declare-fun "+"bar_set"+callTimes+"1 () Int)\n";	
-							postAssume.append(tempVar);
-							postAssume.append(havocTempVar);
-							//variCount.get(assignVar).set(1, getSubscript(assignVar) + 1);
+//							String tempVar = "(declare-fun "+"bar_set"+callTimes+"0 () Int)\n";
+//							String havocTempVar = "(declare-fun "+"bar_set"+callTimes+"1 () Int)\n";	
+//							postAssume.append(tempVar);
+//							postAssume.append(havocTempVar);
+							variCount.get(assignVar).set(1, getSubscript(assignVar) + 1);
 						}
 					}
 
