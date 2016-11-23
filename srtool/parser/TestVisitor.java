@@ -353,7 +353,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitCallStmt(CallStmtContext ctx) {
 
-		// System.out.println("In Call Statement:: ");
+//		 System.out.println("In Call Statement:: ");
 		String methodName = ctx.callee.getText();
 		String assignedVar = ctx.lhs.getText();
 		List<ExprContext> actuals = ctx.actuals;
@@ -428,7 +428,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				}
 			}
 		}
-
 		return postAssume.toString();
 	}
 
