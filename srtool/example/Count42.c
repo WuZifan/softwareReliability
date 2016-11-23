@@ -6,6 +6,9 @@ int main(){
 	i=0;
 	int j;
 
+	if(i == 1) {
+		i = 1;
+	}
 	i=42;
 	j=~i;
 	assert(j<0);
