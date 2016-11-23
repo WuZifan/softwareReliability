@@ -8,12 +8,17 @@ int s;
 
 int c;
 int  foo(int a) {
-c = bar();
-assert(1>2);
+// c = bar();
+// assert(1>2);
+	int i;
+	i=0;
+while(i<5){
+	i=i+1;
+}
 return 2;
 }
 
-int bar() 
-ensures \result != c{
-return c + 1;
-}
+// int bar() 
+// ensures \result != c{
+// return c + 1;
+// }

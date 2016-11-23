@@ -74,7 +74,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 200;
+	private int unboundDepth = 50;
 	private List<String> z3Result = new ArrayList<String>();
 	private boolean isUnwindTimeOut = false;
 	private boolean isUnwindDeepEnough = true;
@@ -214,7 +214,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			if (!this.isTheLastTimeProce) {
 				if (checkTheZ3Answer(i)) {
 					i--;
-					this.unboundDepth += 200;
+					this.unboundDepth += 50;
 				} else {
 					i--;
 					this.isTheLastTimeProce = true;
