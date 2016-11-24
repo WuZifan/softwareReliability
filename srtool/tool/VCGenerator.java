@@ -31,7 +31,7 @@ public class VCGenerator {
 		this.glVisitor = new GlobalVisitor(VarCount);
 		this.paVisitor = new ParameterVisitor(VarCount);
 
-		// TODO: You will probably find it useful to add more fields and
+		// You will probably find it useful to add more fields and
 		// constructor arguments
 	}
 	

@@ -74,16 +74,19 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 4;
+	private int unboundDepth = 10;
 	private List<String> z3Result = new ArrayList<String>();
 	private boolean isUnwindTimeOut = false;
 	private boolean isUnwindDeepEnough = true;
 	private boolean isBlockTheAssert = true;
 	private boolean isTheLastTimeProce = false;
-
+	private boolean isBecauseofTimeout = false;
+	private boolean isKeepGlobaVariable = false;
 	private List<String> assumeList = new ArrayList<String>();
+	private Map<String, ArrayList<Integer>> oldVariCount;
 	// private String z3Result = "";
 	private Map<String, ArrayList<Integer>> backUpVariCount;
+	private Map<String, ArrayList<Integer>> previousVariCount;
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
@@ -154,7 +157,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		int initProcedureIndex = -1;
 		long timeOfProcedure = 0;
 		for (int i = 0; i < ctx.procedures.size(); i++) {
-
+			this.oldVariCount = copyMap(this.variCount);
+			this.previousVariCount = copyMap(this.variCount);
 			this.inProcedure = 1;
 			StringBuffer finalProgramSMT = new StringBuffer();
 			ProcedureDeclContext item = ctx.procedures.get(i);
@@ -182,8 +186,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				initProcedureIndex = i;
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime2: " + timeOfProcedure);
-//				if (timeOfProcedure > 7 * 1000) {
-					 if (false) {
+				if (timeOfProcedure > 7 * 1000) {
+					// if (false) {
+					this.isBecauseofTimeout = true;
 					if (this.z3Result.size() >= i + 1) {
 						this.z3Result.set(i, "UNKNOWN");
 					} else {
@@ -197,13 +202,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime: " + timeOfProcedure);
 				// System.out.println();
-//				if (timeOfProcedure > 7 * 1000) {
-				if(false){
+				if (timeOfProcedure > 7 * 1000) {
+					// if(false){
 					if (this.z3Result.size() >= i + 1) {
 						this.z3Result.set(i, "UNKNOWN");
 					} else {
 						this.z3Result.add(i, "UNKNOWN");
 					}
+					this.isBecauseofTimeout = true;
 					initProcedure();
 					initProgramTime = finishProcedure;
 					continue;
@@ -213,12 +219,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			this.backUpVariCount = copyMap(this.variCount);
 			// this is also a system.out.print ->
 			printTheWrongOne();
+
 			if (!this.isTheLastTimeProce) {
 				if (checkTheZ3Answer(i)) {
 					i--;
-					this.unboundDepth += 1;
+					this.unboundDepth += 10;
+					this.isKeepGlobaVariable = true;
 				} else {
 					i--;
+					this.isKeepGlobaVariable = true;
 					this.isTheLastTimeProce = true;
 					this.isBlockTheAssert = false;
 					this.isUnwindDeepEnough = true;
@@ -229,7 +238,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				this.isUnwindDeepEnough = true;
 			}
 			initProcedure();
-			// System.out.println("z3Result: " + this.z3Result);
+			System.out.println("z3Result: " + this.z3Result);
 			// System.out.println();
 		}
 
@@ -237,17 +246,34 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String finalTestAnswer = "CORRECT";
 		for (String str : this.z3Result) {
 			if (str.equals("INCORRECT")) {
-				// finalTestAnswer = "INCORRECT";
 				System.out.println("INCORRECT");
 				System.exit(0);
 			} else if (str.equals("UNKNOWN")) {
 				finalTestAnswer = "UNKNOWN";
 			}
 		}
-		System.out.println(finalTestAnswer);
+
+		// System.out.println(finalTestAnswer);
+		printFinalResult(finalTestAnswer);
 		// System.out.println("unboundDepth: " + this.unboundDepth);
 		System.exit(0);
 		return resSmt.toString();
+	}
+
+	private void printFinalResult(String finalTestAnswer) {
+		if (finalTestAnswer.equals("UNKNOWN")) {
+			for (String str : this.z3Result) {
+				if (str.equals("INCORRECT")) {
+					System.out.println("Because of TImeOut " + "INCORRECT");
+					System.exit(0);
+				}
+			}
+			System.out.println("Because of TImeOut " + "CORRECT");
+			System.exit(0);
+		} else {
+			System.out.println(finalTestAnswer);
+			System.exit(0);
+		}
 	}
 
 	private void printTheWrongOne() {
@@ -256,8 +282,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				System.out.println(str + " false " + this.proxyAssertMap.get(str));
 			}
 		}
-		// System.out.println(this.resultProxyMap);
-		// System.out.println(this.proxyAssertMap);
 	}
 
 	private boolean checkTheZ3Answer(int i) {
@@ -303,22 +327,35 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.call = new CallVisitor();
 		this.isUnwindTimeOut = false;
 		this.assumeList = new ArrayList<String>();
+		this.isKeepGlobaVariable = false;
 		// this.z3Result = "";
 	}
 
 	private Map<String, ArrayList<Integer>> initVaricount(Map<String, ArrayList<Integer>> localMap) {
 		Map<String, ArrayList<Integer>> reMap = new HashMap<String, ArrayList<Integer>>();
-
-		for (String str : localMap.keySet()) {
-			// if it is a globa variable
-			if (localMap.get(str).get(0) == 0) {
-				ArrayList<Integer> tempList = new ArrayList<Integer>();
-				for (int ij = 0; ij < localMap.get(str).size(); ij++) {
-					tempList.add(ij, localMap.get(str).get(ij));
+		if (!this.isKeepGlobaVariable) {
+			for (String str : localMap.keySet()) {
+				// if it is a globa variable
+				if (localMap.get(str).get(0) == 0) {
+					ArrayList<Integer> tempList = new ArrayList<Integer>();
+					for (int ij = 0; ij < localMap.get(str).size(); ij++) {
+						tempList.add(ij, localMap.get(str).get(ij));
+					}
+					reMap.put(str, tempList);
 				}
-				reMap.put(str, tempList);
-			}
 
+			}
+		} else {
+			for (String str : this.previousVariCount.keySet()) {
+				// if it is a globa variable
+				if (this.previousVariCount.get(str).get(0) == 0) {
+					ArrayList<Integer> tempList = new ArrayList<Integer>();
+					for (int ij = 0; ij < this.previousVariCount.get(str).size(); ij++) {
+						tempList.add(ij, this.previousVariCount.get(str).get(ij));
+					}
+					reMap.put(str, tempList);
+				}
+			}
 		}
 		return reMap;
 	}
@@ -416,7 +453,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 							// "+"bar_set"+callTimes+"1 () Int)\n";
 							// postAssume.append(tempVar);
 							// postAssume.append(havocTempVar);
+							// this.incSubscript(assignVar);
 							variCount.get(assignVar).set(1, getSubscript(assignVar) + 1);
+							if (this.ifLayer.size() == 0) {
+								incAppSubscript(assignVar);
+								setInitSubscript(assignedVar, getSubscript(assignedVar));
+							} else {
+								setAppSubscript(assignedVar);
+							}
+
 						}
 					}
 
@@ -433,10 +478,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 						smt = "(assert (=> " + assertion + " " + smt + "))\n";
 					else
 						smt = "(assert " + smt + " )\n";
+					System.out.println("visitcall1: " + smt);
 					postAssume.append(smt);
 				}
 			}
 		}
+		System.out.println("visitCall2: " + postAssume.toString());
 		return postAssume.toString();
 	}
 
@@ -784,6 +831,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String ensures;
 		StringBuilder ensuresSMT = new StringBuilder();
 		ensures = super.visitEnsures(ctx);
+		// System.out.println("visitensures: "+ensures);
 
 		if (!(preSmtResult.length() == 0)) {
 			ensuresSMT.append("(=> ");
@@ -813,7 +861,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 * @return
 	 */
 	private String getAssertWithRequire(String assStr, Boolean flag) {
-		System.out.println("getAssertWithRequire: Require" + this.requirList);
 		if (!this.requirList.isEmpty()) {
 			String result = this.requirList.get(0);
 			for (int i = 1; i < this.requirList.size(); i++) {
@@ -825,11 +872,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			} else {
 				result = "(=> " + result + " " + assStr + ")";
 			}
-			System.out.println("getAssertWithRequire: " + result);
 
 			return result;
 		} else {
-			System.out.println("getAssertWithRequire2: " + assStr);
 			return assStr;
 		}
 	}
@@ -863,7 +908,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (this.ifLayer.size() != 0) {
 			String finalTest = getIfSmt();
 			finalTest = getAssertWithRequire(finalTest, true);
-			System.out.println("insertAssertion: " + finalTest);
 			// finalTest=getAssertWithAssumeSTMT(finalTest, true);
 			finalTest = "(=> " + finalTest + " " + text + ")";
 			text = finalTest;
@@ -1152,16 +1196,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return resSmt.toString();
 	}
 
-	
 	@Override
 	public String visitLoopInvariant(LoopInvariantContext ctx) {
-		if(ctx.getText().contains("candidate")){
+		if (ctx.getText().contains("candidate")) {
 			return this.visitCandidateInvariant(ctx.candidateInvariant());
-		}else{
+		} else {
 			return this.visitInvariant(ctx.invariant());
 		}
 	}
-	
+
 	@Override
 	public String visitWhileStmt(WhileStmtContext ctx) {
 		StringBuilder res = new StringBuilder("");
@@ -1183,19 +1226,23 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		for (LoopInvariantContext item : ctx.invariantAnnotations) {
 			this.visitLoopInvariant(item);
 		}
-		while (i < this.unboundDepth) {
-			i++;
-			/*
-			 * if this is the last time,then add assert(false);assume(false) as
-			 * the statement; else, add the body inside the while loop as the
-			 * statement.
-			 */
-			if (i == this.unboundDepth) {
-				finalResult.append(this.getUnwindIf(ctx, true));
-			} else {
-				finalResult.append(this.getUnwindIf(ctx, false));
+		try {
+			while (i < this.unboundDepth) {
+				i++;
+				/*
+				 * if this is the last time,then add assert(false);assume(false)
+				 * as the statement; else, add the body inside the while loop as
+				 * the statement.
+				 */
+				if (i == this.unboundDepth) {
+					finalResult.append(this.getUnwindIf(ctx, true));
+				} else {
+					finalResult.append(this.getUnwindIf(ctx, false));
+				}
+				long insideWhile = System.currentTimeMillis();
 			}
-			long insideWhile = System.currentTimeMillis();
+		} catch (Exception e) {
+			this.printFinalResult("UNKNOWN");
 		}
 		// this.ifLayer.remove(this.ifLayer.size());
 		this.insertAssertion("false");
@@ -1821,7 +1868,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	@Override
 	public String visitOldExpr(OldExprContext ctx) {
 		String varible = ctx.getChild(2).getText();
-		return varible + this.getGlobaOldSubscript(varible);
+		String oldResult = varible + this.getGlobaOldSubscript(varible);
+		System.out.println("visitoldexpr " + oldResult);
+		return oldResult;
 	}
 
 	/**
@@ -1829,20 +1878,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 * @return
 	 */
 	private int getGlobaOldSubscript(String varible) {
-		int sub = 0;
-		// variCount here is a HashMap<String, ArrayList<Integer>>
-		// String is means the name of variable
-		// The first element in ArrayList means whether its a global(1) or
-		// locally(1)
-		// The second element in ArrayList means the times of appearance of
-		// variable
-		if (variCount.get(varible).size() < 3) {
-			// here variCOunt.get(varible) get the arrayList
-			sub = 0;
-		} else {
-			sub = variCount.get(varible).get(2);
-		}
-		return sub;
+		return this.oldVariCount.get(varible).get(1);
 	}
 
 	private String getDeclStmt(String variName) {
