@@ -20,7 +20,7 @@ public class SRTool {
 	private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-//		 String filename= args[0];
+		 String filename= args[0];
 
 		/*
 		 * Correct
@@ -93,10 +93,11 @@ public class SRTool {
 		// pass with a large time
 //		String filename="Part2GivenTests/part2_incorrect_10.c";
 		
-		String filename="Part2GivenTests/part2_incorrect_58.c";
+//		String filename="Part2GivenTests/part2_incorrect_1.c";
 		//
 		// pased
 //		 String filename="Part2GivenTests/part2_correct_21.c";
+//		String filename="Part2GivenTests/part2_correct_8.c";
 		// fail
 //		String filename = "Part2GivenTests/part2_incorrect_27.c";
 		// String filename="tests/correct/simpleeq.c";
