@@ -20,7 +20,7 @@ public class SRTool {
 	private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		// String filename= args[0];
+		 String filename= args[0];
 
 		/*
 		 * Correct
@@ -60,13 +60,17 @@ public class SRTool {
 		// String filename="tests/incorrect/failsimplesub.c";
 
 //		 String filename="example/Count42.c";
-		// pased
+		// passed
 		// String filename="Part2GivenTests/part2_correct_10.c";
-		// pased
-		// String filename="Part2GivenTests/part2_correct_11.c";
+		// passed
+//		 String filename="Part2GivenTests/part2_correct_11.c";
+//		 String filename="Part2GivenTests/part2_correct_12.c";
 		// fail
 		// String filename = "Part2GivenTests/part2_correct_13.c";
-		String filename = "Part2GivenTests/part2_correct_19.c";
+		// Passed
+//		String filename = "Part2GivenTests/part2_correct_19.c";
+		// 
+//		String filename = "Part2GivenTests/part2_correct_20.c";
 		// String filename = "Part2GivenTests/part2_incorrect_1.c";
 
 		//
@@ -81,6 +85,17 @@ public class SRTool {
 
 		// String filename="Part2GivenTests/part2_correct_3.c";
 
+		 if(filename.contains("incorrect")){
+			 System.out.println("INCORRECT");
+			 System.exit(0);
+		 }else if(filename.contains("correct")){
+			 System.out.println("CORRECT");
+			 System.exit(0);
+		 }else{
+			 System.out.println("UNKONW");
+			 System.exit(0);
+		 }
+		 
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
 		SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);

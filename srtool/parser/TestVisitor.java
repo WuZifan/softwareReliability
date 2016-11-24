@@ -74,7 +74,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 2;
+	private int unboundDepth = 4;
 	private List<String> z3Result = new ArrayList<String>();
 	private boolean isUnwindTimeOut = false;
 	private boolean isUnwindDeepEnough = true;
@@ -181,9 +181,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			if (initProcedureIndex != i) {
 				initProcedureIndex = i;
 				timeOfProcedure = finishProcedure - initProgramTime;
-				System.out.println("TotalTime2: " + timeOfProcedure);
-				if (timeOfProcedure > 7*1000) {
-					// if (false) {
+				// System.out.println("TotalTime2: " + timeOfProcedure);
+//				if (timeOfProcedure > 7 * 1000) {
+					 if (false) {
 					if (this.z3Result.size() >= i + 1) {
 						this.z3Result.set(i, "UNKNOWN");
 					} else {
@@ -195,9 +195,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				}
 			} else {
 				timeOfProcedure = finishProcedure - initProgramTime;
-				System.out.println("TotalTime: " + timeOfProcedure);
-				System.out.println();
-				if (timeOfProcedure > 7*1000) {
+				// System.out.println("TotalTime: " + timeOfProcedure);
+				// System.out.println();
+//				if (timeOfProcedure > 7 * 1000) {
+				if(false){
 					if (this.z3Result.size() >= i + 1) {
 						this.z3Result.set(i, "UNKNOWN");
 					} else {
@@ -210,6 +211,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 
 			this.backUpVariCount = copyMap(this.variCount);
+			// this is also a system.out.print ->
 			printTheWrongOne();
 			if (!this.isTheLastTimeProce) {
 				if (checkTheZ3Answer(i)) {
@@ -227,8 +229,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				this.isUnwindDeepEnough = true;
 			}
 			initProcedure();
-			System.out.println("z3Result: " + this.z3Result);
-			System.out.println();
+			// System.out.println("z3Result: " + this.z3Result);
+			// System.out.println();
 		}
 
 		// the final result
@@ -322,8 +324,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	private boolean isDeepEnough() {
-		// System.out.println("ResultProxyMap: " + this.resultProxyMap);
-		// System.out.println("ProxyAssertMap: " + this.proxyAssertMap);
 		boolean flag = true;
 		for (String proxy : this.resultProxyMap.keySet()) {
 			// if this assertion is false
@@ -338,6 +338,18 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 		return flag;
+	}
+
+	private String getAssertForCall() {
+		if (!this.assertList.isEmpty()) {
+			String unnomRe = this.assertList.get(0);
+			for (int i = 1; i < this.assertList.size(); i++) {
+				unnomRe = "(and " + this.assertList.get(i) + " " + unnomRe + ")";
+			}
+			return unnomRe;
+		} else {
+			return "";
+		}
 	}
 
 	// TODO call
@@ -365,7 +377,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			List<PrepostContext> contract = thisProcedure.contract;
 			// String assertion = this.assVisitor.getUnAssSMT();
-			String assertion = this.gettvUnAssSMT();
+			// String assertion = this.gettvUnAssSMT();
+			String assertion = this.getAssertForCall();
 
 			for (PrepostContext item : contract) {
 				call.getAllVar(variCount, assignedVar, exParameter, thisProcedure, procedureContext, globals);
@@ -540,7 +553,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	// function for special shift problem
 	private String getMyShiftLeft() {
 		StringBuilder result = new StringBuilder();
-		result.append("(define-fun myshl ((x Int) (y Int)) Int\n" + "(ite (or (>= y 32) (< y 0)) "
+		result.append("(define-fun myshl ((x Int) (y Int)) Int\n" + "(ite (or (or (>= y 32) (< y 0)) (= x 0)) "
 				+ "0 (bv2int (bvshl ((_ int2bv 32) x) ((_ int2bv 32) y)))))");
 		result.append("\n");
 		return result.toString();
@@ -549,7 +562,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	// function for special shift problem
 	private String getMyShiftRight() {
 		StringBuilder result = new StringBuilder();
-		result.append("(define-fun myashr ((x Int) (y Int)) Int\n" + "(ite (or (>= y 32) (< y 0)) "
+		result.append("(define-fun myashr ((x Int) (y Int)) Int\n" + "(ite (or (or (>= y 32) (< y 0)) (= x 0)) "
 				+ "0 (bv2int (bvashr ((_ int2bv 32) x) ((_ int2bv 32) y)))))");
 		result.append("\n");
 		return result.toString();
@@ -800,6 +813,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 * @return
 	 */
 	private String getAssertWithRequire(String assStr, Boolean flag) {
+		System.out.println("getAssertWithRequire: Require" + this.requirList);
 		if (!this.requirList.isEmpty()) {
 			String result = this.requirList.get(0);
 			for (int i = 1; i < this.requirList.size(); i++) {
@@ -811,8 +825,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			} else {
 				result = "(=> " + result + " " + assStr + ")";
 			}
+			System.out.println("getAssertWithRequire: " + result);
+
 			return result;
 		} else {
+			System.out.println("getAssertWithRequire2: " + assStr);
 			return assStr;
 		}
 	}
@@ -836,7 +853,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	private String insertAssertion(String text) {
-		System.out.println("assert: "+text);
+		if (text.trim().isEmpty()) {
+			return "";
+		}
 		if (!text.contains("(")) {
 			text = isNotCondition(text);
 		}
@@ -844,6 +863,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (this.ifLayer.size() != 0) {
 			String finalTest = getIfSmt();
 			finalTest = getAssertWithRequire(finalTest, true);
+			System.out.println("insertAssertion: " + finalTest);
 			// finalTest=getAssertWithAssumeSTMT(finalTest, true);
 			finalTest = "(=> " + finalTest + " " + text + ")";
 			text = finalTest;
@@ -861,6 +881,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitAssertStmt(AssertStmtContext ctx) {
 		if (this.isUnwindDeepEnough) {
 			String text = this.visitExpr(ctx.expr());
+			// System.out.println("visitAssertStme: "+text);
 			return this.insertAssertion(text);
 		} else {
 			return "";
@@ -1131,6 +1152,16 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return resSmt.toString();
 	}
 
+	
+	@Override
+	public String visitLoopInvariant(LoopInvariantContext ctx) {
+		if(ctx.getText().contains("candidate")){
+			return this.visitCandidateInvariant(ctx.candidateInvariant());
+		}else{
+			return this.visitInvariant(ctx.invariant());
+		}
+	}
+	
 	@Override
 	public String visitWhileStmt(WhileStmtContext ctx) {
 		StringBuilder res = new StringBuilder("");
@@ -1149,9 +1180,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		int i = 0;
 		// this.unboundDepth
 		long initWhile = System.currentTimeMillis();
-		// here will generate some problem
 		for (LoopInvariantContext item : ctx.invariantAnnotations) {
-			this.insertAssertion(visitLoopInvariant(item));
+			this.visitLoopInvariant(item);
 		}
 		while (i < this.unboundDepth) {
 			i++;
@@ -1198,20 +1228,21 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String temp = ctx.condition.getText();
 		// System.out.println(temp);
 		String text = this.visitExpr(ctx.condition);
-		if (!text.contains("(")) {
-			text = isNotCondition(text);
-		}
-		if (this.ifLayer.size() != 0) {
-			String finalTest = getIfSmt();
-			finalTest = getAssertWithRequire(finalTest, true);
-			finalTest = "(=> " + finalTest + " " + text + ")";
-			text = finalTest;
-		} else {
-			text = getAssertWithRequire(text, false);
-		}
-		// this.assVisitor.visitunnomAss(text);
-		this.assertList.add(text);
-		;
+		this.insertAssertion(text);
+		// if (!text.contains("(")) {
+		// text = isNotCondition(text);
+		// }
+		// if (this.ifLayer.size() != 0) {
+		// String finalTest = getIfSmt();
+		// finalTest = getAssertWithRequire(finalTest, true);
+		// finalTest = "(=> " + finalTest + " " + text + ")";
+		// text = finalTest;
+		// } else {
+		// text = getAssertWithRequire(text, false);
+		// }
+		// // this.assVisitor.visitunnomAss(text);
+		// System.out.println("invariant: "+text);
+		// this.assertList.add(text);
 
 		return "";
 	}
@@ -1900,28 +1931,24 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		String strif;
 		int layer;
 		init = copyMap(this.variCount);
-
 		if (variCount.containsKey(ctx.condition.getText())) {
 			condition = "(not (= " + ctx.condition.getText() + getSubscript(ctx.condition.getText()) + " 0))";
 		} else {
 			condition = visitExpr(ctx.condition);
 		}
-		condition=isNotCondition(condition);
+		condition = isNotCondition(condition);
 		/** prepare if information **/
 		layer = this.ifLayer.size();
 		iftemp = new HashMap<String, Integer>();
 		iftemp.put(condition, 1);
 		this.ifLayer.put(layer + 1, iftemp);
-
 		/** visit bloc statement **/
 		strif = visitBlockStmt(ctx.body);
-
 		resSmt.append(strif);
 
 		for (LoopInvariantContext item : ctx.invariantAnnotations) {
-			this.insertAssertion(visitLoopInvariant(item));
+			this.visitLoopInvariant(item);
 		}
-
 		/** Compare differences and generate SMT for if **/
 		for (String key : this.variCount.keySet()) {
 
@@ -1947,7 +1974,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (!last) {
 			this.ifLayer.remove(layer + 1);
 		}
-
 		return resSmt.toString();
 	}
 
