@@ -1,21 +1,13 @@
 package parser;
 
 import java.io.IOException;
-import java.sql.Date;
+
 import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.antlr.v4.runtime.Token;
 
@@ -35,7 +27,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private ArrayList<String> postCon = new ArrayList<String>();
 	private StringBuilder preSmtResult = new StringBuilder();
 	private StringBuilder postSmtResult = new StringBuilder();
-	private HashMap<Integer, ArrayList<HashMap<String, ArrayList<String>>>> CandidateInvar = new HashMap<Integer, ArrayList<HashMap<String, ArrayList<String>>>>();
+	private HashMap<Integer, HashMap<String, ArrayList<String>>> CandidateInvar = new HashMap<Integer, HashMap<String, ArrayList<String>>>();
 	private ArrayList<HashMap<String, ArrayList<String>>> singleWhile = new ArrayList<HashMap<String, ArrayList<String>>>();
 	private boolean firstCandidate = true;
 	private int whileID = 1;
@@ -56,10 +48,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private boolean isBecauseofTimeout = false;
 	private boolean isKeepGlobaVariable = false;
 	private List<String> assumeList = new ArrayList<String>();
-	private Map<String, ArrayList<Integer>> oldVariCount;
+	private Map<String, ArrayList<Integer>> oldVariCount = new HashMap<String, ArrayList<Integer>>();
 	// private String z3Result = "";
-	private Map<String, ArrayList<Integer>> backUpVariCount;
-	private Map<String, ArrayList<Integer>> previousVariCount;
+	private Map<String, ArrayList<Integer>> backUpVariCount = new HashMap<String, ArrayList<Integer>>();
+	private Map<String, ArrayList<Integer>> previousVariCount = new HashMap<String, ArrayList<Integer>>();
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
@@ -242,7 +234,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				initProcedureIndex = i;
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime2: " + timeOfProcedure);
-				if (timeOfProcedure > 7 * 1000) {
+				if (timeOfProcedure > 200 * 1000) {
 					// if (false) {
 					this.isBecauseofTimeout = true;
 					if (this.z3Result.size() >= i + 1) {
@@ -258,7 +250,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime: " + timeOfProcedure);
 				// System.out.println();
-				if (timeOfProcedure > 7 * 1000) {
+				if (timeOfProcedure > 200 * 1000) {
 					// if(false){
 					if (this.z3Result.size() >= i + 1) {
 						this.z3Result.set(i, "UNKNOWN");
@@ -272,6 +264,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				}
 			}
 
+
+			
+			this.backUpVariCount = copyMap(this.variCount);
+			
 			//TODO
 			if(this.judgeCandidateInvar()) {
 				System.out.println("error in the candidate");
@@ -281,10 +277,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				
 				initProcedure();
 				i--;
+				System.out.println("current candi  " + this.CandidateInvar);
 				continue;
 			}
+			else {
+				this.firstCandidate = false;
+			}
 			
-			this.backUpVariCount = copyMap(this.variCount);
 			// this is also a system.out.print ->
 			printTheWrongOne();
 
@@ -1266,6 +1265,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return resSmt.toString();
 	}
 
+	//TODO
 	@Override
 	public String visitLoopInvariant(LoopInvariantContext ctx) {
 		if (ctx.getText().contains("candidate")) {
@@ -1280,7 +1280,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		StringBuilder res = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
-
+		HashMap<String, ArrayList<String>> thiswhile = new HashMap<String, ArrayList<String>>();
+		if(this.firstCandidate) {
+			this.singleWhile.add(thiswhile);
+		}
+		
 		/*
 		 * i is a loog index; this.unboundDepth is an artificial Upper bound
 		 * 
@@ -1313,7 +1317,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 			
 //			long insideWhile = System.currentTimeMillis();
-		} catch (Exception e) {
+		} catch (OutOfMemoryError e) {
+//			System.out.println("UNKNOWN FOR WHILE");
 			this.printFinalResult("UNKNOWN");
 		}
 		
@@ -1326,7 +1331,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			this.isUnwindDeepEnough = false;
 		}
 
-		whileID++;
+		if(this.firstCandidate) {
+			this.CandidateInvar.put(this.whileID, thiswhile);
+		}
+		
+		this.whileID++;
 		return res.toString();
 
 	}
@@ -1334,27 +1343,50 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	// TODO
 	@Override
 	public String visitCandidateInvariant(SimpleCParser.CandidateInvariantContext ctx) { 
-		HashMap<String,ArrayList<String>> singleCandidate = new HashMap<String,ArrayList<String>>();
 		if(firstCandidate){			
 			String condition = ctx.condition.getText();
 			String conditionSMT = visitExpr(ctx.condition);
-			ArrayList<String> smts = new ArrayList<String>();
-			smts.add(conditionSMT);
-			singleCandidate.put(condition, smts);
-			singleWhile.add(singleCandidate);
+			HashMap<String, ArrayList<String>> whileCandidate = this.singleWhile.get(this.whileID - 1); 
+			if(whileCandidate.isEmpty()) {
+				ArrayList<String> smt = new ArrayList<String>();
+				smt.add(conditionSMT);
+				whileCandidate.put(condition, smt);
+			}
+			else {
+				if(whileCandidate.containsKey(condition)) {
+					whileCandidate.get(condition).add(conditionSMT);
+				}
+				else {
+					ArrayList<String> temp = new ArrayList<String>();
+					temp.add(conditionSMT);
+					whileCandidate.put(condition, temp);
+				}	
+			}
 			this.insertAssertion(conditionSMT);
 		} else {
 			String condition = ctx.condition.getText();
-			String conditionSMT = visitExpr(ctx.condition);
-			for (int i = 0; i < singleWhile.size(); i++) {
-				if (singleWhile.get(i).containsKey(condition)) {
-					singleWhile.get(i).get(condition).add(conditionSMT);
+			Boolean isCorrectCandidate = false;
+			HashMap<String, ArrayList<String>> whileCandidate = this.CandidateInvar.get(this.whileID);
+			System.out.println("current candidate "  + this.CandidateInvar);
+			System.out.println("current id "  + this.whileID);
+			if(!whileCandidate.isEmpty()) {
+				if(whileCandidate.containsKey(condition)) {
+					isCorrectCandidate = true;
+				}
+			}
+			
+			if(isCorrectCandidate) {
+				String conditionSMT = visitExpr(ctx.condition);
+				if (whileCandidate.containsKey(condition)) {
+					whileCandidate.get(condition).add(conditionSMT);
 					System.out.println("Insert assertion:: " + conditionSMT);
 					this.insertAssertion(conditionSMT);
 					System.out.println(condition);
 				}
 			}
+			
 		}
+		
 		return "";
 	}
 	
@@ -1956,6 +1988,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 * judge and modified candidate invariant in the program
 	 * @return boolean value for whether the candidate is correct or not
 	 */
+	//TODO
 	private boolean judgeCandidateInvar() {
 		Boolean isCandidateErr = false;
 		for(String proxy : this.resultProxyMap.keySet()) {
@@ -1963,26 +1996,27 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				String text = this.proxyAssertMap.get(proxy);
 				System.out.println("error text: " + text);
 				for(int layer : this.CandidateInvar.keySet()) {
-					for(HashMap<String, ArrayList<String>> candidate : this.CandidateInvar.get(layer)) {
-						for(String cond : candidate.keySet()) {
-							if(candidate.get(cond).isEmpty()) {
-								System.out.println("why this is empty?");
-							}
-							for(String item : candidate.get(cond)) {
-								System.out.println("current text  " + item);
-							}
-							if(candidate.get(cond).contains(text)) {
-								
-								candidate.get(layer).remove(cond);
+					System.out.println("current layer: " + layer);
+					HashMap<String, ArrayList<String>> candidate = this.CandidateInvar.get(layer);
+					Boolean isCorrect = true;
+					for(String cond : candidate.keySet()) {
+						System.out.println("current cond  " + cond);
+						for(String item : candidate.get(cond)) {
+							System.out.println("current text  " + item);
+							if(text.contains(item)) {	
+								candidate.remove(cond);
 								isCandidateErr = true;
+								isCorrect = false;
+								break;
 							}
 						}
-						
+						if(!isCorrect) {
+							break;
+						}	
 					}
 				}
 			}
 		}
-		
 		return isCandidateErr;
 		
 	}

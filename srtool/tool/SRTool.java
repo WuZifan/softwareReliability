@@ -85,7 +85,7 @@ public class SRTool {
 		//
 		// String filename = "Part2GivenTests/part2_correct_3.c";
 		// pased
-		 String filename="Part2GivenTests/part2_correct_1.c";
+		 String filename="Part2GivenTests/part2_correct_17.c";
 		// fail
 
 //		String filename = "Part2GivenTests/part2_correct_3.c";
