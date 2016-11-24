@@ -12,7 +12,9 @@ int  foo(int a) {
 // assert(1>2);
 // 	int i;
 // 	i=0;
-while(0){
+while(0)
+	invariant 1==1
+{
 // 	i=i+1;
 }
 return 2;

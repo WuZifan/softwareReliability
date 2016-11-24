@@ -74,7 +74,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 50;
+	private int unboundDepth = 2;
 	private List<String> z3Result = new ArrayList<String>();
 	private boolean isUnwindTimeOut = false;
 	private boolean isUnwindDeepEnough = true;
@@ -214,7 +214,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			if (!this.isTheLastTimeProce) {
 				if (checkTheZ3Answer(i)) {
 					i--;
-					this.unboundDepth += 50;
+					this.unboundDepth += 1;
 				} else {
 					i--;
 					this.isTheLastTimeProce = true;
@@ -836,6 +836,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	private String insertAssertion(String text) {
+		System.out.println("assert: "+text);
 		if (!text.contains("(")) {
 			text = isNotCondition(text);
 		}
@@ -1135,7 +1136,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder res = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
 		String cond;
-		String conditions=ctx.condition.getText();
+
 		cond = visitExpr(ctx.condition);
 
 		/*
@@ -1148,6 +1149,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		int i = 0;
 		// this.unboundDepth
 		long initWhile = System.currentTimeMillis();
+		// here will generate some problem
 		for (LoopInvariantContext item : ctx.invariantAnnotations) {
 			this.insertAssertion(visitLoopInvariant(item));
 		}
@@ -1904,7 +1906,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		} else {
 			condition = visitExpr(ctx.condition);
 		}
-		condition=this.isNotCondition(condition);
+		condition=isNotCondition(condition);
 		/** prepare if information **/
 		layer = this.ifLayer.size();
 		iftemp = new HashMap<String, Integer>();
