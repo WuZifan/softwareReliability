@@ -143,7 +143,6 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 //			}
 	//		System.out.println(p.getOutputStream());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			//e.printStackTrace();
 		}
 

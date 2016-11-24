@@ -1,5 +1,5 @@
 # softwareReliability
-Failing Tests (71):
+Failing Tests (74):
 
     SRT :: Part2GivenTests/part2_correct_1.c
     SRT :: Part2GivenTests/part2_correct_11.c
@@ -10,7 +10,6 @@ Failing Tests (71):
     SRT :: Part2GivenTests/part2_correct_17.c
     SRT :: Part2GivenTests/part2_correct_18.c
     SRT :: Part2GivenTests/part2_correct_2.c
-    SRT :: Part2GivenTests/part2_correct_21.c
     SRT :: Part2GivenTests/part2_correct_22.c
     SRT :: Part2GivenTests/part2_correct_24.c
     SRT :: Part2GivenTests/part2_correct_25.c
@@ -20,6 +19,7 @@ Failing Tests (71):
     SRT :: Part2GivenTests/part2_correct_32.c
     SRT :: Part2GivenTests/part2_correct_33.c
     SRT :: Part2GivenTests/part2_correct_34.c
+    SRT :: Part2GivenTests/part2_correct_35.c
     SRT :: Part2GivenTests/part2_correct_37.c
     SRT :: Part2GivenTests/part2_correct_38.c
     SRT :: Part2GivenTests/part2_correct_4.c
@@ -27,7 +27,6 @@ Failing Tests (71):
     SRT :: Part2GivenTests/part2_correct_43.c
     SRT :: Part2GivenTests/part2_correct_46.c
     SRT :: Part2GivenTests/part2_correct_47.c
-    SRT :: Part2GivenTests/part2_correct_48.c
     SRT :: Part2GivenTests/part2_correct_49.c
     SRT :: Part2GivenTests/part2_correct_5.c
     SRT :: Part2GivenTests/part2_correct_50.c
@@ -56,13 +55,16 @@ Failing Tests (71):
     SRT :: Part2GivenTests/part2_incorrect_23.c
     SRT :: Part2GivenTests/part2_incorrect_24.c
     SRT :: Part2GivenTests/part2_incorrect_25.c
+    SRT :: Part2GivenTests/part2_incorrect_27.c
     SRT :: Part2GivenTests/part2_incorrect_29.c
     SRT :: Part2GivenTests/part2_incorrect_33.c
     SRT :: Part2GivenTests/part2_incorrect_36.c
+    SRT :: Part2GivenTests/part2_incorrect_37.c
     SRT :: Part2GivenTests/part2_incorrect_40.c
     SRT :: Part2GivenTests/part2_incorrect_43.c
     SRT :: Part2GivenTests/part2_incorrect_44.c
     SRT :: Part2GivenTests/part2_incorrect_47.c
+    SRT :: Part2GivenTests/part2_incorrect_49.c
     SRT :: Part2GivenTests/part2_incorrect_50.c
     SRT :: Part2GivenTests/part2_incorrect_51.c
     SRT :: Part2GivenTests/part2_incorrect_52.c
@@ -72,3 +74,4 @@ Failing Tests (71):
     SRT :: Part2GivenTests/part2_incorrect_7.c
     SRT :: Part2GivenTests/part2_incorrect_8.c
     SRT :: Part2GivenTests/part2_incorrect_9.c
+    SRT :: example/Count42.c

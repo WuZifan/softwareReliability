@@ -138,7 +138,8 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	public String visitEnsures(SimpleCParser.EnsuresContext ctx) {
 	
 		String ensures;
-		ensures = super.visitEnsures(ctx);	
+		ensures = super.visitEnsures(ctx);
+		System.out.println("visitensuresINCALL VISITOR: "+ensures);
 		return ensures;
 	}
 
