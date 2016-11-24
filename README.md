@@ -72,3 +72,11 @@ Failing Tests (71):
     SRT :: Part2GivenTests/part2_incorrect_7.c
     SRT :: Part2GivenTests/part2_incorrect_8.c
     SRT :: Part2GivenTests/part2_incorrect_9.c
+    
+    
+    
+    
+        SRT :: Part2GivenTests/part2_incorrect_18.c
+ SRT :: Part2GivenTests/part2_incorrect_27.c
+  SRT :: Part2GivenTests/part2_incorrect_37.c
+   SRT :: Part2GivenTests/part2_incorrect_49.c
