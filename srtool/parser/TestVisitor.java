@@ -439,7 +439,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				for (String str : strIng) {
 					String tempResult = str.replace('(', ' ').trim();
 					String[] tempStrArray = tempResult.split(" ");
-					System.out.println("lala: " + tempStrArray[1] + "  " + tempStrArray[0]);
 					resultProxyMap.put(tempStrArray[0], tempStrArray[1]);
 				}
 				// System.out.println(this.resultProxyMap);
