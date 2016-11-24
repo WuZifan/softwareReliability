@@ -6,17 +6,16 @@
 // int s;
 // 
 // 
-// int c;
-int  foo(int a) {
-
-	while(0)
-	candidate_invariant(2>1),
-	candidate_invariant(3>1){
-	}
-	return 0;
+ int c;
+int foo(int a) {
+	
+	int i ;
+ 	c = bar(c);
+ 	assert(1>2);
+	return 1;
 }
 
-// int bar() 
-// ensures \result != c{
-// return c + 1;
-// }
+int bar(int a) 
+ensures \result != c{
+	return c + 1;
+}

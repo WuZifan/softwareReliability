@@ -59,9 +59,9 @@ public class SRTool {
 		// String filename="tests/incorrect/failsimplelor.c";
 		// String filename="tests/incorrect/failsimplesub.c";
 		// pased
-		// String filename="Part2GivenTests/part2_correct_10.c";
+//		 String filename="Part2GivenTests/part2_incorrect_18.c";
 		// pased
-		// String filename="Part2GivenTests/part2_correct_11.c";
+//		 String filename="Part2GivenTests/part/2_incorrect_15.c";
 		// fail
 //		String filename = "Part2GivenTests/part2_correct_3.c";
 		// String filename="tests/correct/simpleeq.c";

@@ -272,27 +272,27 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 		String assignedVar = ctx.lhs.getText();
 		List<ExprContext> actuals = ctx.actuals;
 		StringBuffer postAssume = new StringBuffer();
-		Map<String, String> exParameter = new HashMap<String, String>();
+		Map<String, ExprContext> exParameterParameters = new HashMap<String, ExprContext>();
 
 		if (procedureContext.containsKey(methodName)) {
 
 			ProcedureDeclContext thisProcedure = procedureContext.get(methodName);
 
 			for (int i = 0; i < actuals.size(); i++) {
-				exParameter.put(thisProcedure.formals.get(i).name.getText(), actuals.get(i).getText());
+				exParameterParameters.put(thisProcedure.formals.get(i).name.getText(), actuals.get(i));
 			}
-
-			for (VarDeclContext items : globals) {
-				if (!exParameter.containsKey(items.name.getText())) {
-					exParameter.put(items.name.getText(), items.name.getText());
-				}
-			}
+//
+//			for (VarDeclContext items : globals) {
+//				if (!exParameter.containsKey(items.name.getText())) {
+//					exParameter.put(items.name.getText(), items.name.getText());
+//				}
+//			}
 
 			List<PrepostContext> contract = thisProcedure.contract;
 			String assertion = this.assVisitor.getUnAssSMT();
 
 			for (PrepostContext item : contract) {
-				call.getAllVar(variCount, assignedVar, exParameter, thisProcedure,procedureContext,globals);		
+				call.getAllVar(variCount, assignedVar, exParameterParameters, thisProcedure,procedureContext,globals);		
 				if (item.getText().contains("requires")) {
 					String smt = call.visitPrepost(item);
 					if (!smt.contains("(")) {

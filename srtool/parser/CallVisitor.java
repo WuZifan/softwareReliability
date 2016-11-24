@@ -43,7 +43,7 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	private Map<String, ArrayList<Integer>> variCount;
 	private String assignedVar;
 	private List<ExprContext> actuals;
-	private Map<String,String> exParameter = new HashMap<String,String>();
+	private Map<String, ExprContext> exParameterParameters = new HashMap<String,ExprContext>();
 	private Map<String, ProcedureDeclContext> procedureContext = new HashMap<String, ProcedureDeclContext>();
 	private ProcedureDeclContext thisProcedure;
 	private List<VarDeclContext> globals = new ArrayList<VarDeclContext>();
@@ -53,11 +53,11 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 		actuals = new ArrayList<ExprContext>();
 	}
 
-	public void getAllVar(Map<String, ArrayList<Integer>> variCount,String assignedVar,Map<String,String> exParameter
+	public void getAllVar(Map<String, ArrayList<Integer>> variCount,String assignedVar,Map<String, ExprContext> exParameterParameters
 			,ProcedureDeclContext thisProcedure, Map<String, ProcedureDeclContext> procedureContext, List<VarDeclContext> globals){
 		this.variCount = variCount;
 		this.assignedVar = assignedVar;
-		this.exParameter = exParameter;
+		this.exParameterParameters = exParameterParameters;
 		this.thisProcedure = thisProcedure;
 		this.procedureContext = procedureContext;
 		this.globals = globals;
@@ -103,9 +103,13 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	
 	@Override
 	public String visitVarrefExpr(VarrefExprContext ctx) {
-		String var = exParameter.get(ctx.getText());
-		var += getSubscript(var);
-		return var;
+		if(exParameterParameters.containsKey(ctx.getText())){
+			ExprContext var = exParameterParameters.get(ctx.getText());
+			return visitExpr(var);
+		}else{
+			return ctx.getText()+getSubscript(ctx.getText());
+		}
+		
 	}
 	
 	@Override
