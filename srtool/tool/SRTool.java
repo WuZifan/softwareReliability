@@ -62,6 +62,7 @@ public class SRTool {
 //		 String filename="example/Count42.c";
 		// passed
 		// pased
+
 		// String filename="Part2GivenTests/part2_correct_10.c";
 		// passed
 //		 String filename="Part2GivenTests/part2_correct_11.c";
@@ -80,15 +81,33 @@ public class SRTool {
 //		String filename = "Part2GivenTests/part2_correct_19.c";
 		// 
 //		String filename = "Part2GivenTests/part2_correct_20.c";
+		// UNKNOW BECAUSE OF TIMEOUT
 		// String filename = "Part2GivenTests/part2_incorrect_1.c";
-
+		
+		// passed change the init unwind depth
+//		String filename="Part2GivenTests/part2_incorrect_7.c";
+		// unknow because the init unwind depth
+//		String filename="Part2GivenTests/part2_incorrect_8.c";
+		// unknow 
+//		String filename="Part2GivenTests/part2_incorrect_9.c";
+		// pass with a large time
+//		String filename="Part2GivenTests/part2_incorrect_10.c";
+		
+		String filename="Part2GivenTests/part2_incorrect_58.c";
 		//
-		// String filename = "Part2GivenTests/part2_correct_3.c";
 		// pased
+<<<<<<< HEAD
 		 String filename="Part2GivenTests/part2_correct_17.c";
+=======
+//		 String filename="Part2GivenTests/part2_correct_21.c";
+>>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 		// fail
+<<<<<<< HEAD
 
 //		String filename = "Part2GivenTests/part2_correct_3.c";
+=======
+//		String filename = "Part2GivenTests/part2_incorrect_27.c";
+>>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 		// String filename="tests/correct/simpleeq.c";
 
 		// String filename="tests/incorrect/failsimplesub.c";
@@ -96,9 +115,13 @@ public class SRTool {
 
 		// String filename="tests/correct/simpleeq.c";
 //		 String filename="example/Count42.c";
+<<<<<<< HEAD
 
 
 	
+=======
+		 
+>>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 
 //		 if(filename.contains("incorrect")){
 //			 System.out.println("INCORRECT");
