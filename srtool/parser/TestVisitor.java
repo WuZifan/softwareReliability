@@ -284,7 +284,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 			
 			// this is also a system.out.print ->
-			// printTheWrongOne();
+//			 printTheWrongOne();
 
 			if (!this.isTheLastTimeProce) {
 				if (checkTheZ3Answer(i)) {
@@ -304,8 +304,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				this.isUnwindDeepEnough = true;
 			}
 			initProcedure();
-			System.out.println("z3Result: " + this.z3Result);
-			System.out.println();
+//			System.out.println("z3Result: " + this.z3Result);
+//			System.out.println();
 		}
 
 		// the final result
@@ -363,10 +363,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (this.z3Result.get(i).equals("INCORRECT") && !this.isDeepEnough()) {
 			return true;
 		} else if (!this.z3Result.get(i).trim().isEmpty()) {
-			if (this.z3Result.get(i).equals("INCORRECT")) {
-				System.out.println("INCORRECT");
-				System.exit(0);
-			}
+//			if (this.z3Result.get(i).equals("INCORRECT")) {
+////				System.out.println("INCORRECT");
+////				System.exit(0);
+//			}
 			// if (this.z3Result.get(i).equals("UNKNOWN")) {
 			//// System.out.println("UNKNOWN");
 			// // System.exit(0);

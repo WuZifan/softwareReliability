@@ -97,6 +97,7 @@ public class SRTool {
 		// pased
 		 String filename="Part2GivenTests/part2_correct_17.c";
 //		 String filename="Part2GivenTests/part2_correct_21.c";
+//		String filename="Part2GivenTests/part2_correct_8.c";
 		// fail
 		// String filename="tests/correct/simpleeq.c";
 
