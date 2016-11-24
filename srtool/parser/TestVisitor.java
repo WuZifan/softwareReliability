@@ -61,7 +61,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	// assertion,
 	// boolean represent is true or not
 	private HashMap<String, String> proxyAssertMap = new HashMap<String, String>();
-	private HashMap<String, Integer> candidate_condition = new HashMap<String, Integer>();
 
 	private static final int TIMEOUT = 180;
 
@@ -259,8 +258,23 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				}
 			}
 
+			//TODO
+			if(this.judgeCandidateInvar()) {
+				System.out.println("error in the candidate");
+				if(this.firstCandidate) {
+					this.firstCandidate = false;
+				}
+				
+				initProcedure();
+				i--;
+				continue;
+			}
+			
 			this.backUpVariCount = copyMap(this.variCount);
 			printTheWrongOne();
+			
+
+			
 			if (!this.isTheLastTimeProce) {
 				if (checkTheZ3Answer(i)) {
 					i--;
@@ -309,7 +323,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	private boolean checkTheZ3Answer(int i) {
-		if (this.z3Result.get(i).equals("INCORRECT") && !this.isDeepEnough() || this.judgeCandidateInvar()) {
+		if (this.z3Result.get(i).equals("INCORRECT") && !this.isDeepEnough()) {
 			return true;
 		} else if (!this.z3Result.get(i).trim().isEmpty()) {
 			if (this.z3Result.get(i).equals("INCORRECT")) {
@@ -1188,9 +1202,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		
 		StringBuilder res = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
-		String cond;
-
-		cond = visitExpr(ctx.condition);
 
 		/*
 		 * i is a loog index; this.unboundDepth is an artificial Upper bound
@@ -1201,9 +1212,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuffer finalResult = new StringBuffer();
 		int i = 0;
 		// this.unboundDepth
-		long initWhile = System.currentTimeMillis();
+//		long initWhile = System.currentTimeMillis();
 		// here will generate some problem
-		for (LoopInvariantContext item : ctx.invariantAnnotations) {
+		for (LoopInvariantContext item : inVarList) {
 			visitLoopInvariant(item);
 		}
 
@@ -1221,7 +1232,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			} else {
 				finalResult.append(this.getUnwindIf(ctx, false));
 			}
-			long insideWhile = System.currentTimeMillis();
+//			long insideWhile = System.currentTimeMillis();
 		}
 		// this.ifLayer.remove(this.ifLayer.size());
 		this.insertAssertion("false");
@@ -1241,7 +1252,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	//TODO
 	@Override
 	public String visitCandidateInvariant(SimpleCParser.CandidateInvariantContext ctx) { 
-		
 		HashMap<String,ArrayList<String>> singleCandidate = new HashMap<String,ArrayList<String>>();
 		if(firstCandidate){			
 			String condition = ctx.condition.getText();
@@ -1251,7 +1261,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			singleCandidate.put(condition, smts);
 			singleWhile.add(singleCandidate);			
 			this.insertAssertion(conditionSMT);
-			
 		}else{
 			String condition = ctx.condition.getText();
 			String conditionSMT = visitExpr(ctx.condition);		
@@ -1267,26 +1276,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		return ""; 
 	}
 	
-	
-	/*
-	 * @Override(non-Javadoc)
-	 * 
-	 * @see parser.SimpleCBaseVisitor#visitLoopInvariant(parser.SimpleCParser.
-	 * LoopInvariantContext)
-	 *
-	 * public String visitLoopInvariant(SimpleCParser.LoopInvariantContext ctx)
-	 * { StringBuilder resSmt = new StringBuilder("");
-	 * 
-	 * 
-	 * return resSmt.toString(); }
-	 */
-	
 	@Override
 	public String visitInvariant(InvariantContext ctx) {
-
-		StringBuilder resSmt = new StringBuilder("");
-		String temp = ctx.condition.getText();
-		// System.out.println(temp);
 		String text = this.visitExpr(ctx.condition);
 		this.insertAssertion(text);
 	
@@ -1887,10 +1878,18 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		for(String proxy : this.resultProxyMap.keySet()) {
 			if(this.resultProxyMap.get(proxy).equals("false")) {
 				String text = this.proxyAssertMap.get(proxy);
+				System.out.println("error text: " + text);
 				for(int layer : this.CandidateInvar.keySet()) {
 					for(HashMap<String, ArrayList<String>> candidate : this.CandidateInvar.get(layer)) {
 						for(String cond : candidate.keySet()) {
+							if(candidate.get(cond).isEmpty()) {
+								System.out.println("why this is empty?");
+							}
+							for(String item : candidate.get(cond)) {
+								System.out.println("current text  " + item);
+							}
 							if(candidate.get(cond).contains(text)) {
+								
 								candidate.get(layer).remove(cond);
 								isCandidateErr = true;
 							}
