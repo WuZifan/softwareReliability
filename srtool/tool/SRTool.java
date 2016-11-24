@@ -76,7 +76,7 @@ public class SRTool {
 //		String filename="Part2GivenTests/part2_correct_18.c";
 		// incorrect because of CALL
 //		String filename="Part2GivenTests/part2_correct_21.c";
-		String filename="Part2GivenTests/part2_correct_22.c";
+//		String filename="Part2GivenTests/part2_correct_22.c";
 		// Passed
 //		String filename = "Part2GivenTests/part2_correct_19.c";
 		// 
@@ -85,7 +85,7 @@ public class SRTool {
 
 		//
 		// pased
-//		 String filename="Part2GivenTests/part/2_incorrect_15.c";
+		 String filename="Part2GivenTests/part2_incorrect_49.c";
 		// fail
 //		String filename = "Part2GivenTests/part2_correct_3.c";
 		// String filename="tests/correct/simpleeq.c";
