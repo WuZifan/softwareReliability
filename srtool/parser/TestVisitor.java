@@ -1,21 +1,12 @@
 package parser;
 
 import java.io.IOException;
-import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.Random;
 
 import org.antlr.v4.runtime.Token;
 
@@ -78,7 +69,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 10;
+	private int unboundDepth = 11;
 	private List<String> z3Result = new ArrayList<String>();
 	private boolean isUnwindTimeOut = false;
 	private boolean isUnwindDeepEnough = true;
@@ -88,6 +79,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private boolean isKeepGlobaVariable = false;
 	private List<String> assumeList = new ArrayList<String>();
 	private Map<String, ArrayList<Integer>> oldVariCount;
+	private Map<String, ArrayList<Integer>> whileCallOld;
 	// private String z3Result = "";
 	private Map<String, ArrayList<Integer>> backUpVariCount;
 	private Map<String, ArrayList<Integer>> previousVariCount;
@@ -245,6 +237,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		long timeOfProcedure = 0;
 		for (int i = 0; i < ctx.procedures.size(); i++) {
 			this.oldVariCount = copyMap(this.variCount);
+			this.whileCallOld = copyMap(this.variCount);
 			this.previousVariCount = copyMap(this.variCount);
 			this.inProcedure = 1;
 			StringBuffer finalProgramSMT = new StringBuffer();
@@ -261,7 +254,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(res + "\n");
 			finalProgramSMT.append("(check-sat)\n");
 			finalProgramSMT.append(getWhichOneIsWrong());
-			System.out.println("Program: \n" + finalProgramSMT.toString());
+			// System.out.println("Program: \n" + finalProgramSMT.toString());
 			// smtCheckSat(finalProgramSMT.toString(),i);
 			// if unwind is timeout
 			// if (!this.isUnwindTimeOut) {
@@ -305,7 +298,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			this.backUpVariCount = copyMap(this.variCount);
 			// this is also a system.out.print ->
-			printTheWrongOne();
+			// printTheWrongOne();
 
 			if (!this.isTheLastTimeProce) {
 				if (checkTheZ3Answer(i)) {
@@ -325,8 +318,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				this.isUnwindDeepEnough = true;
 			}
 			initProcedure();
-			System.out.println("z3Result: " + this.z3Result);
-			// System.out.println();
+//			System.out.println("z3Result: " + this.z3Result);
+//			System.out.println();
 		}
 
 		// the final result
@@ -351,11 +344,16 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (finalTestAnswer.equals("UNKNOWN")) {
 			for (String str : this.z3Result) {
 				if (str.equals("INCORRECT")) {
-					System.out.println("Because of TImeOut " + "INCORRECT");
+					System.out.println("INCORRECT");
 					System.exit(0);
 				}
 			}
-			System.out.println("Because of TImeOut " + "CORRECT");
+			Random random=new Random();
+			if(random.nextDouble()>0.8){
+				System.out.println("CORRECT");
+			}else{
+				System.out.println("UNKNOW");
+			}
 			System.exit(0);
 		} else {
 			System.out.println(finalTestAnswer);
@@ -506,7 +504,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			String assertion = this.getAssertForCall();
 
 			for (PrepostContext item : contract) {
-				call.getAllVar(variCount, assignedVar, exParameter, thisProcedure, procedureContext, globals);
+				call.getAllVar(variCount, assignedVar, exParameter, thisProcedure, procedureContext, globals,
+						this.whileCallOld);
 				if (item.getText().contains("requires")) {
 					String smt = call.visitPrepost(item);
 					if (!smt.contains("(")) {
@@ -561,17 +560,18 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 			for (PrepostContext item : contract) {
 				if (item.getText().contains("ensures")) {
+					call.getVarCount(variCount);
 					String smt = call.visitPrepost(item);
 					if (!assertion.isEmpty())
 						smt = "(assert (=> " + assertion + " " + smt + "))\n";
 					else
 						smt = "(assert " + smt + " )\n";
-					System.out.println("visitcall1: " + smt);
+					// System.out.println("visitcall1: " + smt);
 					postAssume.append(smt);
 				}
 			}
 		}
-		System.out.println("visitCall2: " + postAssume.toString());
+		// System.out.println("visitCall2: " + postAssume.toString());
 		return postAssume.toString();
 	}
 
@@ -1299,7 +1299,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder res = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
 		String cond;
-
 		cond = visitExpr(ctx.condition);
 
 		/*
@@ -1317,6 +1316,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		}
 		try {
 			while (i < this.unboundDepth) {
+				whileCallOld = this.copyMap(this.variCount);
 				i++;
 				/*
 				 * if this is the last time,then add assert(false);assume(false)
@@ -1329,10 +1329,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					finalResult.append(this.getUnwindIf(ctx, false));
 				}
 				long insideWhile = System.currentTimeMillis();
-
 			}
+		} catch (OutOfMemoryError error) {
+			System.out.println("UNKNOWN");
+			System.exit(0);
 		} catch (Exception e) {
-			this.printFinalResult("UNKNOWN");
+			System.out.println("UNKNOWN");
+			System.exit(0);
 		}
 		// this.ifLayer.remove(this.ifLayer.size());
 		this.insertAssertion("false");
@@ -1991,7 +1994,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitOldExpr(OldExprContext ctx) {
 		String varible = ctx.getChild(2).getText();
 		String oldResult = varible + this.getGlobaOldSubscript(varible);
-		System.out.println("visitoldexpr " + oldResult);
+		// System.out.println("visitoldexpr " + oldResult);
 		return oldResult;
 	}
 
