@@ -8,12 +8,10 @@ int s;
 
 int c;
 int  foo(int a) {
-c = bar();
-assert(1>2);
-return 2;
-}
 
-int bar() 
-ensures \result != c{
-return c + 1;
+	while(0)
+	candidate_invariant(2>1),
+	candidate_invariant(3>1){
+	}
+	return 0;
 }

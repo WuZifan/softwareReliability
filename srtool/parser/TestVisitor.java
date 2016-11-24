@@ -66,6 +66,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private ArrayList<String> postCon = new ArrayList<String>();
 	private StringBuilder preSmtResult = new StringBuilder();
 	private StringBuilder postSmtResult = new StringBuilder();
+	private HashMap<Integer,ArrayList<HashMap<String,ArrayList<String>>>> CandidateInvar = new HashMap<Integer,ArrayList<HashMap<String,ArrayList<String>>>>();
+	private ArrayList<HashMap<String,ArrayList<String>>> singleWhile = new ArrayList<HashMap<String,ArrayList<String>>>();
+	private boolean firstCandidate = true;
+	private int whileID = 1;
 	private int postNumber = 0;
 	private int preNumber = 0;
 	private int inProcedure;
@@ -130,13 +134,89 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			preSmtResult.append(preCon.get(i) + ") ");
 		}
 	}
+	
+	public static boolean isInteger(String s) {
+	    return isInteger(s,10);
+	}
 
+	public static boolean isInteger(String s, int radix) {
+	    if(s.isEmpty()) return false;
+	    for(int i = 0; i < s.length(); i++) {
+	        if(i == 0 && s.charAt(i) == '-') {
+	            if(s.length() == 1) return false;
+	            else continue;
+	        }
+	        if(Character.digit(s.charAt(i),radix) < 0) return false;
+	    }
+	    return true;
+	}
+
+	public void generateCandidate(SimpleCParser.ProgramContext ctx){
+		
+		List<ProcedureDeclContext> procedures = ctx.procedures;
+		HashMap<String,ArrayList<ExprContext>> procedureCandidate = new HashMap<String,ArrayList<ExprContext>>();
+		ArrayList<ExprContext> assertList = new ArrayList<ExprContext>();
+		ArrayList<ExprContext> assumeList = new ArrayList<ExprContext>();
+		ArrayList<ExprContext> loopList = new ArrayList<ExprContext>();
+		
+		
+		for(ProcedureDeclContext procedure : procedures){
+//			System.out.println(procedure.name.getText());
+			
+			ArrayList<String> vars = new ArrayList<String>();
+			
+			for(VarDeclContext global : globals){
+				vars.add(global.name.getText());		
+			}		
+			
+			for(FormalParamContext formal :procedure.formals){
+				vars.add(formal.name.getText());		
+			}	
+			
+			if(!isInteger(procedure.returnExpr.getText()))
+				vars.add(procedure.returnExpr.getText());
+//			System.out.println(vars.toString());
+			
+			
+			for(StmtContext smt : procedure.stmts){
+				//catch assert
+				try{
+					for(String var: vars){	
+						if(smt.assertStmt().condition.getText().contains(var)){
+							assertList.add(smt.assertStmt().condition);
+//							System.out.println(smt.getText()+" is in the assertion! ");
+						}	
+					}
+				}catch(NullPointerException e){
+//					System.out.println(smt.getText()+" is not in assertion that contains vars");
+				}	
+				//catch assume
+				try{
+					for(String var: vars){	
+						if(smt.assumeStmt().condition.getText().contains(var)){
+							assumeList.add(smt.assumeStmt().condition);
+//							System.out.println(smt.getText()+" is in the assumtion! ");
+						}	
+					}
+				}catch(NullPointerException e){
+//					System.out.println(smt.getText()+" is not in assumtion that contains vars");
+				}	
+			}
+			
+			procedureCandidate.put("assert",assertList);
+			procedureCandidate.put("assume",assumeList);
+//			prePostCandidates.put(procedure.name.getText(), procedureCandidate);			
+		}
+	} 
+	
 	@Override
 	public String visitProgram(SimpleCParser.ProgramContext ctx) {
+		globals = ctx.globals;
+//		generateCandidate(ctx);
 		StringBuilder resSmt = new StringBuilder("");
 		List<VarDeclContext> gobls = ctx.globals;
 		List<ProcedureDeclContext> procedures = ctx.procedures;
-		globals = ctx.globals;
+		
 		this.inProcedure = 0;
 
 		for (VarDeclContext item : gobls) {
@@ -170,7 +250,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(res + "\n");
 			finalProgramSMT.append("(check-sat)\n");
 			finalProgramSMT.append(getWhichOneIsWrong());
-			System.out.println("Program: \n" + finalProgramSMT.toString());
+//			System.out.println("Program: \n" + finalProgramSMT.toString());
 			// smtCheckSat(finalProgramSMT.toString(),i);
 			// if unwind is timeout
 			if (!this.isUnwindTimeOut) {
@@ -308,6 +388,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		this.call = new CallVisitor();
 		this.isUnwindTimeOut = false;
 		this.assumeList=new ArrayList<String>();
+		this.whileID = 1;
 		// this.z3Result = "";
 	}
 
@@ -1138,6 +1219,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 	@Override
 	public String visitWhileStmt(WhileStmtContext ctx) {
+		
 		StringBuilder res = new StringBuilder("");
 		List<LoopInvariantContext> inVarList = new ArrayList<LoopInvariantContext>();
 		String cond;
@@ -1155,8 +1237,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		// this.unboundDepth
 		long initWhile = System.currentTimeMillis();
 		for (LoopInvariantContext item : ctx.invariantAnnotations) {
-			this.insertAssertion(visitLoopInvariant(item));
+			visitLoopInvariant(item);
 		}
+		//////////////////////////////////////
+		firstCandidate = false;
+		//////////////////////////////////////
+		
 		while (i < this.unboundDepth) {
 			i++;
 			/*
@@ -1183,9 +1269,41 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (this.isBlockTheAssert) {
 			this.isUnwindDeepEnough = false;
 		}
+		
+		
+		whileID++;		
 		return res.toString();
+		
 	}
-
+	
+	//TODO
+	@Override
+	public String visitCandidateInvariant(SimpleCParser.CandidateInvariantContext ctx) { 
+		
+		HashMap<String,ArrayList<String>> singleCandidate = new HashMap<String,ArrayList<String>>();
+		if(firstCandidate){			
+			String condition = ctx.condition.getText();
+			String conditionSMT = visitExpr(ctx.condition);		
+			ArrayList<String> smts = new ArrayList<String>();
+			smts.add(conditionSMT);
+			singleCandidate.put(condition, smts);
+			singleWhile.add(singleCandidate);			
+			this.insertAssertion(conditionSMT);
+			
+		}else{
+			String condition = ctx.condition.getText();
+			String conditionSMT = visitExpr(ctx.condition);		
+			for(int i =0;i<singleWhile.size();i++){
+				if(singleWhile.get(i).containsKey(condition)){
+					singleWhile.get(i).get(condition).add(conditionSMT);	
+					this.insertAssertion(conditionSMT);
+				}			
+			}			
+		}
+		return ""; 
+	}
+	
+	
 	/*
 	 * @Override(non-Javadoc)
 	 * 
@@ -1198,7 +1316,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	 * 
 	 * return resSmt.toString(); }
 	 */
-
+	
 	@Override
 	public String visitInvariant(InvariantContext ctx) {
 
