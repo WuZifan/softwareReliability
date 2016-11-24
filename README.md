@@ -43,35 +43,35 @@ Failing Tests (74):
     SRT :: Part2GivenTests/part2_correct_62.c
     SRT :: Part2GivenTests/part2_correct_63.c
     SRT :: Part2GivenTests/part2_correct_8.c
-    SRT :: Part2GivenTests/part2_incorrect_1.c
-    SRT :: Part2GivenTests/part2_incorrect_10.c
-    SRT :: Part2GivenTests/part2_incorrect_12.c
-    SRT :: Part2GivenTests/part2_incorrect_14.c
-    SRT :: Part2GivenTests/part2_incorrect_15.c
-    SRT :: Part2GivenTests/part2_incorrect_19.c
-    SRT :: Part2GivenTests/part2_incorrect_20.c
-    SRT :: Part2GivenTests/part2_incorrect_21.c
-    SRT :: Part2GivenTests/part2_incorrect_22.c
-    SRT :: Part2GivenTests/part2_incorrect_23.c
-    SRT :: Part2GivenTests/part2_incorrect_24.c
-    SRT :: Part2GivenTests/part2_incorrect_25.c
-    SRT :: Part2GivenTests/part2_incorrect_27.c
-    SRT :: Part2GivenTests/part2_incorrect_29.c
-    SRT :: Part2GivenTests/part2_incorrect_33.c
-    SRT :: Part2GivenTests/part2_incorrect_36.c
-    SRT :: Part2GivenTests/part2_incorrect_37.c
-    SRT :: Part2GivenTests/part2_incorrect_40.c
-    SRT :: Part2GivenTests/part2_incorrect_43.c
-    SRT :: Part2GivenTests/part2_incorrect_44.c
-    SRT :: Part2GivenTests/part2_incorrect_47.c
-    SRT :: Part2GivenTests/part2_incorrect_49.c
-    SRT :: Part2GivenTests/part2_incorrect_50.c
-    SRT :: Part2GivenTests/part2_incorrect_51.c
-    SRT :: Part2GivenTests/part2_incorrect_52.c
-    SRT :: Part2GivenTests/part2_incorrect_56.c
-    SRT :: Part2GivenTests/part2_incorrect_57.c
-    SRT :: Part2GivenTests/part2_incorrect_58.c
-    SRT :: Part2GivenTests/part2_incorrect_7.c
-    SRT :: Part2GivenTests/part2_incorrect_8.c
-    SRT :: Part2GivenTests/part2_incorrect_9.c
+    SRT :: Part2GivenTests/part2_incorrect_1.c   // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_10.c  // Pass; larger the time limitation 
+    SRT :: Part2GivenTests/part2_incorrect_12.c  // UNKNOW or CORRECT; because of time out
+    SRT :: Part2GivenTests/part2_incorrect_14.c  // UNKNOW or CORRECT; because of time out
+    SRT :: Part2GivenTests/part2_incorrect_15.c  // call
+    SRT :: Part2GivenTests/part2_incorrect_19.c  // -1 out of the time limitation
+    SRT :: Part2GivenTests/part2_incorrect_20.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT  
+    SRT :: Part2GivenTests/part2_incorrect_21.c  // candidate
+    SRT :: Part2GivenTests/part2_incorrect_22.c  // candidate 
+    SRT :: Part2GivenTests/part2_incorrect_23.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_24.c  // PASS
+    SRT :: Part2GivenTests/part2_incorrect_25.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_27.c  // PASS
+    SRT :: Part2GivenTests/part2_incorrect_29.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_33.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_36.c  // PASS
+    SRT :: Part2GivenTests/part2_incorrect_37.c  // candidate
+    SRT :: Part2GivenTests/part2_incorrect_40.c  // call problem 
+    SRT :: Part2GivenTests/part2_incorrect_43.c  // UNKNOWN 
+    SRT :: Part2GivenTests/part2_incorrect_44.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_47.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_49.c  // deep call
+    SRT :: Part2GivenTests/part2_incorrect_50.c  // 0.8 UNKNOW or 0.2*0.8CORRECT or0.2*0.2 INCORRECT;SMT WRONG;WHILE IN WHILE 
+    SRT :: Part2GivenTests/part2_incorrect_51.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_52.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_56.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_57.c  // UNKNOW
+    SRT :: Part2GivenTests/part2_incorrect_58.c  // 0.8 UNKNOW or 0.2*0.8 CORRECT or 0.2*0.2 INCORRECT
+    SRT :: Part2GivenTests/part2_incorrect_7.c   // Passed; change the init unwind depth  from 10 to 4
+    SRT :: Part2GivenTests/part2_incorrect_8.c   // unknow; because of time out
+    SRT :: Part2GivenTests/part2_incorrect_9.c   // unknow; because of time out
     SRT :: example/Count42.c
