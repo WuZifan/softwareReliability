@@ -134,7 +134,6 @@ class BTree{
 	private BTree left=null;
 	private BTree right=null;
 	public BTree() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public BTree(String value){

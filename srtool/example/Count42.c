@@ -1,22 +1,21 @@
 // RUN: %tool "%s" > "%t"
 // RUN: %diff %CORRECT "%t"
-// int s;
-// int y;
-// int x;
-// int s;
-// 
-// 
-// int c;
-int  foo(int a) {
 
-	while(0)
-	candidate_invariant(2>1),
-	candidate_invariant(3>1){
-	}
-	return 0;
+int foo(int x, int y) 
+  requires y > 32
+{
+  int s;
+  int t;
+  s = x;
+  t = y;
+  while(t > -42)
+      invariant t >= -42,
+      invariant (t == y || s == 0) {
+    s = s << t;
+    assert s == 0;
+    t = t - 1;
+  }
+  assert s == 0;
+  assert t == -42;
+  return 0;
 }
-
-// int bar() 
-// ensures \result != c{
-// return c + 1;
-// }

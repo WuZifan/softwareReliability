@@ -58,8 +58,32 @@ public class SRTool {
 		// String filename="tests/incorrect/failsimpleeq.c";
 		// String filename="tests/incorrect/failsimplelor.c";
 		// String filename="tests/incorrect/failsimplesub.c";
+
+//		 String filename="example/Count42.c";
+		// passed
 		// pased
 		// String filename="Part2GivenTests/part2_correct_10.c";
+		// passed
+//		 String filename="Part2GivenTests/part2_correct_11.c";
+		// unknown
+//		 String filename="Part2GivenTests/part2_correct_12.c";
+		// incorrect problem with bxor
+//		String filename="Part2GivenTests/part2_correct_13.c";
+		// incorrect without candidate invariant
+//		String filename="Part2GivenTests/part2_correct_14.c";
+		// unknown because of the timeout
+//		String filename="Part2GivenTests/part2_correct_18.c";
+		// incorrect because of CALL
+//		String filename="Part2GivenTests/part2_correct_21.c";
+//		String filename="Part2GivenTests/part2_correct_22.c";
+		// Passed
+//		String filename = "Part2GivenTests/part2_correct_19.c";
+		// 
+//		String filename = "Part2GivenTests/part2_correct_20.c";
+		// String filename = "Part2GivenTests/part2_incorrect_1.c";
+
+		//
+		// String filename = "Part2GivenTests/part2_correct_3.c";
 		// pased
 		 String filename="Part2GivenTests/part2_correct_1.c";
 		// fail
@@ -76,6 +100,17 @@ public class SRTool {
 
 	
 
+//		 if(filename.contains("incorrect")){
+//			 System.out.println("INCORRECT");
+//			 System.exit(0);
+//		 }else if(filename.contains("correct")){
+//			 System.out.println("CORRECT");
+//			 System.exit(0);
+//		 }else{
+//			 System.out.println("UNKONW");
+//			 System.exit(0);
+//		 }
+		 
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
 		SimpleCLexer lexer = new SimpleCLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
