@@ -62,6 +62,7 @@ public class SRTool {
 //		 String filename="example/Count42.c";
 		// passed
 		// pased
+
 		// String filename="Part2GivenTests/part2_correct_10.c";
 		// passed
 //		 String filename="Part2GivenTests/part2_correct_11.c";
@@ -94,7 +95,6 @@ public class SRTool {
 		
 		String filename="Part2GivenTests/part2_incorrect_58.c";
 		//
-		// String filename = "Part2GivenTests/part2_correct_3.c";
 		// pased
 //		 String filename="Part2GivenTests/part2_correct_21.c";
 		// fail
