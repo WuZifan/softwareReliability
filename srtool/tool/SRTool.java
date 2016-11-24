@@ -93,21 +93,11 @@ public class SRTool {
 		// pass with a large time
 //		String filename="Part2GivenTests/part2_incorrect_10.c";
 		
-		String filename="Part2GivenTests/part2_incorrect_58.c";
 		//
 		// pased
-<<<<<<< HEAD
 		 String filename="Part2GivenTests/part2_correct_17.c";
-=======
 //		 String filename="Part2GivenTests/part2_correct_21.c";
->>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 		// fail
-<<<<<<< HEAD
-
-//		String filename = "Part2GivenTests/part2_correct_3.c";
-=======
-//		String filename = "Part2GivenTests/part2_incorrect_27.c";
->>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 		// String filename="tests/correct/simpleeq.c";
 
 		// String filename="tests/incorrect/failsimplesub.c";
@@ -115,14 +105,6 @@ public class SRTool {
 
 		// String filename="tests/correct/simpleeq.c";
 //		 String filename="example/Count42.c";
-<<<<<<< HEAD
-
-
-	
-=======
-		 
->>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
-
 //		 if(filename.contains("incorrect")){
 //			 System.out.println("INCORRECT");
 //			 System.exit(0);
