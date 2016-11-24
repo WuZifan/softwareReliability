@@ -58,25 +58,23 @@ public class SRTool {
 		// String filename="tests/incorrect/failsimpleeq.c";
 		// String filename="tests/incorrect/failsimplelor.c";
 		// String filename="tests/incorrect/failsimplesub.c";
-
-		// String filename="example/Count42.c";
 		// pased
 		// String filename="Part2GivenTests/part2_correct_10.c";
 		// pased
-//		 String filename="Part2GivenTests/part2_correct_11.c";
+		 String filename="Part2GivenTests/part2_correct_11.c";
 		// fail
-//		String filename = "Part2GivenTests/part2_correct_12.c";
-		//
+
 //		String filename = "Part2GivenTests/part2_correct_3.c";
 		// String filename="tests/correct/simpleeq.c";
 
 		// String filename="tests/incorrect/failsimplesub.c";
-//		String filename="tests/incorrect/failsimplesub.c";
+		// String filename="tests/incorrect/failsimplesub.c";
 
-//		String filename="tests/correct/simpleeq.c";
-//		String filename="tests/correct/if.c";
+		// String filename="tests/correct/simpleeq.c";
+//		 String filename="example/Count42.c";
 
-		String filename="Part2GivenTests/part2_correct_3.c";
+
+	
 
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(filename));
 		SimpleCLexer lexer = new SimpleCLexer(input);
