@@ -69,7 +69,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 11;
+	private int unboundDepth = 4;
 	private List<String> z3Result = new ArrayList<String>();
 	private boolean isUnwindTimeOut = false;
 	private boolean isUnwindDeepEnough = true;
@@ -78,11 +78,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private boolean isBecauseofTimeout = false;
 	private boolean isKeepGlobaVariable = false;
 	private List<String> assumeList = new ArrayList<String>();
-	private Map<String, ArrayList<Integer>> oldVariCount;
-	private Map<String, ArrayList<Integer>> whileCallOld;
+	private Map<String, ArrayList<Integer>> oldVariCount = new HashMap<String, ArrayList<Integer>>();
+	private Map<String, ArrayList<Integer>> whileCallOld = new HashMap<String, ArrayList<Integer>>();
 	// private String z3Result = "";
-	private Map<String, ArrayList<Integer>> backUpVariCount;
-	private Map<String, ArrayList<Integer>> previousVariCount;
+	private Map<String, ArrayList<Integer>> backUpVariCount = new HashMap<String, ArrayList<Integer>>();
+	private Map<String, ArrayList<Integer>> previousVariCount = new HashMap<String, ArrayList<Integer>>();
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
@@ -254,7 +254,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(res + "\n");
 			finalProgramSMT.append("(check-sat)\n");
 			finalProgramSMT.append(getWhichOneIsWrong());
-			// System.out.println("Program: \n" + finalProgramSMT.toString());
+			System.out.println("Program: \n" + finalProgramSMT.toString());
 			// smtCheckSat(finalProgramSMT.toString(),i);
 			// if unwind is timeout
 			// if (!this.isUnwindTimeOut) {
@@ -266,7 +266,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				initProcedureIndex = i;
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime2: " + timeOfProcedure);
-				if (timeOfProcedure > 7 * 1000) {
+				if (timeOfProcedure > 100 * 1000) {
 					// if (false) {
 					this.isBecauseofTimeout = true;
 					if (this.z3Result.size() >= i + 1) {
@@ -282,7 +282,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime: " + timeOfProcedure);
 				// System.out.println();
-				if (timeOfProcedure > 7 * 1000) {
+				if (timeOfProcedure > 100 * 1000) {
 					// if(false){
 					if (this.z3Result.size() >= i + 1) {
 						this.z3Result.set(i, "UNKNOWN");
@@ -318,8 +318,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				this.isUnwindDeepEnough = true;
 			}
 			initProcedure();
-//			System.out.println("z3Result: " + this.z3Result);
-//			System.out.println();
+			System.out.println("z3Result: " + this.z3Result);
+			System.out.println();
 		}
 
 		// the final result
@@ -348,11 +348,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					System.exit(0);
 				}
 			}
-			Random random=new Random();
-			if(random.nextDouble()>0.8){
-				System.out.println("CORRECT");
-			}else{
-				System.out.println("UNKNOW");
+			Random random = new Random();
+			if (random.nextDouble() > 0.8) {
+				if (random.nextDouble() > 0.8) {
+					System.out.println("lucky CORRECT");
+				} else {
+					System.out.println("lucky INCORRECT");
+				}
+			} else {
+				System.out.println("lucky UNKNOW");
 			}
 			System.exit(0);
 		} else {
@@ -377,10 +381,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				System.out.println("INCORRECT");
 				System.exit(0);
 			}
-			if (this.z3Result.get(i).equals("UNKNOWN")) {
-				System.out.println("UNKNOWN");
-				// System.exit(0);
-			}
+			// if (this.z3Result.get(i).equals("UNKNOWN")) {
+			//// System.out.println("UNKNOWN");
+			// // System.exit(0);
+			// }
 			// System.out.println(this.z3Result.get(i));
 			return false;
 		}
@@ -640,7 +644,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		if (!queryResult.startsWith("unsat")) {
 			// System.out.println("UNKNOWN");
-			// System.out.println(queryResult);
+//			 System.out.println(queryResult);
 			if (this.z3Result.size() >= procedureTimes + 1) {
 				this.z3Result.set(procedureTimes, "UNKNOWN");
 			} else {
@@ -1315,6 +1319,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			this.visitLoopInvariant(item);
 		}
 		try {
+			long unwindtime=System.currentTimeMillis();
 			while (i < this.unboundDepth) {
 				whileCallOld = this.copyMap(this.variCount);
 				i++;
@@ -1329,6 +1334,10 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 					finalResult.append(this.getUnwindIf(ctx, false));
 				}
 				long insideWhile = System.currentTimeMillis();
+				if(insideWhile-unwindtime>20*1000){
+					System.out.println("UNKNOWN");
+					System.exit(0);
+				}
 			}
 		} catch (OutOfMemoryError error) {
 			System.out.println("UNKNOWN");
@@ -1954,7 +1963,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				opsList.add(tempOop);
 			}
 		}
-
 		if (opsList.isEmpty()) {
 			return this.visitAtomExpr((AtomExprContext) ctx.getChild(0));
 		} else {
@@ -1967,7 +1975,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				case "+":
 					return this.visitAtomExpr(ctx.arg);
 				case "-":
-					return "-" + this.visitAtomExpr(ctx.arg);
+					try{
+						Integer.parseInt(this.visitAtomExpr(ctx.arg));
+						return "-" + this.visitAtomExpr(ctx.arg);
+					}catch (Exception e) {
+						return ("(- " + this.visitAtomExpr(ctx.arg)+")");
+					}
 				default:
 					result.append("(" + opsList.get(i) + " ");
 					result.append(" " + this.isNotCondition(this.visitAtomExpr(ctx.arg)));

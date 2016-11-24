@@ -20,7 +20,7 @@ public class SRTool {
 	private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		 String filename= args[0];
+//		 String filename= args[0];
 
 		/*
 		 * Correct
@@ -80,8 +80,19 @@ public class SRTool {
 //		String filename = "Part2GivenTests/part2_correct_19.c";
 		// 
 //		String filename = "Part2GivenTests/part2_correct_20.c";
+		// UNKNOW BECAUSE OF TIMEOUT
 		// String filename = "Part2GivenTests/part2_incorrect_1.c";
-
+		
+		// passed change the init unwind depth
+//		String filename="Part2GivenTests/part2_incorrect_7.c";
+		// unknow because the init unwind depth
+//		String filename="Part2GivenTests/part2_incorrect_8.c";
+		// unknow 
+//		String filename="Part2GivenTests/part2_incorrect_9.c";
+		// pass with a large time
+//		String filename="Part2GivenTests/part2_incorrect_10.c";
+		
+		String filename="Part2GivenTests/part2_incorrect_58.c";
 		//
 		// String filename = "Part2GivenTests/part2_correct_3.c";
 		// pased
@@ -95,8 +106,7 @@ public class SRTool {
 
 		// String filename="tests/correct/simpleeq.c";
 //		 String filename="example/Count42.c";
-
-		// String filename="Part2GivenTests/part2_correct_3.c";
+		 
 
 //		 if(filename.contains("incorrect")){
 //			 System.out.println("INCORRECT");
