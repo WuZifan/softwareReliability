@@ -382,7 +382,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				System.exit(0);
 			}
 			if (this.z3Result.get(i).equals("UNKNOWN")) {
-				System.out.println("UNKNOWN");
+//				System.out.println("UNKNOWN");
 				// System.exit(0);
 			}
 			// System.out.println(this.z3Result.get(i));

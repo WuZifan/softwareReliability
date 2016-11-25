@@ -20,13 +20,14 @@ public class SRTool {
 	private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		 String filename= args[0];
+//		 String filename= args[0];
+
 
 		/*
 		 * Correct
 		 */
 		// Pased
-		// String filename="tests/correct/divzero.c";
+//		 String filename="tests/correct/divzero.c";
 		// Pased. But afarid of missing the assertation in the block
 		// String filename="tests/correct/if.c";
 		// Error:(error "line 28 column 21: unexpected character"):(assert (= x3
@@ -81,13 +82,21 @@ public class SRTool {
 //		String filename = "Part2GivenTests/part2_correct_19.c";
 		// 
 //		String filename = "Part2GivenTests/part2_correct_20.c";
+		// UNKNOW BECAUSE OF TIMEOUT
 		// String filename = "Part2GivenTests/part2_incorrect_1.c";
-
+		
+		// passed change the init unwind depth
+//		String filename="Part2GivenTests/part2_incorrect_7.c";
+		// unknow because the init unwind depth
+//		String filename="Part2GivenTests/part2_incorrect_8.c";
+		// unknow 
+		String filename="Part2GivenTests/part2_incorrect_15.c";
+		// pass with a large time
+//		String filename="Part2GivenTests/part2_incorrect_10.c";
+		
 		//
 		// pased
-//		 String filename="Part2GivenTests/part2_incorrect_40.c";
 		// fail
-//		String filename = "Part2GivenTests/part2_correct_3.c";
 		// String filename="tests/correct/simpleeq.c";
 
 		// String filename="tests/incorrect/failsimplesub.c";
@@ -95,9 +104,6 @@ public class SRTool {
 
 		// String filename="tests/correct/simpleeq.c";
 //		 String filename="example/Count42.c";
-
-		// String filename="Part2GivenTests/part2_correct_3.c";
-
 //		 if(filename.contains("incorrect")){
 //			 System.out.println("INCORRECT");
 //			 System.exit(0);
@@ -128,29 +134,9 @@ public class SRTool {
 			System.exit(1);
 		}
 
-		// assert ctx.procedures.size() == 1;
-		// For Part 1 of the coursework, this can be assumed
-
-		//
-		// String cmd[] = new String[] {"sh", "-c", "echo '" + filename + "' >>
-		// temp"};
-		// Process p = Runtime.getRuntime().exec(cmd);
-		// String cmd2[] = new String[] {"sh", "-c", "cat temp | mail
-		// hh1816@ic.ac.uk"};
-		// Process p2 = Runtime.getRuntime().exec(cmd2);
-		// BufferedReader stdInput = new BufferedReader(new
-		// InputStreamReader(p2.getInputStream()));
-		// String s = null;
-		// while ((s = stdInput.readLine()) != null) {
-		// System.out.println(s);
-		// }
 
 		VCGenerator vcgenGL = new VCGenerator(ctx, null);
 		// vcgenGL.generateVCGlobal();
 		String tempVc = vcgenGL.generateVC().toString();
-
-		// System.out.println("CORRECT");
-		// System.exit(0);
-
 	}
 }

@@ -71,6 +71,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 	private List<String> z3Result = new ArrayList<String>();
 	// private String z3Result = "";
 	private Map<String, ArrayList<Integer>> backUpVariCount;
+	private Map<String, ArrayList<Integer>> oldVariCount;
 	// the fisrt string is proxy+i; the second string is the sentence of
 	// assertion,
 	// boolean represent is true or not
@@ -154,6 +155,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 		}
 
 		for (int i = 0; i < ctx.procedures.size(); i++) {
+			this.oldVariCount = copyMap(this.variCount);
 			this.inProcedure = 1;
 			StringBuffer finalProgramSMT = new StringBuffer();
 			ProcedureDeclContext item = ctx.procedures.get(i);

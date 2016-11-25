@@ -1,5 +1,6 @@
 package parser;
 
+import java.security.interfaces.RSAMultiPrimePrivateCrtKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,8 +48,8 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	private Map<String, ProcedureDeclContext> procedureContext = new HashMap<String, ProcedureDeclContext>();
 	private ProcedureDeclContext thisProcedure;
 	private List<VarDeclContext> globals = new ArrayList<VarDeclContext>();
-	List<String> globalVars = new ArrayList<String>();
-	
+	private List<String> globalVars = new ArrayList<String>();
+	private Map<String, ArrayList<Integer>> oldVariCount;
 	CallVisitor(){
 		actuals = new ArrayList<ExprContext>();
 	}
@@ -61,6 +62,10 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 		this.thisProcedure = thisProcedure;
 		this.procedureContext = procedureContext;
 		this.globals = globals;
+		this.oldVariCount=oldVariCount;
+	}
+	public void getVarCount(Map<String, ArrayList<Integer>> variCount){
+		this.variCount = variCount;
 	}
 	
 //	@Override
@@ -133,7 +138,7 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	@Override
 	public String visitRequires(SimpleCParser.RequiresContext ctx) {
 		String requires;
-		requires = super.visitRequires(ctx);		
+		requires = this.visitExpr(ctx.condition);		
 		return requires;
 	}
 	
@@ -141,8 +146,8 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	public String visitEnsures(SimpleCParser.EnsuresContext ctx) {
 	
 		String ensures;
-		ensures = super.visitEnsures(ctx);
-//		System.out.println("visitensuresINCALL VISITOR: "+ensures);
+		ensures = this.visitExpr(ctx.condition);	
+
 		return ensures;
 	}
 
@@ -672,17 +677,12 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	@Override
 	public String visitOldExpr(OldExprContext ctx) {
 		String varible = ctx.getChild(2).getText();
-		return varible + this.getGlobaOldSubscript(varible);
+		String oldResult = varible + this.getGlobaOldSubscript(varible);
+		return oldResult;
 	}
 	
 	private int getGlobaOldSubscript(String varible) {
-		int sub = 0;
-		if (variCount.get(varible).size() < 3) {
-			sub = 0;
-		} else {
-			sub = variCount.get(varible).get(2);
-		}
-		return sub;
+		return this.oldVariCount.get(varible).get(1);
 	}
 	
 	/** Get current subscripte for a specific variable **/
