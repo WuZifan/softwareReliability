@@ -76,7 +76,7 @@ public class SRTool {
 		// unknown because of the timeout
 //		String filename="Part2GivenTests/part2_correct_18.c";
 		// incorrect because of CALL
-//		String filename="Part2GivenTests/part2_correct_21.c";
+		String filename="Part2GivenTests/part2_correct_8.c";
 //		String filename="Part2GivenTests/part2_correct_22.c";
 		// Passed
 //		String filename = "Part2GivenTests/part2_correct_19.c";
@@ -86,7 +86,7 @@ public class SRTool {
 		// String filename = "Part2GivenTests/part2_incorrect_1.c";
 		
 		// passed change the init unwind depth
-		String filename="Part2GivenTests/part2_incorrect_4.c";
+//		String filename="Part2GivenTests/part2_incorrect_4.c";
 		// unknow because the init unwind depth
 //		String filename="Part2GivenTests/part2_incorrect_8.c";
 		// unknow 
