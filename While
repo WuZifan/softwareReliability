@@ -1,0 +1,102 @@
+For the 'while' statement, we learn from lectures that we can replace it with BMC(bounded model checking) <h6>or</h6> summerization 
+to create a loop-free procedure. And since we have the loop-free procedure, we can use what we have built in Part1 to generate
+the SMT and use z3 to check the procedure.
+
+1.1 BMC(Bound Model Checking)
+In lecture 4, we learnt BMC and its main idea is replacing  'while' by a 'nested if' statement. And the deepest block of that 
+nested if is "assert(false);assume(false)", aiming to block the execution of the procedure and tell us whether our deepth is 
+enough or not.And it is an over-approximation.
+
+In practice, we find that the logic of 'nested if' is very hard to complete.For instance, how to return the value of a variable
+both being modified in different layer of if and for each branch with assertion, how to combine the whole if condition together.
+(see below):
+  Example1:         int x;                                 Example2:          int x;
+                    x=0;                                                      x=0;
+                    if(Condition1){                                           if(Condition1){           
+                     x=1;                                                     assert(Acond1)
+                      if(Condition2){                                            if(Condition2){  
+                      }else{                                                      }else{
+                        if(Condition){                                              assertion(Acond2)   
+                          x=2                                                     } 
+                        }                                                     }
+                      }
+                    }
+
+Since then, we decide to 'unnest' the 'nested if' of while block into a sequence of if block.Like:
+Case1:                                             Case2:
+         if(condition1){                                   if(Condition1){};
+          if(condition2){                                  if(Condition2){};
+              ........                      ------>         ..........
+              if(conditionX){                              if(conditionX){   
+                assert(false);                               assert(false);
+                assume(false;)                               assume(false);
+              }                                             }
+            }
+         }
+
+In this case(for while block), we can tell that each condition is only different in the subscript of variable.In Case1, if the 
+'nested if' blocked in conditionN, that means conditionN-1 holds and conditionN not.Meanwhile,in Case2,the conditonN-1 holds and 
+the conditionN not because of the same subscript of both cases' condition.
+
+One way to disable the 'unnestion' is if the original 'nested if ' is like:
+
+        if(condition1){                                   
+          if(condition2){                               
+              ........                      
+              if(conditionX){                                 
+                assert(false);                              
+                assume(false;)                               
+              }
+              statement2;
+            }
+            statement1;
+         }
+which will never happen in the 'nested if' of while block.
+
+Now, we make the while block in to a sequence of if block, which is an over-approximation.And there are two that the sequence 
+of if can fail, one is the program execut the final if block which implies the unwind depth is not enough, the other is some
+assertions inside the while block is wrong. And in Simple C, 'assert(false)' is illegel, the only way we can see a '(assert false)'
+in SMT is we insert this sentence into SMT,which is exactly what we do in the last block of the sequence of if.So, we can
+tell whether the proceudre fail is because of depth or assertion inside the while by simply checking the whether the wrong assertion
+in SMT contains 'false' or not. If it does, it implies the 'assume(false)' is being executed and the depth is not deep enough;if not,
+just finish the checking of this procedure and report 'INCORRECT'.
+
+In this way, we can replace while block by a sequence of if, which won't report any false-negative or false-positive.
+
+But, BMC is very time consuming, it is easy to report 'UNKNOWN' beacause of time out.
+
+1.2 Summerization
+As the lecture 3 mentioned, summerization can provide a over-proximation result from the original test case. The benefit we found out 
+through the practice of the summerization can reduce a significant amount of BMC checking time of unwinding loop.
+        while(condition1)                                       assert(condition2)
+        loop_invariant condition2                               assert(condition3)
+        loop_invariant condition3                               havoc index_variables
+        {                                                       assume(condition2)
+           statements                  -------------->          assume(condition3)
+        }                                                       if(condition1) {
+                                                                    statements
+                                                                    assert(condition2)
+                                                                    assert(condition3)
+                                                                    assume(false)
+                                                                }
+ The picture above shows the transformation of summerization. Loop_invariant stands for both invariant and candidate invariant. 
+ We found out that the index variable through iteration of the statements in the while loop finding the variable changed in the 
+ loop which also appearing in the while condition(condition1).  ALthough the result may be false-positive, we can use the result
+ of correct as a correct evaluation and discard othe output result to ensure correctness.
+ 
+1.3 Houdini
+In this practice, we did not focus on the candidate prepost condition but only on the loop candidate invariant. Each time we run 
+the test case, firstly we will record all the candidate invariant matches the while loop. After the z3 evaluate the generated SMT,
+we will judge the result:
+        * If the result is correct, then all candidate invariants stay the same as an invariant.
+        * If the result is incorrect, then we will figure out the reason of the failure. If the failure is cause by the candidate,
+              then we will mark this candidate as a wrong invariant and it will not generate SMT in the further test. The program 
+              will be continously tested until the result is correct or there is an error caused by othe reaseon.
+ 
+ The Houdini in BMC will happen simultaneously and the priority of the Houdini is higher than the BMC so that the Houdini will finish 
+ as early as possible in the evaluation process to economize the time for the later unwind part.
+ 
+ 
+
+
+
