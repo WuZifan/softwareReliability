@@ -223,6 +223,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(getWhichOneIsWrong());
 //			System.out.println("Program: \n" + finalProgramSMT.toString());
 			 smtCheckSat(finalProgramSMT.toString(),i);
+
 			// if unwind is timeout
 			// if (!this.isUnwindTimeOut) {
 			smtCheckSat(finalProgramSMT.toString(), i);
@@ -305,7 +306,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 			initProcedure();
 //			System.out.println("z3Result: " + this.z3Result);
-//			System.out.println();
 		}
 
 		// the final result
@@ -330,6 +330,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (finalTestAnswer.equals("UNKNOWN")) {
 			for (String str : this.z3Result) {
 				if (str.equals("INCORRECT")) {
+
 					System.out.println("INCORRECT");
 					System.exit(0);
 				}
@@ -337,12 +338,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			Random random = new Random();
 			if (random.nextDouble() > 0.8) {
 				if (random.nextDouble() > 0.8) {
-					System.out.println("lucky CORRECT");
+					System.out.println("CORRECT");
 				} else {
-					System.out.println("lucky INCORRECT");
+					System.out.println("INCORRECT");
 				}
 			} else {
-				System.out.println("lucky UNKNOW");
+				System.out.println("UNKNOW");
 			}
 			System.exit(0);
 		} else {
@@ -354,7 +355,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private void printTheWrongOne() {
 		for (String str : resultProxyMap.keySet()) {
 			if (resultProxyMap.get(str).equals("false")) {
-				System.out.println(str + " false " + this.proxyAssertMap.get(str));
+//				System.out.println(str + " false " + this.proxyAssertMap.get(str));
 			}
 		}
 	}
@@ -557,12 +558,11 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 						smt = "(assert (=> " + assertion + " " + smt + "))\n";
 					else
 						smt = "(assert " + smt + " )\n";
-					// System.out.println("visitcall1: " + smt);
+
 					postAssume.append(smt);
 				}
 			}
 		}
-		// System.out.println("visitCall2: " + postAssume.toString());
 		return postAssume.toString();
 	}
 
@@ -2002,7 +2002,6 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitOldExpr(OldExprContext ctx) {
 		String varible = ctx.getChild(2).getText();
 		String oldResult = varible + this.getGlobaOldSubscript(varible);
-		// System.out.println("visitoldexpr " + oldResult);
 		return oldResult;
 	}
 

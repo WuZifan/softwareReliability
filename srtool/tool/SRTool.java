@@ -21,22 +21,26 @@ public class SRTool {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		 String filename = args[0];
+<<<<<<< HEAD
+=======
+
+>>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 
 		/*
 		 * Correct
 		 */
 		// Pased
-		// String filename="tests/correct/divzero.c";
+//		 String filename="tests/correct/divzero.c";
 		// Pased. But afarid of missing the assertation in the block
 		// String filename="tests/correct/if.c";
 		// Error:(error "line 28 column 21: unexpected character"):(assert (= x3
 		// (ite ([@31,151:151='<',<29>,11:9] x0 (or ) (bvlshr 1 24)) x2 x1)))
 
-		// String filename="tests/correct/ifelse.c";
+//		 String filename="tests/correct/ifelse.c";
 
 		// (Error "line 8 column 36: invalid function application, arguments
 		// missing")
-		// String filename="tests/correct/overshift.c";
+//		 String filename="tests/correct/overshift.c";
 
 		// Pased
 		// String filename="tests/correct/simpleeq.c";
@@ -54,7 +58,7 @@ public class SRTool {
 		// Pased
 		// String filename="tests/incorrect/faildivzero.c";
 		// String filename="tests/incorrect/failold.c";
-		// String filename="tests/incorrect/failovershift.c.c";
+//		 String filename="tests/incorrect/failovershift.c.c";
 		// String filename="tests/incorrect/failsimpleeq.c";
 		// String filename="tests/incorrect/failsimplelor.c";
 		// String filename="tests/incorrect/failsimplesub.c";
@@ -63,7 +67,7 @@ public class SRTool {
 		// passed
 		// pased
 
-		// String filename="Part2GivenTests/part2_correct_10.c";
+//		 String filename="Part2GivenTests/part2_correct_10.c";
 		// passed
 //		 String filename="Part2GivenTests/part2_correct_11.c";
 		// unknown
@@ -89,6 +93,7 @@ public class SRTool {
 		// unknow because the init unwind depth
 //		String filename="Part2GivenTests/part2_incorrect_8.c";
 		// unknow 
+<<<<<<< HEAD
 //		String filename="Part2GivenTests/part2_incorrect_9.c";
 		// pass with a large time
 //		String filename="Part2GivenTests/part2_incorrect_10.c";
@@ -98,6 +103,8 @@ public class SRTool {
 //		 String filename="Part2GivenTests/part2_correct_17.c";
 //		 String filename="Part2GivenTests/part2_correct_21.c";
 //		String filename="Part2GivenTests/part2_correct_8.c";
+=======
+>>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 		// fail
 		// String filename="tests/correct/simpleeq.c";
 

@@ -120,9 +120,12 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	@Override
 	public String visitResultExpr(ResultExprContext ctx) {
 
-		String postVar = assignedVar;
-		postVar += getSubscript(postVar);
-		return postVar;
+//		String postVar = assignedVar;
+//		postVar += getSubscript(postVar);
+//		return postVar;
+		
+		String Expr = super.visitExpr(thisProcedure.returnExpr);
+		return Expr;
 	}
 	
 	@Override
