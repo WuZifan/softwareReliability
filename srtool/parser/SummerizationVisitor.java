@@ -293,7 +293,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 			String assertion = this.assVisitor.getUnAssSMT();
 
 			for (PrepostContext item : contract) {
-				call.getAllVar(variCount, assignedVar, exParameterParameters, thisProcedure,procedureContext,globals);		
+				call.getAllVar(variCount, assignedVar, exParameterParameters, thisProcedure,procedureContext,globals, this.oldVariCount);		
 				if (item.getText().contains("requires")) {
 					String smt = call.visitPrepost(item);
 					if (!smt.contains("(")) {

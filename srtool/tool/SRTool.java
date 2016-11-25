@@ -17,10 +17,10 @@ import util.ProcessTimeoutException;
 
 public class SRTool {
 
-	private static final int TIMEOUT = 30;
+	private static final int TIMEOUT = 40;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		 String filename = args[0];
+//		 String filename = args[0];
 
 
 		/*
@@ -86,7 +86,7 @@ public class SRTool {
 		// String filename = "Part2GivenTests/part2_incorrect_1.c";
 		
 		// passed change the init unwind depth
-//		String filename="Part2GivenTests/part2_incorrect_7.c";
+		String filename="Part2GivenTests/part2_incorrect_4.c";
 		// unknow because the init unwind depth
 //		String filename="Part2GivenTests/part2_incorrect_8.c";
 		// unknow 
