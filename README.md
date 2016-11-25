@@ -1,5 +1,5 @@
 # softwareReliability
- SRT :: Part2GivenTests/part2_correct_1.c
+    SRT :: Part2GivenTests/part2_correct_1.c
     SRT :: Part2GivenTests/part2_correct_11.c
     SRT :: Part2GivenTests/part2_correct_12.c
     SRT :: Part2GivenTests/part2_correct_13.c
