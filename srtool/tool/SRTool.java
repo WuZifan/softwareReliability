@@ -63,7 +63,7 @@ public class SRTool {
 //		 String filename="example/Count42.c";
 		// passed
 		// pased
-
+		 String filename="Part2GivenTests/part2_correct_1.c";
 //		 String filename="Part2GivenTests/part2_correct_10.c";
 		// passed
 //		 String filename="Part2GivenTests/part2_correct_11.c";
@@ -76,7 +76,7 @@ public class SRTool {
 		// unknown because of the timeout
 //		String filename="Part2GivenTests/part2_correct_18.c";
 		// incorrect because of CALL
-		String filename="Part2GivenTests/part2_correct_8.c";
+//		String filename="Part2GivenTests/part2_correct_8.c";
 //		String filename="Part2GivenTests/part2_correct_22.c";
 		// Passed
 //		String filename = "Part2GivenTests/part2_correct_19.c";
