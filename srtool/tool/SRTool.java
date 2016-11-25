@@ -20,7 +20,7 @@ public class SRTool {
 	private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-//		 String filename= args[0];
+		 String filename = args[0];
 
 
 		/*
@@ -33,7 +33,7 @@ public class SRTool {
 		// Error:(error "line 28 column 21: unexpected character"):(assert (= x3
 		// (ite ([@31,151:151='<',<29>,11:9] x0 (or ) (bvlshr 1 24)) x2 x1)))
 
-		// String filename="tests/correct/ifelse.c";
+//		 String filename="tests/correct/ifelse.c";
 
 		// (Error "line 8 column 36: invalid function application, arguments
 		// missing")
@@ -55,7 +55,7 @@ public class SRTool {
 		// Pased
 		// String filename="tests/incorrect/faildivzero.c";
 		// String filename="tests/incorrect/failold.c";
-		// String filename="tests/incorrect/failovershift.c.c";
+//		 String filename="tests/incorrect/failovershift.c.c";
 		// String filename="tests/incorrect/failsimpleeq.c";
 		// String filename="tests/incorrect/failsimplelor.c";
 		// String filename="tests/incorrect/failsimplesub.c";
@@ -64,7 +64,7 @@ public class SRTool {
 		// passed
 		// pased
 
-		// String filename="Part2GivenTests/part2_correct_10.c";
+//		 String filename="Part2GivenTests/part2_correct_10.c";
 		// passed
 //		 String filename="Part2GivenTests/part2_correct_11.c";
 		// unknown
@@ -90,12 +90,6 @@ public class SRTool {
 		// unknow because the init unwind depth
 //		String filename="Part2GivenTests/part2_incorrect_8.c";
 		// unknow 
-		String filename="Part2GivenTests/part2_incorrect_15.c";
-		// pass with a large time
-//		String filename="Part2GivenTests/part2_incorrect_10.c";
-		
-		//
-		// pased
 		// fail
 		// String filename="tests/correct/simpleeq.c";
 

@@ -147,7 +147,6 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	
 		String ensures;
 		ensures = this.visitExpr(ctx.condition);	
-
 		return ensures;
 	}
 
