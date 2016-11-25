@@ -9,27 +9,50 @@ FAIL: SRT :: Part2GivenTests/part2_correct_14.c (3 of 136)
 PASS: SRT :: Part2GivenTests/part2_correct_15.c (4 of 136)
 
 PASS: SRT :: Part2GivenTests/part2_correct_16.c (5 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_17.c (6 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_1.c (7 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_12.c (8 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_11.c (9 of 136)
+
 PASS: SRT :: Part2GivenTests/part2_correct_20.c (10 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_21.c (11 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_18.c (12 of 136)
+
 PASS: SRT :: Part2GivenTests/part2_correct_23.c (13 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_22.c (14 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_25.c (15 of 136)
+
+CANDIDATE
 FAIL: SRT :: Part2GivenTests/part2_correct_26.c (16 of 136)
+
 PASS: SRT :: Part2GivenTests/part2_correct_27.c (17 of 136)
+
 PASS: SRT :: Part2GivenTests/part2_correct_28.c (18 of 136)
+
 PASS: SRT :: Part2GivenTests/part2_correct_29.c (19 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_19.c (20 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_3.c (21 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_2.c (22 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_24.c (23 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_33.c (24 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_30.c (25 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_32.c (26 of 136)
+
 PASS: SRT :: Part2GivenTests/part2_correct_36.c (27 of 136)
 FAIL: SRT :: Part2GivenTests/part2_correct_31.c (28 of 136)
 PASS: SRT :: Part2GivenTests/part2_correct_37.c (29 of 136)
