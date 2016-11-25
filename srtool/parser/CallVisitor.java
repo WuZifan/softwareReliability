@@ -55,7 +55,7 @@ public class CallVisitor extends SimpleCBaseVisitor<String>{
 	}
 
 	public void getAllVar(Map<String, ArrayList<Integer>> variCount,String assignedVar,Map<String, ExprContext> exParameterParameters
-			,ProcedureDeclContext thisProcedure, Map<String, ProcedureDeclContext> procedureContext, List<VarDeclContext> globals,Map<String, ArrayList<Integer>> oldVariCount){
+			,ProcedureDeclContext thisProcedure, Map<String, ProcedureDeclContext> procedureContext, List<VarDeclContext> globals, Map<String, ArrayList<Integer>> oldVariCount){
 		this.variCount = variCount;
 		this.assignedVar = assignedVar;
 		this.exParameterParameters = exParameterParameters;

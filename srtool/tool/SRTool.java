@@ -17,11 +17,11 @@ import util.ProcessTimeoutException;
 
 public class SRTool {
 
-	private static final int TIMEOUT = 30;
+	private static final int TIMEOUT = 40;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-//		 String filename = args[0];
-
+		 String filename = args[0];
+//		 String filename="Part2GivenTests/part2_correct_1.c";
 
 		/*
 		 * Correct
@@ -58,12 +58,12 @@ public class SRTool {
 //		 String filename="tests/incorrect/failovershift.c.c";
 		// String filename="tests/incorrect/failsimpleeq.c";
 		// String filename="tests/incorrect/failsimplelor.c";
-		// String filename="tests/incorrect/failsimplesub.c";
+//		 String filename="tests/incorrect/failsimplesub.c";
 
 //		 String filename="example/Count42.c";
 		// passed
 		// pased
-		 String filename="Part2GivenTests/part2_correct_1.c";
+//		 String filename="Part2GivenTests/part2_correct_1.c";
 //		 String filename="Part2GivenTests/part2_correct_10.c";
 		// passed
 //		 String filename="Part2GivenTests/part2_correct_11.c";
@@ -86,10 +86,10 @@ public class SRTool {
 		// String filename = "Part2GivenTests/part2_incorrect_1.c";
 		
 		// passed change the init unwind depth
-//		String filename="Part2GivenTests/part2_incorrect_7.c";
-		// unknow because the init unwind depth
+//		String filename="Part2GivenTests/part2_incorrect_4.c";
+		// unknown because the init unwind depth
 //		String filename="Part2GivenTests/part2_incorrect_8.c";
-		// unknow 
+		// unknown 
 		// fail
 		// String filename="tests/correct/simpleeq.c";
 
