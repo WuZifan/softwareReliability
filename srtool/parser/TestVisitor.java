@@ -261,7 +261,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(res + "\n");
 			finalProgramSMT.append("(check-sat)\n");
 			finalProgramSMT.append(getWhichOneIsWrong());
-			System.out.println("Program: \n" + finalProgramSMT.toString());
+//			System.out.println("Program: \n" + finalProgramSMT.toString());
 			// smtCheckSat(finalProgramSMT.toString(),i);
 			// if unwind is timeout
 			// if (!this.isUnwindTimeOut) {
@@ -325,7 +325,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				this.isUnwindDeepEnough = true;
 			}
 			initProcedure();
-			System.out.println("z3Result: " + this.z3Result);
+//			System.out.println("z3Result: " + this.z3Result);
 			// System.out.println();
 		}
 
@@ -351,11 +351,13 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		if (finalTestAnswer.equals("UNKNOWN")) {
 			for (String str : this.z3Result) {
 				if (str.equals("INCORRECT")) {
-					System.out.println("Because of TImeOut " + "INCORRECT");
+//					System.out.println("Because of TImeOut " + "INCORRECT");
+					System.out.println("INCORRECT");
 					System.exit(0);
 				}
 			}
-			System.out.println("Because of TImeOut " + "CORRECT");
+//			System.out.println("Because of TImeOut " + "CORRECT");
+			System.out.println("CORRECT");
 			System.exit(0);
 		} else {
 			System.out.println(finalTestAnswer);
@@ -366,7 +368,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	private void printTheWrongOne() {
 		for (String str : resultProxyMap.keySet()) {
 			if (resultProxyMap.get(str).equals("false")) {
-				System.out.println(str + " false " + this.proxyAssertMap.get(str));
+//				System.out.println(str + " false " + this.proxyAssertMap.get(str));
 			}
 		}
 	}
@@ -567,12 +569,12 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 						smt = "(assert (=> " + assertion + " " + smt + "))\n";
 					else
 						smt = "(assert " + smt + " )\n";
-					System.out.println("visitcall1: " + smt);
+//					System.out.println("visitcall1: " + smt);
 					postAssume.append(smt);
 				}
 			}
 		}
-		System.out.println("visitCall2: " + postAssume.toString());
+//		System.out.println("visitCall2: " + postAssume.toString());
 		return postAssume.toString();
 	}
 
@@ -1369,9 +1371,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			for (int i = 0; i < singleWhile.size(); i++) {
 				if (singleWhile.get(i).containsKey(condition)) {
 					singleWhile.get(i).get(condition).add(conditionSMT);
-					System.out.println("Insert assertion:: " + conditionSMT);
+//					System.out.println("Insert assertion:: " + conditionSMT);
 					this.insertAssertion(conditionSMT);
-					System.out.println(condition);
+//					System.out.println(condition);
 				}
 			}
 		}
@@ -1992,7 +1994,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 	public String visitOldExpr(OldExprContext ctx) {
 		String varible = ctx.getChild(2).getText();
 		String oldResult = varible + this.getGlobaOldSubscript(varible);
-		System.out.println("visitoldexpr " + oldResult);
+//		System.out.println("visitoldexpr " + oldResult);
 		return oldResult;
 	}
 

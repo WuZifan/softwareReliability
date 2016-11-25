@@ -10,7 +10,7 @@
 int foo(int a) {
 	
 	int i ;
- 	c = bar(c);
+ 	i = bar(c);
  	assert(1>2);
 	return 1;
 }

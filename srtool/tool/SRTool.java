@@ -20,7 +20,7 @@ public class SRTool {
 	private static final int TIMEOUT = 30;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-//		 String filename= args[0];
+		 String filename= args[0];
 
 		/*
 		 * Correct
@@ -36,7 +36,7 @@ public class SRTool {
 
 		// (Error "line 8 column 36: invalid function application, arguments
 		// missing")
-		// String filename="tests/correct/overshift.c";
+//		 String filename="tests/correct/overshift.c";
 
 		// Pased
 		// String filename="tests/correct/simpleeq.c";
@@ -85,7 +85,7 @@ public class SRTool {
 
 		//
 		// pased
-		 String filename="Part2GivenTests/part2_incorrect_49.c";
+//		 String filename="Part2GivenTests/part2_incorrect_40.c";
 		// fail
 //		String filename = "Part2GivenTests/part2_correct_3.c";
 		// String filename="tests/correct/simpleeq.c";

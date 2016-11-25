@@ -193,7 +193,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 				break;
 			}
 		}
-		System.out.println(finalTestAnswer);
+//		System.out.println(finalTestAnswer);
 //		System.out.println("unboundDepth: " + this.unboundDepth);
 		System.exit(0);
 		return resSmt.toString();
