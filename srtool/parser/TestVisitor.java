@@ -221,7 +221,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(res + "\n");
 			finalProgramSMT.append("(check-sat)\n");
 			finalProgramSMT.append(getWhichOneIsWrong());
-			System.out.println("Program: \n" + finalProgramSMT.toString());
+//			System.out.println("Program: \n" + finalProgramSMT.toString());
 			 smtCheckSat(finalProgramSMT.toString(),i);
 			// if unwind is timeout
 			// if (!this.isUnwindTimeOut) {
@@ -233,7 +233,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				initProcedureIndex = i;
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime2: " + timeOfProcedure);
-				if (timeOfProcedure > 200 * 1000) {
+				if (timeOfProcedure > 175 * 1000) {
 					// if (false) {
 					this.isBecauseofTimeout = true;
 					if (this.z3Result.size() >= i + 1) {
@@ -249,7 +249,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime: " + timeOfProcedure);
 				// System.out.println();
-				if (timeOfProcedure > 200 * 1000) {
+				if (timeOfProcedure > 175 * 1000) {
 					// if(false){
 					if (this.z3Result.size() >= i + 1) {
 						this.z3Result.set(i, "UNKNOWN");
@@ -269,14 +269,14 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			
 			//TODO
 			if(this.judgeCandidateInvar()) {
-				System.out.println("error in the candidate");
+//				System.out.println("error in the candidate");
 				if(this.firstCandidate) {
 					this.firstCandidate = false;
 				}
 				
 				initProcedure();
 				i--;
-				System.out.println("current candi  " + this.CandidateInvar);
+//				System.out.println("current candi  " + this.CandidateInvar);
 				continue;
 			}
 			else {
@@ -1385,8 +1385,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			String condition = ctx.condition.getText();
 			Boolean isCorrectCandidate = false;
 			HashMap<String, ArrayList<String>> whileCandidate = this.CandidateInvar.get(this.whileID);
-			System.out.println("current candidate "  + this.CandidateInvar);
-			System.out.println("current id "  + this.whileID);
+//			System.out.println("current candidate "  + this.CandidateInvar);
+//			System.out.println("current id "  + this.whileID);
 			if(!whileCandidate.isEmpty()) {
 				if(whileCandidate.containsKey(condition)) {
 					isCorrectCandidate = true;
@@ -1397,9 +1397,9 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				String conditionSMT = visitExpr(ctx.condition);
 				if (whileCandidate.containsKey(condition)) {
 					whileCandidate.get(condition).add(conditionSMT);
-					System.out.println("Insert assertion:: " + conditionSMT);
+//					System.out.println("Insert assertion:: " + conditionSMT);
 					this.insertAssertion(conditionSMT);
-					System.out.println(condition);
+//					System.out.println(condition);
 				}
 			}
 			
@@ -2016,15 +2016,15 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 		for(String proxy : this.resultProxyMap.keySet()) {
 			if(this.resultProxyMap.get(proxy).equals("false")) {
 				String text = this.proxyAssertMap.get(proxy);
-				System.out.println("error text: " + text);
+//				System.out.println("error text: " + text);
 				for(int layer : this.CandidateInvar.keySet()) {
-					System.out.println("current layer: " + layer);
+//					System.out.println("current layer: " + layer);
 					HashMap<String, ArrayList<String>> candidate = this.CandidateInvar.get(layer);
 					Boolean isCorrect = true;
 					for(String cond : candidate.keySet()) {
-						System.out.println("current cond  " + cond);
+//						System.out.println("current cond  " + cond);
 						for(String item : candidate.get(cond)) {
-							System.out.println("current text  " + item);
+//							System.out.println("current text  " + item);
 							if(text.contains(item)) {	
 								candidate.remove(cond);
 								isCandidateErr = true;
