@@ -5,6 +5,7 @@ package tool;
 import parser.GlobalVisitor;
 import parser.MyAssertVisitor;
 import parser.ParameterVisitor;
+import parser.SummerizationVisitor;
 import parser.SimpleCParser.ProcedureDeclContext;
 import parser.SimpleCParser.ProgramContext;
 import parser.TestVisitor;
@@ -14,14 +15,17 @@ public class VCGenerator {
 	private ProcedureDeclContext proc;
 	private ProgramContext prog;
 	private TestVisitor tv;
+	private SummerizationVisitor sVisitor;
 	private GlobalVisitor glVisitor;
 	private ParameterVisitor paVisitor;
 	private StringBuilder result;
 	private static VariCount VarCount;
+	private static VariCount sVarCount;
 	private MyAssertVisitor mav;
 	private static String glSmt;
 	static {
 		VarCount = new VariCount();
+		sVarCount =new VariCount();
 	}
 
 	public VCGenerator(ProgramContext prog, ProcedureDeclContext proc) {
@@ -50,8 +54,19 @@ public class VCGenerator {
 
 		mav = new MyAssertVisitor();
 		tv = new TestVisitor(mav, VarCount, VCGenerator.glSmt, null);
+		
+		
+		sVisitor=new SummerizationVisitor(mav,sVarCount,VCGenerator.glSmt,null);
 
-		tv.visit(this.prog);
+		String svAnswer=sVisitor.visitProgram(this.prog);
+		String tvAnswer=tv.visitProgram(this.prog);
+//		System.out.println("sv "+svAnswer);
+//		System.out.println("tv "+tvAnswer);
+		if(svAnswer.equals("CORRECT")){
+			System.out.println(svAnswer);
+		}else{
+			System.out.println(tvAnswer);
+		}
 		return result;
 	}
 	

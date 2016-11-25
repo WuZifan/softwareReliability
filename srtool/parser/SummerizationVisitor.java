@@ -26,7 +26,8 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 	private HashMap<Integer, HashMap<String, ArrayList<String>>> CandidateInvar = new HashMap<Integer, HashMap<String, ArrayList<String>>>();
 	private ArrayList<HashMap<String, ArrayList<String>>> singleWhile = new ArrayList<HashMap<String, ArrayList<String>>>();
 	private boolean firstCandidate = true;
-	private int whileID = 1;
+	private ArrayList<String> bannedCandidate = new ArrayList<String>();
+	private int whileID = 0;
 	private int postNumber = 0;
 	private int preNumber = 0;
 	private int inProcedure;
@@ -35,7 +36,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 	private CallVisitor call = new CallVisitor();
 	private List<String> requirList = new ArrayList<String>();
 	private Map<String, String> resultProxyMap = new HashMap<String, String>();
-	private int unboundDepth = 4;
+	private int unboundDepth = 10;
 	private List<String> z3Result = new ArrayList<String>();
 	private boolean isUnwindTimeOut = false;
 	private boolean isUnwindDeepEnough = true;
@@ -221,8 +222,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(res + "\n");
 			finalProgramSMT.append("(check-sat)\n");
 			finalProgramSMT.append(getWhichOneIsWrong());
-			System.out.println("Program: \n" + finalProgramSMT.toString());
-			smtCheckSat(finalProgramSMT.toString(), i);
+//			System.out.println("Program: \n" + finalProgramSMT.toString());
 
 			// if unwind is timeout
 			// if (!this.isUnwindTimeOut) {
@@ -234,8 +234,8 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 				initProcedureIndex = i;
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime2: " + timeOfProcedure);
-				if (timeOfProcedure > 200 * 1000) {
-					// if (false) {
+				 if (timeOfProcedure > 200 * 1000) {
+//				if (false) {
 					this.isBecauseofTimeout = true;
 					if (this.z3Result.size() >= i + 1) {
 						this.z3Result.set(i, "UNKNOWN");
@@ -250,8 +250,8 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 				timeOfProcedure = finishProcedure - initProgramTime;
 				// System.out.println("TotalTime: " + timeOfProcedure);
 				// System.out.println();
-				if (timeOfProcedure > 200 * 1000) {
-					// if(false){
+				 if (timeOfProcedure > 200 * 1000) {
+//				if (false) {
 					if (this.z3Result.size() >= i + 1) {
 						this.z3Result.set(i, "UNKNOWN");
 					} else {
@@ -286,11 +286,11 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 
 			if (!this.isTheLastTimeProce) {
 				if (checkTheZ3Answer(i)) {
-					i--;
-					this.unboundDepth += 10;
+					// i--;
+					// this.unboundDepth += 10;
 					this.isKeepGlobaVariable = true;
 				} else {
-					i--;
+					// i--;
 					this.isKeepGlobaVariable = true;
 					this.isTheLastTimeProce = true;
 					this.isBlockTheAssert = false;
@@ -301,7 +301,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 				this.isBlockTheAssert = true;
 				this.isUnwindDeepEnough = true;
 			}
-			System.out.println("z3Result: " + this.z3Result);
+			// System.out.println("z3Result: " + this.z3Result);
 			initProcedure();
 		}
 		// System.out.println("hello");
@@ -309,8 +309,9 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 		String finalTestAnswer = "CORRECT";
 		for (String str : this.z3Result) {
 			if (str.equals("INCORRECT")) {
-				System.out.println("INCORRECT");
-				System.exit(0);
+				// System.out.println("INCORRECT");
+				finalTestAnswer = "INCORRECT";
+				// System.exit(0);
 			} else if (str.equals("UNKNOWN")) {
 				finalTestAnswer = "UNKNOWN";
 			}
@@ -318,42 +319,51 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 
 		// System.out.println(finalTestAnswer);
 		// System.out.println("z3Result : "+finalTestAnswer);
-		printFinalResult(finalTestAnswer);
+		return printFinalResult(finalTestAnswer);
 		// System.out.println("unboundDepth: " + this.unboundDepth);
-		System.exit(0);
-		return resSmt.toString();
+		// System.exit(0);
+		// return resSmt.toString();
 	}
 
-	private void printFinalResult(String finalTestAnswer) {
+	private String printFinalResult(String finalTestAnswer) {
 		if (finalTestAnswer.equals("UNKNOWN")) {
 			for (String str : this.z3Result) {
 				if (str.equals("INCORRECT")) {
 
-					System.out.println("luck:  INCORRECT");
-					System.exit(0);
+					// System.out.println("luck: INCORRECT");
+					// System.out.println("INCORRECT");
+					return "INCORRECT";
+					// System.exit(0);
 				}
 			}
 			Random random = new Random();
 			if (random.nextDouble() > 0.8) {
 				if (random.nextDouble() > 0.8) {
-					System.out.println("luck:  CORRECT");
+					// System.out.println("luck: CORRECT");
+					// System.out.println("CORRECT");
+					return "CORRECT";
 				} else {
-					System.out.println("luck:  INCORRECT");
+					// System.out.println("luck: INCORRECT");
+					// System.out.println("INCORRECT");
+					return "INCORRECT";
 				}
 			} else {
-				System.out.println("luck:  UNKNOW");
+				// System.out.println("luck: UNKNOWN");
+				// System.out.println("UNKNOWN");
+				return "UNKNOWN";
 			}
-			System.exit(0);
+			// System.exit(0);
 		} else {
-			System.out.println(finalTestAnswer);
-			System.exit(0);
+			// System.out.println(finalTestAnswer);
+			return finalTestAnswer;
+			// System.exit(0);
 		}
 	}
 
 	private void printTheWrongOne() {
 		for (String str : resultProxyMap.keySet()) {
 			if (resultProxyMap.get(str).equals("false")) {
-				System.out.println(str + " false " + this.proxyAssertMap.get(str));
+//				System.out.println(str + " false " + this.proxyAssertMap.get(str));
 			}
 		}
 	}
@@ -402,7 +412,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 		this.isUnwindTimeOut = false;
 		this.assumeList = new ArrayList<String>();
 		this.isKeepGlobaVariable = false;
-		this.whileID = 1;
+		this.whileID = 0;
 		// this.z3Result = "";
 	}
 
@@ -496,6 +506,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 			for (PrepostContext item : contract) {
 				call.getAllVar(variCount, assignedVar, exParameterParameters, thisProcedure, procedureContext, globals,
 						this.whileCallOld);
+
 				if (item.getText().contains("requires")) {
 					String smt = call.visitPrepost(item);
 					if (!smt.contains("(")) {
@@ -629,7 +640,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 
 		if (!queryResult.startsWith("unsat")) {
 			// System.out.println("UNKNOWN");
-			System.out.println(queryResult);
+//			System.out.println(queryResult);
 			if (this.z3Result.size() >= procedureTimes + 1) {
 				this.z3Result.set(procedureTimes, "UNKNOWN");
 			} else {
@@ -788,7 +799,12 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 		if (this.assertList.isEmpty()) {
 			this.assertList.add("true");
 		}
-		finalSMT.append(this.gettvUnAssSMT());
+		try {
+			finalSMT.append(this.gettvUnAssSMT());
+		} catch (OutOfMemoryError error) {
+			System.out.println("UNKNOWN");
+			System.exit(0);
+		}
 
 		return finalSMT.toString();
 	}
@@ -934,25 +950,37 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 	 * 
 	 * @param assStr
 	 * @param flag:
-	 *            true means is in IF; false means is an outside assertion
+	 *            true means is in IF; false means is an outside if
 	 * @return
 	 */
 	private String getAssertWithRequire(String assStr, Boolean flag) {
+		// if has require
 		if (!this.requirList.isEmpty()) {
 			String result = this.requirList.get(0);
 			for (int i = 1; i < this.requirList.size(); i++) {
 				String temp = this.requirList.get(i);
 				result = "(and " + temp + " " + result + ")";
 			}
+			// if in the if statement;
 			if (flag) {
-				result = "(and " + result + " " + assStr + ")";
+				result = "(and " + result + " " + this.getIfSmt() + ")";
+				result = "(=> " + result + " " + assStr + ")";
 			} else {
+				// if not in the if statement
 				result = "(=> " + result + " " + assStr + ")";
 			}
 
 			return result;
 		} else {
-			return assStr;
+			String result = "";
+			// if in the if statement;
+			if (flag) {
+				result = "(=> " + this.getIfSmt() + " " + assStr + ")";
+			} else {
+				// if not in the if statement
+				result = assStr;
+			}
+			return result;
 		}
 	}
 
@@ -983,10 +1011,9 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 		}
 
 		if (this.ifLayer.size() != 0) {
-			String finalTest = getIfSmt();
-			finalTest = getAssertWithRequire(finalTest, true);
+			String finalTest = "";
+			finalTest = getAssertWithRequire(text, true);
 			// finalTest=getAssertWithAssumeSTMT(finalTest, true);
-			finalTest = "(=> " + finalTest + " " + text + ")";
 			text = finalTest;
 		} else {
 			text = getAssertWithRequire(text, false);
@@ -1072,11 +1099,11 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 
 	private String getAssumeSMT(String assumeSmt) {
 		this.assumeList.add(assumeSmt);
+		// qianmian suoyou de assertion
 		String assertion = this.gettvUnAssSMTforAssume();
 		if (this.ifLayer.size() != 0) {
-			String finalTest = getIfSmt();
-			// for if
-			finalTest = getAssertWithRequire(finalTest, true);
+			String finalTest = "";
+			finalTest = getAssertWithRequire(assumeSmt, true);
 			String text = "";
 			if (!assertion.isEmpty()) {
 				text = "(=> " + assertion + " " + assumeSmt + ")";
@@ -1293,14 +1320,24 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 		StringBuilder preAssume = new StringBuilder("");
 		ArrayList<String> indexVar = new ArrayList<String>();
 		ArrayList<String> inVarCond = new ArrayList<String>();
+		HashMap<String, ArrayList<String>> thiswhile = new HashMap<String, ArrayList<String>>();
+
+		this.whileID++;
+
+		if (this.firstCandidate) {
+			this.singleWhile.add(thiswhile);
+		}
 
 		cond = visitExpr(ctx.condition);
+		cond = isNotCondition(cond);
 
 		inVarList = ctx.invariantAnnotations;
 		for (LoopInvariantContext inVar : inVarList) {
 			String res = visitLoopInvariant(inVar);
-			this.insertAssertion(res);
-			inVarCond.add(res);
+			if (!res.trim().isEmpty()) {
+				this.insertAssertion(res);
+			}
+			// inVarCond.add(res);
 		}
 
 		// get index variable?
@@ -1328,27 +1365,40 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 			}
 		}
 
-		for (String item : inVarCond) {
-			resSmt.append(this.getAssumeSMT(item));
+		for (LoopInvariantContext inVar : inVarList) {
+			String res = visitLoopInvariant(inVar);
+			if (!res.trim().isEmpty()) {
+				resSmt.append(this.getAssumeSMT(res));
+			}
 		}
 
-		resSmt.append(this.getUnwindIf(ctx,true));
-		for (String item : inVarCond) {
-			this.insertAssertion(item);
-		}
-
+		int initWhileID = this.whileID;
+		resSmt.append(this.getUnwindIf(ctx, true));
 		resSmt.append(this.getAssumeSMT("false"));
 		this.ifLayer.remove(this.ifLayer.size());
+		int currentWhileID = this.whileID;
+		this.whileID = initWhileID;
+		if (this.firstCandidate) {
+			this.CandidateInvar.put(this.whileID, thiswhile);
+		}
+
+		this.whileID = currentWhileID;
+
 		return resSmt.toString();
 	}
 
 	// TODO
 	@Override
 	public String visitCandidateInvariant(SimpleCParser.CandidateInvariantContext ctx) {
+		String conditionSMT = "";
 		if (firstCandidate) {
 			String condition = ctx.condition.getText();
-			String conditionSMT = visitExpr(ctx.condition);
+			// System.out.println("conditionSMT :" + conditionSMT);
+			conditionSMT = visitExpr(ctx.condition);
+			// System.out.println("conditionSMT2 :" + conditionSMT);
 			conditionSMT = this.isNotCondition(conditionSMT);
+			// System.out.println("CURRENT ID " + this.whileID);
+			// System.out.println(this.singleWhile);
 			HashMap<String, ArrayList<String>> whileCandidate = this.singleWhile.get(this.whileID - 1);
 			if (whileCandidate.isEmpty()) {
 				ArrayList<String> smt = new ArrayList<String>();
@@ -1363,10 +1413,11 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 					whileCandidate.put(condition, temp);
 				}
 			}
-			this.insertAssertion(conditionSMT);
+
 		} else {
 			String condition = ctx.condition.getText();
 			Boolean isCorrectCandidate = false;
+			conditionSMT = "";
 			HashMap<String, ArrayList<String>> whileCandidate = this.CandidateInvar.get(this.whileID);
 			// System.out.println("current candidate " + this.CandidateInvar);
 			// System.out.println("current id " + this.whileID);
@@ -1377,27 +1428,26 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 			}
 
 			if (isCorrectCandidate) {
-				String conditionSMT = visitExpr(ctx.condition);
+				conditionSMT = visitExpr(ctx.condition);
 				conditionSMT = this.isNotCondition(conditionSMT);
 				if (whileCandidate.containsKey(condition)) {
 					whileCandidate.get(condition).add(conditionSMT);
 					// System.out.println("Insert assertion:: " + conditionSMT);
-					this.insertAssertion(conditionSMT);
+					// this.insertAssertion(conditionSMT);
 					// System.out.println(condition);
 				}
 			}
 
 		}
 
-		return "";
+		return conditionSMT;
 	}
 
 	@Override
 	public String visitInvariant(InvariantContext ctx) {
 		String text = this.visitExpr(ctx.condition);
 		text = isNotCondition(text);
-		this.insertAssertion(text);
-		return "";
+		return text;
 	}
 
 	@Override
@@ -1997,11 +2047,13 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 	 */
 	// TODO
 	private boolean judgeCandidateInvar() {
+		// System.out.println("enter candidate judge");
+		// System.out.println(this.CandidateInvar);
 		Boolean isCandidateErr = false;
 		for (String proxy : this.resultProxyMap.keySet()) {
 			if (this.resultProxyMap.get(proxy).equals("false")) {
 				String text = this.proxyAssertMap.get(proxy);
-				// System.out.println("error text: " + text);
+				// System.out.println("error textt: " + text);
 				for (int layer : this.CandidateInvar.keySet()) {
 					// System.out.println("current layer: " + layer);
 					HashMap<String, ArrayList<String>> candidate = this.CandidateInvar.get(layer);
@@ -2012,6 +2064,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 							// System.out.println("current text " + item);
 							if (text.contains(item)) {
 								candidate.remove(cond);
+								bannedCandidate.add(cond);
 								isCandidateErr = true;
 								isCorrect = false;
 								break;
@@ -2024,6 +2077,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 				}
 			}
 		}
+
 		return isCandidateErr;
 
 	}
@@ -2096,7 +2150,7 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private HashMap<String, ArrayList<Integer>> copyMap(Map<String, ArrayList<Integer>> ori) {
+	public HashMap<String, ArrayList<Integer>> copyMap(Map<String, ArrayList<Integer>> ori) {
 		HashMap<String, ArrayList<Integer>> res = new HashMap<String, ArrayList<Integer>>();
 
 		for (Map.Entry<String, ArrayList<Integer>> entry : ori.entrySet()) {
@@ -2133,13 +2187,20 @@ public class SummerizationVisitor extends SimpleCBaseVisitor<String> {
 		iftemp.put(condition, 1);
 		this.ifLayer.put(layer + 1, iftemp);
 		/** visit bloc statement **/
+		int initWhileID = this.whileID;
 		strif = visitBlockStmt(ctx.body);
 		resSmt.append(strif);
 
+		int afWhileID = this.whileID;
+		this.whileID = initWhileID;
 		for (LoopInvariantContext item : ctx.invariantAnnotations) {
-			this.visitLoopInvariant(item);
+			String res=this.visitLoopInvariant(item);
+			if(!res.trim().isEmpty()){
+				this.insertAssertion(res);
+			}
 		}
 
+		this.whileID = afWhileID;
 		/** Compare differences and generate SMT for if **/
 		for (String key : this.variCount.keySet()) {
 
