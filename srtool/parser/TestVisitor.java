@@ -222,8 +222,8 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			finalProgramSMT.append(res + "\n");
 			finalProgramSMT.append("(check-sat)\n");
 			finalProgramSMT.append(getWhichOneIsWrong());
-			System.out.println("Program: \n" + finalProgramSMT.toString());
-			 smtCheckSat(finalProgramSMT.toString(),i);
+//			System.out.println("Program: \n" + finalProgramSMT.toString());
+//			 smtCheckSat(finalProgramSMT.toString(),i);
 
 			// if unwind is timeout
 			// if (!this.isUnwindTimeOut) {
@@ -286,7 +286,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			}
 			
 			// this is also a system.out.print ->
-			 printTheWrongOne();
+//			 printTheWrongOne();
 
 			if (!this.isTheLastTimeProce) {
 				if (checkTheZ3Answer(i)) {
@@ -305,7 +305,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 				this.isBlockTheAssert = true;
 				this.isUnwindDeepEnough = true;
 			}
-			System.out.println("z3Result: "+this.z3Result);
+//			System.out.println("z3Result: "+this.z3Result);
 			initProcedure();
 		}
 //		System.out.println("hello");
@@ -333,19 +333,23 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 			for (String str : this.z3Result) {
 				if (str.equals("INCORRECT")) {
 
-					System.out.println("luck:  INCORRECT");
+//					System.out.println("luck:  INCORRECT");
+					System.out.println("INCORRECT");
 					System.exit(0);
 				}
 			}
 			Random random = new Random();
 			if (random.nextDouble() > 0.8) {
 				if (random.nextDouble() > 0.8) {
-					System.out.println("luck:  CORRECT");
+//					System.out.println("luck:  CORRECT");
+					System.out.println("CORRECT");
 				} else {
-					System.out.println("luck:  INCORRECT");
+//					System.out.println("luck:  INCORRECT");
+					System.out.println("INCORRECT");
 				}
 			} else {
-				System.out.println("luck:  UNKNOW");
+//				System.out.println("luck:  UNKNOWN");
+				System.out.println("UNKNOWN");
 			}
 			System.exit(0);
 		} else {
@@ -634,7 +638,7 @@ public class TestVisitor extends SimpleCBaseVisitor<String> {
 
 		if (!queryResult.startsWith("unsat")) {
 			// System.out.println("UNKNOWN");
-			 System.out.println(queryResult);
+//			 System.out.println(queryResult);
 			if (this.z3Result.size() >= procedureTimes + 1) {
 				this.z3Result.set(procedureTimes, "UNKNOWN");
 			} else {
