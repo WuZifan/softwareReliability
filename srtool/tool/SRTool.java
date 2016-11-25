@@ -21,10 +21,7 @@ public class SRTool {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		 String filename = args[0];
-<<<<<<< HEAD
-=======
 
->>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 
 		/*
 		 * Correct
@@ -93,18 +90,6 @@ public class SRTool {
 		// unknow because the init unwind depth
 //		String filename="Part2GivenTests/part2_incorrect_8.c";
 		// unknow 
-<<<<<<< HEAD
-//		String filename="Part2GivenTests/part2_incorrect_9.c";
-		// pass with a large time
-//		String filename="Part2GivenTests/part2_incorrect_10.c";
-		
-		//
-		// pased
-//		 String filename="Part2GivenTests/part2_correct_17.c";
-//		 String filename="Part2GivenTests/part2_correct_21.c";
-//		String filename="Part2GivenTests/part2_correct_8.c";
-=======
->>>>>>> branch 'master' of https://github.com/w460461339/softwareReliability.git
 		// fail
 		// String filename="tests/correct/simpleeq.c";
 
