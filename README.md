@@ -1,9 +1,13 @@
 # softwareReliability
 
 PASS: SRT :: Part2GivenTests/part2_correct_10.c (1 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_13.c (2 of 136)
+
 FAIL: SRT :: Part2GivenTests/part2_correct_14.c (3 of 136)
+
 PASS: SRT :: Part2GivenTests/part2_correct_15.c (4 of 136)
+
 PASS: SRT :: Part2GivenTests/part2_correct_16.c (5 of 136)
 FAIL: SRT :: Part2GivenTests/part2_correct_17.c (6 of 136)
 FAIL: SRT :: Part2GivenTests/part2_correct_1.c (7 of 136)
